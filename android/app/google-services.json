@@ -1,22 +1,21 @@
 {
   "project_info": {
-    "project_number": "667445087876",
-    "firebase_url": "https://pamfurred-6bb29-default-rtdb.asia-southeast1.firebasedatabase.app",
-    "project_id": "pamfurred-6bb29",
-    "storage_bucket": "pamfurred-6bb29.appspot.com"
+    "project_number": "232119935912",
+    "project_id": "pamfurred-c0953",
+    "storage_bucket": "pamfurred-c0953.appspot.com"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:667445087876:android:0561bffa90a0e9f8a23cd1",
+        "mobilesdk_app_id": "1:232119935912:android:e016039737f48c3ec8b39d",
         "android_client_info": {
-          "package_name": "com.example.your_app_package_name"
+          "package_name": "com.example.pamfurred"
         }
       },
       "oauth_client": [],
       "api_key": [
         {
-          "current_key": "AIzaSyC7VTQSqqW3lPZZZNUrF2GRukkNd9LEYZM"
+          "current_key": "AIzaSyCAFDrYnyGNzlpbRQXJVREkqIUrQjORQfg"
         }
       ],
       "services": {

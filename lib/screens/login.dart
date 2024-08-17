@@ -1,6 +1,7 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:email_validator/email_validator.dart';
+import 'package:pamfurred/auth/auth_service.dart';
 import 'package:pamfurred/components/screen_transitions.dart';
 import 'package:pamfurred/screens/home_screen.dart';
 import 'package:pamfurred/tests/register.dart';
@@ -8,6 +9,25 @@ import '../components/globals.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
+
+  void login(
+      BuildContext context, emailController, dynamic passwordController) async {
+    // authService
+    final authService = AuthService();
+
+    // try login
+    try {
+      await authService.signInWithEmailAndPassword(
+          emailController.text, passwordController.text);
+    } catch (e) {
+      showDialog(
+        context: context,
+        builder: ((context) => AlertDialog(
+              title: Text(e.toString()),
+            )),
+      );
+    }
+  }
 
   @override
   LoginScreenState createState() => LoginScreenState();

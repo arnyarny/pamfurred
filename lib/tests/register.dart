@@ -1,5 +1,6 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:intl_phone_field/intl_phone_field.dart';
 import 'package:pamfurred/components/custom_appbar.dart';
 import 'package:pamfurred/components/header.dart';
 import 'package:pamfurred/components/screen_transitions.dart';
@@ -127,6 +128,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
           'lastName': lastName,
           'phone_number': phoneNumber,
         },
+        emailRedirectTo: 'com.pamfurred://confirmation/signup',
       );
 
       final userId = response.user!.id;
@@ -136,10 +138,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
         await Supabase.instance.client
             .from('pet_owner')
             .insert({'username': username, 'user_id': userId}).select();
-        await Supabase.instance.client.from('users').insert({
+        await Supabase.instance.client.from('user').insert({
           'user_id': userId,
           'phone_number': phoneNumber,
-          'email_address': email,
           'password': password,
           'user_type': 'pet_owner',
           'first_name': firstName,
@@ -240,11 +241,46 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 ],
               ),
               const SizedBox(height: secondarySizedBox),
-              Row(
-                children: [
-                  Expanded(
-                      child: _buildTextField("Phone Number", "phoneNumber")),
-                ],
+              const SizedBox(height: secondarySizedBox),
+              RichText(
+                text: const TextSpan(children: [
+                  TextSpan(
+                    text: "Phone number ",
+                    style: TextStyle(
+                      color: Colors.black,
+                      fontSize: regularText,
+                    ),
+                  ),
+                  TextSpan(
+                    text: "*",
+                    style: TextStyle(color: primaryColor),
+                  ),
+                ]),
+              ),
+              const SizedBox(height: primarySizedBox),
+              SizedBox(
+                height: 65,
+                child: IntlPhoneField(
+                  cursorColor: Colors.black,
+                  initialCountryCode: 'PH',
+                  onChanged: (phone) {
+                    controllers['phoneNumber']?.text =
+                        phone.completeNumber; // Update the controller value
+                  },
+                  decoration: InputDecoration(
+                    contentPadding: const EdgeInsets.all(10.0),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(
+                        secondaryBorderRadius,
+                      ),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderSide: const BorderSide(color: secondaryColor),
+                      borderRadius:
+                          BorderRadius.circular(secondaryBorderRadius),
+                    ),
+                  ),
+                ),
               ),
               const SizedBox(height: tertiarySizedBox),
               Center(

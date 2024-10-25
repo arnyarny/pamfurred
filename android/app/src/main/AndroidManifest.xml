@@ -27,6 +27,14 @@
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
 
+            <!-- New deep linking intent filter -->
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="com.pamfurred" android:host="confirmation" />
+            </intent-filter>
+
             <!-- Meta-data for Flutter embedding -->
             <meta-data
                 android:name="io.flutter.embedding.android.NormalTheme"

@@ -37,7 +37,7 @@ class MainScreenState extends ConsumerState<MainScreen> {
       const HomeScreen(),
       const AppointmentsScreen(),
       const NotificationsScreen(),
-      const ProfileScreen(), // Removed userId as it's managed through session
+      const ProfileScreen(),
     ];
 
     return Scaffold(

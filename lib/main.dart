@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:pamfurred/components/globals.dart';
 import 'package:pamfurred/screens/auth_redirect.dart';
+import 'package:pamfurred/screens/email_auth.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 void main() async {
@@ -51,7 +52,18 @@ class MyApp extends StatelessWidget {
               Theme.of(context).colorScheme.copyWith(primary: primaryColor),
           splashFactory: NoSplash.splashFactory, // Disable splash colors
         ),
-        home: const AuthRedirect(),
+        initialRoute: '/',
+        onGenerateRoute: (RouteSettings settings) {
+          // Handle deep links here
+          if (settings.name == '/confirmation/signup') {
+            return MaterialPageRoute(
+              builder: (context) =>
+                  const EmailAuth(), // Replace with your EmailAuth screen
+            );
+          }
+          // Add more route handling as needed
+          return MaterialPageRoute(builder: (context) => const AuthRedirect());
+        },
       ),
     );
   }

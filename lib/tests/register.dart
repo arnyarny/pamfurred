@@ -136,10 +136,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
         await Supabase.instance.client
             .from('pet_owner')
             .insert({'username': username, 'user_id': userId}).select();
-        await Supabase.instance.client.from('users').insert({
+        await Supabase.instance.client.from('user').insert({
           'user_id': userId,
           'phone_number': phoneNumber,
-          'email_address': email,
           'password': password,
           'user_type': 'pet_owner',
           'first_name': firstName,

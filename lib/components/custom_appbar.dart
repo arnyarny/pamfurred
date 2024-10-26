@@ -5,7 +5,6 @@ import 'package:flutter/material.dart';
 AppBar appBar(BuildContext context) {
   return AppBar(
     backgroundColor: Colors.white,
-    toolbarHeight: 60,
     leadingWidth: 190,
     leading: Padding(
       padding: const EdgeInsets.fromLTRB(15, 10, 0, 10),

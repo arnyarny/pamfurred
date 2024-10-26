@@ -17,6 +17,8 @@ class MainScreen extends ConsumerStatefulWidget {
 class MainScreenState extends ConsumerState<MainScreen> {
   int currentIndex = 0;
   final PageController _pageController = PageController();
+  final double bottomNavHeight =
+      60.0; // Define the height of the bottom nav bar
 
   @override
   void dispose() {
@@ -32,12 +34,14 @@ class MainScreenState extends ConsumerState<MainScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isVisible = ref.watch(visibilityProvider);
+
     // Define screens without userId
     final List<Widget> screens = [
       const HomeScreen(),
       const AppointmentsScreen(),
       const NotificationsScreen(),
-      const ProfileScreen(), // Removed userId as it's managed through session
+      const ProfileScreen(),
     ];
 
     return Scaffold(
@@ -47,21 +51,26 @@ class MainScreenState extends ConsumerState<MainScreen> {
         onPageChanged: onPageChanged,
         children: screens,
       ),
-      bottomNavigationBar: ref.watch(visibilityProvider)
-          ? CustomBottomNavBar(
-              currentIndex: currentIndex,
-              onTap: (index) {
-                setState(() {
-                  currentIndex = index;
-                });
-                _pageController.animateToPage(
-                  index,
-                  duration: const Duration(milliseconds: 300),
-                  curve: Curves.easeInOut,
-                );
-              },
-            )
-          : null,
+      bottomNavigationBar: AnimatedContainer(
+        duration: const Duration(milliseconds: 300),
+        height: isVisible ? bottomNavHeight : 0,
+        curve: Curves.easeInOut,
+        child: isVisible
+            ? CustomBottomNavBar(
+                currentIndex: currentIndex,
+                onTap: (index) {
+                  setState(() {
+                    currentIndex = index;
+                  });
+                  _pageController.animateToPage(
+                    index,
+                    duration: const Duration(milliseconds: 300),
+                    curve: Curves.easeInOut,
+                  );
+                },
+              )
+            : null,
+      ),
     );
   }
 }

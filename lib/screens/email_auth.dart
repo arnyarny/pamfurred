@@ -18,7 +18,7 @@ class EmailAuth extends StatefulWidget {
 class EmailAuthState extends State<EmailAuth> {
   bool _isLoading = false;
   Timer? _timer;
-  int _counter = 300;
+  int _counter = 60;
 
   @override
   void initState() {

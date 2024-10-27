@@ -5,6 +5,7 @@ Text customTitleText(BuildContext context, String text) {
   return Text(
     text,
     style: const TextStyle(fontSize: titleFont, fontWeight: mediumWeight),
+    overflow: TextOverflow.ellipsis,
   );
 }
 
@@ -28,4 +29,13 @@ Text customTitleTextWithPrimaryColor(BuildContext context, String text) {
   return Text(text,
       style: const TextStyle(
           fontSize: titleFont, fontWeight: mediumWeight, color: primaryColor));
+}
+
+Text customSearchResultsTitleText(BuildContext context, String text) {
+  return Text(
+    text,
+    style: const TextStyle(fontSize: titleFont, fontWeight: mediumWeight),
+    overflow: TextOverflow.ellipsis,
+    maxLines: 1, // Limit to 1 line
+  );
 }

@@ -75,9 +75,9 @@ class LoginScreenState extends State<LoginScreen> {
       if (response.session != null) {
         // Save session for the logged-in user
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Login successful!')),
-          );
+          // ScaffoldMessenger.of(context).showSnackBar(
+          //   const SnackBar(content: Text('Login successful!')),
+          // );
         }
         // Navigate to MainScreen if authentication is successful
         if (mounted) {

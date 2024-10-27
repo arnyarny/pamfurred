@@ -12,7 +12,7 @@ class CustomHeader extends StatelessWidget {
       completeText: '',
       failedText: 'Refresh Failed',
       idleText: '',
-      releaseText: 'Release to refresh',
+      releaseText: '',
       height: 100.0, // Adjust height for pull distance
     );
   }

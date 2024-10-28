@@ -132,10 +132,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
       final userId = response.user!.id;
 
       if (response.user != null) {
-        // Save additional user details (username) in the `pet_owner` table
-        await Supabase.instance.client
-            .from('pet_owner')
-            .insert({'username': username, 'user_id': userId}).select();
         await Supabase.instance.client.from('user').insert({
           'user_id': userId,
           'phone_number': phoneNumber,
@@ -144,6 +140,11 @@ class _RegisterScreenState extends State<RegisterScreen> {
           'first_name': firstName,
           'last_name': lastName,
         }).select();
+        // Save additional user details (username) in the `pet_owner` table
+        await Supabase.instance.client
+            .from('pet_owner')
+            .insert({'username': username, 'user_id': userId}).select();
+
         if (mounted) {
           // User registered successfully, navigate to OTPAuth screen
           Navigator.push(context, rightToLeftRoute(const EmailAuth()));

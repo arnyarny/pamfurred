@@ -1,14 +1,17 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pamfurred/components/rating_widget.dart';
-import 'package:pamfurred/components/screen_transitions.dart';
+// import 'package:pamfurred/components/screen_transitions.dart';
 import 'package:pamfurred/components/sentiment_label.dart';
 import 'package:pamfurred/components/title_text.dart';
+import 'package:pamfurred/math_functions/distance_calculator.dart';
 import 'package:pamfurred/providers/global_providers.dart';
 import 'package:pamfurred/providers/search_results_provider.dart';
-import 'package:pamfurred/screens/edit_preferences.dart';
+// import 'package:pamfurred/screens/edit_preferences.dart';
 import 'package:pamfurred/components/custom_appbar.dart';
 import 'package:pamfurred/components/globals.dart';
+import 'package:shimmer/shimmer.dart';
 
 class SearchResultsScreen extends ConsumerStatefulWidget {
   const SearchResultsScreen({super.key});
@@ -19,14 +22,18 @@ class SearchResultsScreen extends ConsumerStatefulWidget {
 }
 
 class SearchResultsScreenState extends ConsumerState<SearchResultsScreen> {
+  // Move the GlobalKey here
+  final GlobalKey<ScaffoldState> scaffoldKey = GlobalKey<ScaffoldState>();
+
   @override
   Widget build(BuildContext context) {
-    final selectedIndex = ref.watch(selectedCategoryIndexProvider);
-
     return SafeArea(
       child: Scaffold(
+        key: scaffoldKey, // Pass the key here
         backgroundColor: Colors.white,
         appBar: customAppBar(context),
+        endDrawer: buildDrawer(
+            context), // Ensure this method is used to build the drawer
         body: Column(
           children: [
             Row(
@@ -34,12 +41,8 @@ class SearchResultsScreenState extends ConsumerState<SearchResultsScreen> {
               children: [
                 OutlinedButton.icon(
                   onPressed: () {
-                    Navigator.push(
-                      context,
-                      rightToLeftRoute(
-                        EditPreferencesScreen(index: selectedIndex),
-                      ),
-                    );
+                    scaffoldKey.currentState
+                        ?.openEndDrawer(); // Open the drawer
                   },
                   icon: const Icon(Icons.settings, color: Colors.black),
                   label: const Text(
@@ -58,6 +61,103 @@ class SearchResultsScreenState extends ConsumerState<SearchResultsScreen> {
             ),
             const SizedBox(height: primarySizedBox),
             const ResultsListWidget(),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // This method builds the drawer
+  Widget buildDrawer(BuildContext context) {
+    String? selectedPrice;
+    double priceRange = 500;
+
+    return Drawer(
+      child: Container(
+        padding: const EdgeInsets.all(16.0),
+        decoration: BoxDecoration(
+          color: Colors.grey[200],
+        ),
+        child: ListView(
+          padding: EdgeInsets.zero,
+          children: [
+            const DrawerHeader(
+              child: Text(
+                'Preferences',
+                style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+              ),
+            ),
+            const Text(
+              'Location',
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
+            Row(
+              children: [
+                Expanded(
+                  child: TextField(
+                    decoration: InputDecoration(
+                      hintText: 'Enter location',
+                      suffixIcon: const Icon(Icons.location_on),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8.0),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+            const Text(
+              'Price',
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
+            Row(
+              children: [
+                Radio<String>(
+                  value: 'Low',
+                  groupValue: selectedPrice,
+                  onChanged: (value) {
+                    setState(() {
+                      selectedPrice = value;
+                    });
+                  },
+                ),
+                const Text('Low'),
+                Radio<String>(
+                  value: 'Medium',
+                  groupValue: selectedPrice,
+                  onChanged: (value) {
+                    setState(() {
+                      selectedPrice = value;
+                    });
+                  },
+                ),
+                const Text('Medium'),
+                Radio<String>(
+                  value: 'High',
+                  groupValue: selectedPrice,
+                  onChanged: (value) {
+                    setState(() {
+                      selectedPrice = value;
+                    });
+                  },
+                ),
+                const Text('High'),
+              ],
+            ),
+            const SizedBox(height: 16),
+            Slider(
+              min: 0,
+              max: 1000,
+              divisions: 10,
+              label: 'Select price range',
+              value: priceRange,
+              onChanged: (double value) {
+                setState(() {
+                  priceRange = value;
+                });
+              },
+            ),
           ],
         ),
       ),
@@ -98,7 +198,7 @@ class ResultsListWidget extends ConsumerWidget {
             var provider = providers[index];
 
             return SizedBox(
-              height: 120,
+              height: 150,
               child: Column(
                 children: [
                   Card(
@@ -110,23 +210,42 @@ class ResultsListWidget extends ConsumerWidget {
                     color: Colors.white,
                     child: Row(
                       children: [
-                        // Handle null values for the image
-                        Image.network(
-                          provider['service_image'] ??
-                              '', // Provide a default if null
-                          width: 100,
-                          height: 100,
-                          fit: BoxFit.cover,
-                          errorBuilder: (context, error, stackTrace) {
-                            return const SizedBox(
-                                height: 100,
-                                width: 100,
-                                child: Icon(Icons.error));
+                        FutureBuilder(
+                          future: precacheImage(
+                              NetworkImage(provider['service_image'] ?? ''),
+                              context),
+                          builder: (context, snapshot) {
+                            if (snapshot.connectionState ==
+                                ConnectionState.done) {
+                              return Image.network(
+                                provider['service_image'] ?? '',
+                                width: 120,
+                                height: 138,
+                                fit: BoxFit.cover,
+                                errorBuilder: (context, error, stackTrace) {
+                                  return const SizedBox(
+                                      height: 138,
+                                      width: 120,
+                                      child: Icon(Icons.error));
+                                },
+                              );
+                            } else {
+                              return Shimmer.fromColors(
+                                baseColor: Colors.grey[300]!,
+                                highlightColor: Colors.grey[100]!,
+                                child: Container(
+                                  width: 120,
+                                  height: 138,
+                                  color: Colors.grey[300],
+                                ),
+                              );
+                            }
                           },
                         ),
                         Expanded(
                           child: Padding(
-                            padding: const EdgeInsets.all(secondarySizedBox),
+                            padding: const EdgeInsets.all(
+                                secondarySizedBox), // Ensure secondarySizedBox is defined
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
@@ -141,24 +260,31 @@ class ResultsListWidget extends ConsumerWidget {
                                             'No name', // Default name if null
                                       ),
                                     ),
+                                    ratingWidget(provider['rating'].toString()),
                                   ],
                                 ),
-                                const SizedBox(height: primarySizedBox),
+                                const SizedBox(
+                                    height:
+                                        primarySizedBox), // Ensure primarySizedBox is defined
                                 Text(
                                   provider['service_name'] ??
                                       'No service', // Default service if null
                                   style: const TextStyle(
-                                    fontSize: smallText,
+                                    fontSize:
+                                        regularText, // Ensure regularText is defined
                                     color: Colors.black,
                                   ),
                                 ),
+                                const SizedBox(height: primarySizedBox),
                                 Row(
                                   children: [
                                     const Text(
                                       "₱",
                                       style: TextStyle(
-                                        fontSize: smallText,
-                                        color: primaryColor,
+                                        fontSize:
+                                            smallText, // Ensure smallText is defined
+                                        color:
+                                            primaryColor, // Ensure primaryColor is defined
                                       ),
                                     ),
                                     const SizedBox(width: primarySizedBox),
@@ -168,34 +294,32 @@ class ResultsListWidget extends ConsumerWidget {
                                     ),
                                   ],
                                 ),
+                                const SizedBox(height: primarySizedBox),
+                                Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    sentimentLabelTextWidget(
+                                      provider[
+                                          'sentiment_label'], // Default sentiment if null
+                                    ),
+                                    Row(
+                                      children: [
+                                        const Icon(CupertinoIcons.location,
+                                            size: 19),
+                                        Text(
+                                          calculateDistance(
+                                              provider['latitude'],
+                                              provider['longitude']),
+                                        ),
+                                      ],
+                                    ),
+                                  ],
+                                ),
                               ],
                             ),
                           ),
-                        ),
-                        Padding(
-                          padding:
-                              const EdgeInsets.only(right: tertiarySizedBox),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.end,
-                            children: [
-                              ratingWidget(provider['rating'].toString()),
-                              const SizedBox(height: quaternarySizedBox),
-                              provider['sentiment_label'] == null ||
-                                      provider['sentiment_label'] == 0
-                                  ? const Text(
-                                      'N/A',
-                                      style: TextStyle(
-                                        fontSize: 14,
-                                        color: Colors.black,
-                                      ),
-                                    )
-                                  : sentimentLabelTextWidget(
-                                      provider['sentiment_label'] ??
-                                          'Unknown', // Handle null
-                                    ),
-                            ],
-                          ),
-                        ),
+                        )
                       ],
                     ),
                   ),
@@ -217,27 +341,45 @@ class ResultsListWidget extends ConsumerWidget {
                 ),
                 child: Row(
                   children: [
-                    Container(width: 100, height: 100, color: Colors.grey[300]),
+                    Shimmer.fromColors(
+                      baseColor: Colors.grey[300]!,
+                      highlightColor: Colors.grey[100]!,
+                      child: Container(
+                          width: 100, height: 100, color: Colors.grey[300]),
+                    ),
                     Expanded(
                       child: Padding(
                         padding: const EdgeInsets.all(8.0),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Container(
-                                width: 150,
-                                height: 20,
-                                color: Colors.grey[300]),
+                            Shimmer.fromColors(
+                              baseColor: Colors.grey[300]!,
+                              highlightColor: Colors.grey[100]!,
+                              child: Container(
+                                  width: 150,
+                                  height: 20,
+                                  color: Colors.grey[300]),
+                            ),
                             const SizedBox(height: 10),
-                            Container(
-                                width: 100,
-                                height: 20,
-                                color: Colors.grey[300]),
+                            Shimmer.fromColors(
+                              baseColor: Colors.grey[300]!,
+                              highlightColor: Colors.grey[100]!,
+                              child: Container(
+                                  width: 100,
+                                  height: 20,
+                                  color: Colors.grey[300]),
+                            ),
                           ],
                         ),
                       ),
                     ),
-                    Container(width: 25, height: 25, color: Colors.grey[300]),
+                    Shimmer.fromColors(
+                      baseColor: Colors.grey[300]!,
+                      highlightColor: Colors.grey[100]!,
+                      child: Container(
+                          width: 25, height: 25, color: Colors.grey[300]),
+                    ),
                     const SizedBox(width: 8),
                   ],
                 ),

@@ -381,7 +381,7 @@ class ServiceProvidersWidget extends ConsumerWidget {
                     sp['rating'].toString(); // Default rating if null
                 final latitude = sp['latitude'] ?? 0.0; // Default latitude
                 final longitude = sp['longitude'] ?? 0.0; // Default longitude
-                final sentimentLabel = sp['sentiment_label'] ?? 'N/A';
+                final sentimentLabel = sp['sentiment_label'];
 
                 print(imageUrl);
 

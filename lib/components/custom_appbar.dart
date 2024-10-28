@@ -30,6 +30,7 @@ AppBar customAppBar(BuildContext context) {
   return AppBar(
     backgroundColor: Colors.white,
     toolbarHeight: 60,
+    actions: <Widget>[Container()],
     leading: Padding(
       padding: const EdgeInsets.all(10.0),
       child: IconButton(

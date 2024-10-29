@@ -41,8 +41,6 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   // Function to fetch user data from Supabase
   Future<void> _fetchUserData() async {
     try {
-      // Assuming you store user information in the session state or global state
-      // You can directly use those variables here.
       final userSession = Supabase.instance.client.auth.currentSession;
 
       if (userSession == null) {

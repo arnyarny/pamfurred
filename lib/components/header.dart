@@ -8,7 +8,26 @@ Widget buildSectionHeader(String title) {
       const SizedBox(height: secondarySizedBox),
       Text(
         title,
-        style: const TextStyle(fontSize: headerText, fontWeight: mediumWeight, color: primaryColor),
+        style: const TextStyle(
+            fontSize: headerText,
+            fontWeight: mediumWeight,
+            color: primaryColor),
+      ),
+    ],
+  );
+}
+
+Widget buildSectionHeaderBlackText(String title) {
+  return Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      const SizedBox(height: secondarySizedBox),
+      Text(
+        title,
+        style: const TextStyle(
+            fontSize: headerText,
+            fontWeight: mediumWeight,
+            color: Colors.black),
       ),
     ],
   );

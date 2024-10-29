@@ -2,15 +2,15 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pamfurred/components/rating_widget.dart';
-// import 'package:pamfurred/components/screen_transitions.dart';
+import 'package:pamfurred/components/screen_transitions.dart';
 import 'package:pamfurred/components/sentiment_label.dart';
 import 'package:pamfurred/components/title_text.dart';
 import 'package:pamfurred/math_functions/distance_calculator.dart';
 import 'package:pamfurred/providers/global_providers.dart';
 import 'package:pamfurred/providers/search_results_provider.dart';
-// import 'package:pamfurred/screens/edit_preferences.dart';
 import 'package:pamfurred/components/custom_appbar.dart';
 import 'package:pamfurred/components/globals.dart';
+import 'package:pamfurred/screens/pin_location.dart';
 import 'package:shimmer/shimmer.dart';
 
 class SearchResultsScreen extends ConsumerStatefulWidget {
@@ -24,6 +24,23 @@ class SearchResultsScreen extends ConsumerStatefulWidget {
 class SearchResultsScreenState extends ConsumerState<SearchResultsScreen> {
   // Move the GlobalKey here
   final GlobalKey<ScaffoldState> scaffoldKey = GlobalKey<ScaffoldState>();
+
+  // Variable to track the selected filter (price or location)
+  String selectedFilter = 'All';
+
+  // Controller to manage the text field input
+  final TextEditingController minRangeController = TextEditingController();
+  final TextEditingController maxRangeController = TextEditingController();
+
+  var currentRangeValues = const RangeValues(10, 200);
+
+  @override
+  void initState() {
+    super.initState();
+    // Initialize the TextField with the values of the range
+    minRangeController.text = currentRangeValues.start.toString();
+    maxRangeController.text = currentRangeValues.end.toString();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -67,96 +84,254 @@ class SearchResultsScreenState extends ConsumerState<SearchResultsScreen> {
     );
   }
 
-  // This method builds the drawer
   Widget buildDrawer(BuildContext context) {
-    String? selectedPrice;
-    double priceRange = 500;
+    final hasDetectedAddress = ref.read(hasDetectedAddressProvider);
+    final street = ref.watch(streetProvider);
+    final city = ref.watch(cityProvider);
+    final province = ref.watch(provinceProvider);
 
     return Drawer(
       child: Container(
-        padding: const EdgeInsets.all(16.0),
+        padding: const EdgeInsets.all(secondarySizedBox),
         decoration: BoxDecoration(
           color: Colors.grey[200],
         ),
         child: ListView(
-          padding: EdgeInsets.zero,
+          padding: const EdgeInsets.all(tertiarySizedBox),
           children: [
-            const DrawerHeader(
-              child: Text(
-                'Preferences',
-                style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-              ),
-            ),
-            const Text(
-              'Location',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-            ),
-            Row(
+            const Row(
+              mainAxisAlignment: MainAxisAlignment.start,
               children: [
-                Expanded(
-                  child: TextField(
-                    decoration: InputDecoration(
-                      hintText: 'Enter location',
-                      suffixIcon: const Icon(Icons.location_on),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(8.0),
+                Text(
+                  'Preference',
+                  style: TextStyle(fontSize: titleFont, fontWeight: boldWeight),
+                ),
+              ],
+            ),
+            const SizedBox(height: primarySizedBox),
+            Column(
+              children: [
+                SizedBox(
+                  height: 35,
+                  child: Row(
+                    children: [
+                      Radio<String>(
+                        value: 'All',
+                        groupValue: selectedFilter,
+                        onChanged: (String? value) {
+                          setState(() {
+                            selectedFilter = value!;
+                            ref.read(sortResultsProvider.notifier).state =
+                                'All';
+                          });
+                        },
                       ),
-                    ),
+                      const Text(
+                        'All',
+                        style: TextStyle(fontSize: regularText),
+                      ),
+                    ],
+                  ),
+                ),
+                SizedBox(
+                  height: 35,
+                  child: Row(
+                    children: [
+                      Radio<String>(
+                        value: 'Location',
+                        groupValue: selectedFilter,
+                        onChanged: (String? value) {
+                          setState(() {
+                            selectedFilter = value!;
+                            ref.read(sortResultsProvider.notifier).state =
+                                'Location';
+                          });
+                        },
+                      ),
+                      const Text(
+                        'Location',
+                        style: TextStyle(fontSize: regularText),
+                      ),
+                    ],
+                  ),
+                ),
+                SizedBox(
+                  height: 35,
+                  child: Row(
+                    children: [
+                      Radio<String>(
+                        value: 'Price',
+                        groupValue: selectedFilter,
+                        onChanged: (String? value) {
+                          setState(() {
+                            selectedFilter = value!;
+                            ref.read(sortResultsProvider.notifier).state =
+                                'Price';
+                          });
+                        },
+                      ),
+                      const Text(
+                        'Price (₱)',
+                        style: TextStyle(fontSize: regularText),
+                      ),
+                    ],
                   ),
                 ),
               ],
             ),
-            const SizedBox(height: 16),
-            const Text(
-              'Price',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-            ),
-            Row(
-              children: [
-                Radio<String>(
-                  value: 'Low',
-                  groupValue: selectedPrice,
-                  onChanged: (value) {
-                    setState(() {
-                      selectedPrice = value;
-                    });
-                  },
-                ),
-                const Text('Low'),
-                Radio<String>(
-                  value: 'Medium',
-                  groupValue: selectedPrice,
-                  onChanged: (value) {
-                    setState(() {
-                      selectedPrice = value;
-                    });
-                  },
-                ),
-                const Text('Medium'),
-                Radio<String>(
-                  value: 'High',
-                  groupValue: selectedPrice,
-                  onChanged: (value) {
-                    setState(() {
-                      selectedPrice = value;
-                    });
-                  },
-                ),
-                const Text('High'),
-              ],
-            ),
-            const SizedBox(height: 16),
-            Slider(
-              min: 0,
-              max: 1000,
-              divisions: 10,
-              label: 'Select price range',
-              value: priceRange,
-              onChanged: (double value) {
-                setState(() {
-                  priceRange = value;
-                });
+
+            const SizedBox(height: tertiarySizedBox),
+
+            // Conditional rendering based on the selected filter
+            if (selectedFilter == 'Location') ...[
+              const Row(
+                mainAxisAlignment: MainAxisAlignment.start,
+                children: [
+                  Text(
+                    'Location',
+                    style:
+                        TextStyle(fontSize: titleFont, fontWeight: boldWeight),
+                  ),
+                ],
+              ),
+              const SizedBox(height: secondarySizedBox),
+              Row(
+                children: [
+                  Expanded(
+                    child: TextField(
+                      decoration: InputDecoration(
+                        hintText: hasDetectedAddress
+                            ? '$street, $city, $province'
+                            : 'Enter location',
+                        suffixIcon: IconButton(
+                          icon: const Icon(Icons.my_location,
+                              color: primaryColor),
+                          onPressed: () {
+                            Navigator.push(
+                                context, slideUpRoute(const PinAddress()));
+                          },
+                        ),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(8.0),
+                        ),
+                      ),
+                      style: const TextStyle(fontSize: regularText),
+                    ),
+                  ),
+                ],
+              ),
+            ] else if (selectedFilter == 'Price') ...[
+              Column(
+                children: [
+                  const Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        'Price (₱)',
+                        style: TextStyle(
+                            fontSize: titleFont, fontWeight: boldWeight),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: tertiarySizedBox),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      SizedBox(
+                        height: 45,
+                        width: 70,
+                        child: TextField(
+                          controller: minRangeController,
+                          decoration: const InputDecoration(
+                            border: OutlineInputBorder(),
+                            hintText: 'min',
+                          ),
+                          textAlign: TextAlign.center, // Center the text
+                          onChanged: (text) {
+                            setState(() {
+                              // Parse the text from the TextField controller
+                              final minValue =
+                                  double.tryParse(minRangeController.text);
+
+                              // Update providers with the final value
+                              ref.read(minPriceProvider.notifier).state =
+                                  minValue!;
+                            });
+                          },
+                        ),
+                      ),
+                      const SizedBox(width: secondarySizedBox),
+                      const Text('to'),
+                      const SizedBox(width: secondarySizedBox),
+                      SizedBox(
+                        height: 45,
+                        width: 70,
+                        child: TextField(
+                          controller: maxRangeController,
+                          decoration: const InputDecoration(
+                            border: OutlineInputBorder(),
+                            hintText: 'max',
+                          ),
+                          textAlign: TextAlign.center, // Center the text
+                          onChanged: (text) {
+                            setState(() {
+                              // Parse the text from the TextField controller
+                              final maxValue =
+                                  double.tryParse(maxRangeController.text);
+
+                              // Update providers with the final value
+                              ref.read(maxPriceProvider.notifier).state =
+                                  maxValue!;
+                            });
+                          },
+                        ),
+                      ),
+                    ],
+                  ),
+                  RangeSlider(
+                    activeColor: secondaryColor,
+                    values: currentRangeValues,
+                    max: 1000,
+                    divisions: 100,
+                    labels: RangeLabels(
+                      currentRangeValues.start.round().toString(),
+                      currentRangeValues.end.round().toString(),
+                    ),
+                    onChanged: (RangeValues values) {
+                      setState(() {
+                        currentRangeValues = values;
+                        // Update the TextField's text to reflect the new values
+                        minRangeController.text = values.start.toStringAsFixed(
+                            0); // Convert to string without decimals
+                        maxRangeController.text = values.end.toStringAsFixed(
+                            0); // Convert to string without decimals
+
+                        // Update providers with the final values
+                        ref.read(minPriceProvider.notifier).state =
+                            values.start;
+                        ref.read(maxPriceProvider.notifier).state = values.end;
+                      });
+                    },
+                  ),
+                ],
+              ),
+            ],
+            const SizedBox(height: quaternarySizedBox),
+            TextButton(
+              onPressed: () {
+                // Add your action here
+                Navigator.pop(context); // Close the drawer
               },
+              style: TextButton.styleFrom(
+                backgroundColor: primaryColor, // You can customize the color
+                padding:
+                    const EdgeInsets.symmetric(vertical: 10, horizontal: 20),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8.0),
+                ),
+              ),
+              child: const Text('Done',
+                  style: TextStyle(fontSize: regularText, color: Colors.white)),
             ),
           ],
         ),
@@ -184,10 +359,21 @@ class ResultsListWidget extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final selectedIndex = ref.watch(selectedCategoryIndexProvider);
-    final providerDataAsync = ref.watch(
-      searchResultsServiceProviders(
-          checkSelectedServiceCategory(selectedIndex)),
-    );
+
+    // Get the current value of the selected results sorter
+    final checkResultsSorter = ref.watch(sortResultsProvider);
+
+    final providerDataAsync = checkResultsSorter == 'All'
+        ? ref.watch(searchResultsServiceProviders(
+            checkSelectedServiceCategory(selectedIndex)))
+        : checkResultsSorter == 'Location'
+            ? ref.watch(sortSearchResultsByLocation(
+                checkSelectedServiceCategory(selectedIndex)))
+            : checkResultsSorter == 'Price'
+                ? ref.watch(sortSearchResultsByPrice(
+                    checkSelectedServiceCategory(selectedIndex)))
+                : ref.watch(searchResultsServiceProviders(
+                    checkSelectedServiceCategory(selectedIndex)));
 
     return Expanded(
       child: providerDataAsync.when(
@@ -333,54 +519,67 @@ class ResultsListWidget extends ConsumerWidget {
           physics: const BouncingScrollPhysics(),
           itemCount: 6,
           itemBuilder: (context, index) {
-            return Padding(
-              padding: const EdgeInsets.symmetric(vertical: 10),
-              child: Card(
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(0),
-                ),
+            return SizedBox(
+              height: 150,
+              child: Center(
                 child: Row(
                   children: [
-                    Shimmer.fromColors(
-                      baseColor: Colors.grey[300]!,
-                      highlightColor: Colors.grey[100]!,
-                      child: Container(
-                          width: 100, height: 100, color: Colors.grey[300]),
-                    ),
                     Expanded(
-                      child: Padding(
-                        padding: const EdgeInsets.all(8.0),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
+                      child: Card(
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(0),
+                        ),
+                        child: Row(
                           children: [
                             Shimmer.fromColors(
                               baseColor: Colors.grey[300]!,
                               highlightColor: Colors.grey[100]!,
                               child: Container(
-                                  width: 150,
-                                  height: 20,
+                                  width: 120,
+                                  height: 138,
                                   color: Colors.grey[300]),
                             ),
-                            const SizedBox(height: 10),
+                            Expanded(
+                              child: Padding(
+                                padding:
+                                    const EdgeInsets.all(secondarySizedBox),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Shimmer.fromColors(
+                                      baseColor: Colors.grey[300]!,
+                                      highlightColor: Colors.grey[100]!,
+                                      child: Container(
+                                          width: 150,
+                                          height: 20,
+                                          color: Colors.grey[300]),
+                                    ),
+                                    const SizedBox(height: 10),
+                                    Shimmer.fromColors(
+                                      baseColor: Colors.grey[300]!,
+                                      highlightColor: Colors.grey[100]!,
+                                      child: Container(
+                                          width: 100,
+                                          height: 20,
+                                          color: Colors.grey[300]),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
                             Shimmer.fromColors(
                               baseColor: Colors.grey[300]!,
                               highlightColor: Colors.grey[100]!,
                               child: Container(
-                                  width: 100,
-                                  height: 20,
+                                  width: 25,
+                                  height: 25,
                                   color: Colors.grey[300]),
                             ),
+                            const SizedBox(width: 8),
                           ],
                         ),
                       ),
                     ),
-                    Shimmer.fromColors(
-                      baseColor: Colors.grey[300]!,
-                      highlightColor: Colors.grey[100]!,
-                      child: Container(
-                          width: 25, height: 25, color: Colors.grey[300]),
-                    ),
-                    const SizedBox(width: 8),
                   ],
                 ),
               ),

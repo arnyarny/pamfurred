@@ -5,6 +5,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pamfurred/components/custom_appbar.dart';
 import 'package:pamfurred/components/custom_padded_button.dart';
 import 'package:pamfurred/components/pull_to_refresh.dart';
+import 'package:pamfurred/components/rating_widget.dart';
+import 'package:pamfurred/components/sentiment_label.dart';
 import 'package:pamfurred/components/title_text.dart';
 import 'package:pamfurred/math_functions/distance_calculator.dart';
 import 'package:pamfurred/components/globals.dart';
@@ -26,6 +28,7 @@ class HomeScreenState extends ConsumerState<HomeScreen> {
   final ScrollController _scrollController = ScrollController();
 
   bool isSelected = false;
+
   int selectedIndex = 0;
 
   @override
@@ -300,17 +303,14 @@ class HomeScreenState extends ConsumerState<HomeScreen> {
       mainAxisAlignment: MainAxisAlignment.end,
       children: [
         TextButton(
-          onPressed: () {
-            Navigator.push(
-              context,
-              crossFadeRoute(SearchResultsScreen(index: selectedIndex)),
-            );
-          },
+          onPressed: () {},
           child: customPaddedTextButton(
               text: "Submit",
               onPressed: () {
-                Navigator.push(context,
-                    crossFadeRoute(SearchResultsScreen(index: selectedIndex)));
+                ref.read(selectedCategoryIndexProvider.notifier).state =
+                    selectedIndex;
+                Navigator.push(
+                    context, crossFadeRoute(const SearchResultsScreen()));
               }),
         ),
       ],
@@ -377,10 +377,11 @@ class ServiceProvidersWidget extends ConsumerWidget {
                 final imageUrl = sp['image'] ??
                     'https://tinyurl.com/3tnt6yyy'; // Default image if null
                 final name = sp['name'] ?? 'Unknown'; // Default name if null
-                final rating = sp['rating'] ?? 'N/A'; // Default rating if null
+                final rating =
+                    sp['rating'].toString(); // Default rating if null
                 final latitude = sp['latitude'] ?? 0.0; // Default latitude
                 final longitude = sp['longitude'] ?? 0.0; // Default longitude
-                final sentimentLabel = sp['sentiment_label'] ?? 'N/A';
+                final sentimentLabel = sp['sentiment_label'];
 
                 print(imageUrl);
 
@@ -469,13 +470,7 @@ class ServiceProvidersWidget extends ConsumerWidget {
                             Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
-                                Row(
-                                  children: [
-                                    const Icon(Icons.star,
-                                        size: 19, color: secondaryColor),
-                                    Text(rating.toString()),
-                                  ],
-                                ),
+                                ratingWidget(rating),
                                 Row(
                                   children: [
                                     const Icon(CupertinoIcons.location,
@@ -510,38 +505,5 @@ Widget serviceProviderName(String name) {
         ),
       ),
     ],
-  );
-}
-
-Widget sentimentLabelTextWidget(String text) {
-  Color borderColor;
-
-  if (text == 'positive') {
-    borderColor = Colors.green;
-  } else if (text == 'negative') {
-    borderColor = Colors.red;
-  } else if (text == 'neutral') {
-    borderColor = darkGreyColor;
-  } else {
-    borderColor = Colors.transparent;
-  }
-
-  return Container(
-    decoration: BoxDecoration(
-      border: Border.all(color: borderColor, width: .75), // Outline border
-      borderRadius: BorderRadius.circular(
-          primaryBorderRadius), // Optional: for rounded corners
-    ),
-    padding: const EdgeInsets.symmetric(
-        horizontal: 8.0, vertical: 4.0), // Padding around the text
-    child: Text(
-      text,
-      style: TextStyle(
-        fontSize: smallText,
-        color: borderColor != Colors.transparent
-            ? borderColor
-            : Colors.black, // Use the same color for the text
-      ),
-    ),
   );
 }

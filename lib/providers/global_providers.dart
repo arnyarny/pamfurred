@@ -20,3 +20,5 @@ final visibilityProvider = StateNotifierProvider<VisibilityState, bool>((ref) {
 
 // Provider to manage the selected tab index (in the ServiceProviderScreen)
 final selectedTabProvider = StateProvider<int>((ref) => 0);
+
+final selectedCategoryIndexProvider = StateProvider<int>((ref) => 0);

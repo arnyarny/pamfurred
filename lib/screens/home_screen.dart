@@ -13,9 +13,12 @@ import 'package:pamfurred/components/globals.dart';
 import 'package:pamfurred/components/screen_transitions.dart';
 import 'package:pamfurred/providers/global_providers.dart';
 import 'package:pamfurred/providers/serviceprovider_provider.dart';
+import 'package:pamfurred/providers/sp_profile_provider_packages.dart';
+import 'package:pamfurred/providers/sp_profile_provider_services.dart';
 // import 'package:pamfurred/providers/serviceprovider_provider.dart';
 // import 'package:pamfurred/screens/profile.dart';
 import 'package:pamfurred/screens/search_results.dart';
+import 'package:pamfurred/screens/serviceprovider_profile.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
@@ -373,6 +376,8 @@ class ServiceProvidersWidget extends ConsumerWidget {
                   serviceProviders.length > 10 ? 10 : serviceProviders.length,
               itemBuilder: (context, index) {
                 final sp = serviceProviders[index];
+                final id = sp['sp_id'];
+
                 // Accessing fields based on your data structure
                 final imageUrl = sp['image'] ??
                     'https://tinyurl.com/3tnt6yyy'; // Default image if null
@@ -389,7 +394,15 @@ class ServiceProvidersWidget extends ConsumerWidget {
                   padding:
                       const EdgeInsets.symmetric(horizontal: primarySizedBox),
                   child: GestureDetector(
-                    onTap: () {},
+                    onTap: () {
+                      print('Service Provider ID: $id');
+                      ref.watch(allServicesProvider(sp['sp_id']));
+                      ref.watch(allPackagesProvider(sp['sp_id']));
+                      ref.read(selectedSpIndexProvider.notifier).state =
+                          sp['sp_id'];
+                      Navigator.push(context,
+                          slideUpRoute(const ServiceproviderProfileScreen()));
+                    },
                     child: SizedBox(
                       width: 250,
                       child: Card(

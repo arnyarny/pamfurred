@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:pamfurred/components/screen_transitions.dart';
-import 'package:pamfurred/screens/login.dart';
+import 'package:pamfurred/screens/main_screen.dart';
+
 import '../components/globals.dart';
 
 class SuccessfulRegistration extends StatefulWidget {
@@ -71,7 +72,7 @@ class _SuccessfulRegistrationState extends State<SuccessfulRegistration> {
                   child: TextButton(
                     onPressed: () {
                       Navigator.push(
-                          context, crossFadeRoute(const LoginScreen()));
+                          context, crossFadeRoute(const MainScreen()));
                     },
                     style: ButtonStyle(
                       shape: WidgetStateProperty.all<RoundedRectangleBorder>(

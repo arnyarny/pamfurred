@@ -5,7 +5,7 @@ import 'package:pamfurred/components/custom_appbar.dart';
 import 'package:pamfurred/components/header.dart';
 import 'package:pamfurred/components/screen_transitions.dart';
 import 'package:pamfurred/components/title_text.dart';
-import 'package:pamfurred/screens/email_auth.dart';
+import 'package:pamfurred/screens/otp_input.dart';
 import 'package:supabase_flutter/supabase_flutter.dart'; // Import Supabase package
 
 import '../components/globals.dart';
@@ -150,7 +150,12 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
         if (mounted) {
           // User registered successfully, navigate to OTPAuth screen
-          Navigator.push(context, rightToLeftRoute(const EmailAuth()));
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => OtpVerificationScreen(email: email),
+            ),
+          );
         }
       } else {
         // Handle registration error

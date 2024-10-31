@@ -16,6 +16,7 @@ import 'package:pamfurred/providers/serviceprovider_provider.dart';
 // import 'package:pamfurred/providers/serviceprovider_provider.dart';
 // import 'package:pamfurred/screens/profile.dart';
 import 'package:pamfurred/screens/search_results.dart';
+import 'package:pamfurred/screens/service_provider_details_screen.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
@@ -347,6 +348,7 @@ class ServiceProvidersWidget extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    ref.read(selectedSpCategoryProvider.notifier).state = serviceCategory;
     final providerData =
         ref.watch(serviceProviderFutureProvider(serviceCategory));
 
@@ -374,6 +376,7 @@ class ServiceProvidersWidget extends ConsumerWidget {
               itemBuilder: (context, index) {
                 final sp = serviceProviders[index];
                 // Accessing fields based on your data structure
+                final spId = sp['sp_id'];
                 final imageUrl = sp['image'] ??
                     'https://tinyurl.com/3tnt6yyy'; // Default image if null
                 final name = sp['name'] ?? 'Unknown'; // Default name if null
@@ -389,7 +392,16 @@ class ServiceProvidersWidget extends ConsumerWidget {
                   padding:
                       const EdgeInsets.symmetric(horizontal: primarySizedBox),
                   child: GestureDetector(
-                    onTap: () {},
+                    onTap: () {
+                      print('Service Provider ID: $spId');
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) =>
+                              ServiceProviderDetailsScreen(sp_id: spId),
+                        ),
+                      );
+                    },
                     child: SizedBox(
                       width: 250,
                       child: Card(

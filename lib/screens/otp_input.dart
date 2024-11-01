@@ -6,14 +6,13 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 class OtpVerificationScreen extends StatefulWidget {
   final String email;
 
-  const OtpVerificationScreen({Key? key, required this.email})
-      : super(key: key);
+  const OtpVerificationScreen({super.key, required this.email});
 
   @override
-  _OtpVerificationScreenState createState() => _OtpVerificationScreenState();
+  OtpVerificationScreenState createState() => OtpVerificationScreenState();
 }
 
-class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
+class OtpVerificationScreenState extends State<OtpVerificationScreen> {
   final TextEditingController _otpController = TextEditingController();
   bool _isLoading = false;
   bool _isResending = false; // Track the state of resending OTP
@@ -54,16 +53,18 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
         // OTP verification successful
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('OTP verification successful')),
+            const SnackBar(content: Text('OTP verification successful')),
           );
         }
 
         // Navigate to the home screen or any other screen
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(
-              builder: (context) => const SuccessfulRegistration()),
-        );
+        if (mounted) {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(
+                builder: (context) => const SuccessfulRegistration()),
+          );
+        }
       } else {
         // Handle verification error
         if (mounted) {

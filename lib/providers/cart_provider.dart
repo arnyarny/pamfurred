@@ -1,19 +1,13 @@
-import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pamfurred/models/cart_item.dart';
 import 'package:pamfurred/models/services.dart';
 import 'package:pamfurred/models/packages.dart';
 
-part 'cart_provider.g.dart';
-
 // Notifier provider to manage the cart
-@riverpod
-class CartNotifier extends _$CartNotifier {
-  @override
-  Set<CartItem> build() {
-    return {};
-  }
+class CartNotifier extends StateNotifier<Set<CartItem>> {
+  CartNotifier() : super({});
 
-// Add a Service to the cart
+  // Add a Service to the cart
   void addService(Service service) {
     if (!state.any((item) => item.id == service.id)) {
       state = {
@@ -23,12 +17,12 @@ class CartNotifier extends _$CartNotifier {
     }
   }
 
-// Remove a Service from the cart
+  // Remove a Service from the cart
   void removeService(Service service) {
     state = state.where((item) => item.id != service.id).toSet();
   }
 
-// Add a Package to the cart
+  // Add a Package to the cart
   void addPackage(Package package) {
     if (!state.any((item) => item.id == package.id)) {
       state = {
@@ -38,7 +32,7 @@ class CartNotifier extends _$CartNotifier {
     }
   }
 
-// Remove a Package from the cart
+  // Remove a Package from the cart
   void removePackage(Package package) {
     state = state.where((item) => item.id != package.id).toSet();
   }
@@ -49,9 +43,14 @@ class CartNotifier extends _$CartNotifier {
   }
 }
 
+// Create a provider for CartNotifier
+final cartNotifierProvider =
+    StateNotifierProvider<CartNotifier, Set<CartItem>>((ref) {
+  return CartNotifier();
+});
+
 // Provider to calculate the total price of all items in the cart
-@riverpod
-num cartTotal(ref) {
+final cartTotalProvider = Provider<num>((ref) {
   final cartItems = ref.watch(cartNotifierProvider);
   num total = 0;
 
@@ -60,4 +59,4 @@ num cartTotal(ref) {
   }
 
   return total;
-}
+});

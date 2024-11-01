@@ -15,7 +15,6 @@ import 'package:pamfurred/providers/global_providers.dart';
 import 'package:pamfurred/providers/serviceprovider_provider.dart';
 import 'package:pamfurred/providers/sp_profile_provider_packages.dart';
 import 'package:pamfurred/providers/sp_profile_provider_services.dart';
-// import 'package:pamfurred/providers/serviceprovider_provider.dart';
 // import 'package:pamfurred/screens/profile.dart';
 import 'package:pamfurred/screens/search_results.dart';
 import 'package:pamfurred/screens/serviceprovider_profile.dart';

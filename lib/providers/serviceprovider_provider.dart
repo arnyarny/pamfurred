@@ -20,7 +20,7 @@ final serviceProviderFutureProviderWithoutCategory =
   final response = await supabase
       .from('service_provider')
       .select(
-          'sp_id, image, name, rating, latitude, longitude, sentiment_label, category, user:user_id(user_type)')
+          '*, user:user_id(user_type)')
       .eq('user.user_type', 'service_provider');
 
   return response as List<dynamic>;

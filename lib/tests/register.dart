@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:intl_phone_field/intl_phone_field.dart';
 import 'package:pamfurred/components/custom_appbar.dart';
 import 'package:pamfurred/components/header.dart';
-import 'package:pamfurred/components/screen_transitions.dart';
+// import 'package:pamfurred/components/screen_transitions.dart';
 import 'package:pamfurred/components/title_text.dart';
 import 'package:pamfurred/screens/otp_input.dart';
 import 'package:supabase_flutter/supabase_flutter.dart'; // Import Supabase package

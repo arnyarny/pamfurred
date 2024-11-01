@@ -18,7 +18,7 @@ final serviceTypeProvider = StateNotifierProvider<ServiceTypeNotifier, String>(
 );
 
 class ServiceTypeNotifier extends StateNotifier<String> {
-  ServiceTypeNotifier() : super('Home service');
+  ServiceTypeNotifier() : super('All');
 
   void updateServiceType(String value) {
     state = value;
@@ -31,7 +31,7 @@ final petTypeProvider = StateNotifierProvider<PetTypeNotifier, String>(
 );
 
 class PetTypeNotifier extends StateNotifier<String> {
-  PetTypeNotifier() : super('Dog');
+  PetTypeNotifier() : super('All');
 
   void updatePetType(String value) {
     state = value;

@@ -100,9 +100,11 @@ class EmailAuthState extends State<EmailAuth> {
         // Resend confirmation email
         await Supabase.instance.client.auth.api
             .sendConfirmationEmail(user.email!);
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Confirmation email resent!')),
-        );
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Confirmation email resent!')),
+          );
+        }
         _startTimer(); // Restart the timer
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -110,9 +112,11 @@ class EmailAuthState extends State<EmailAuth> {
         );
       }
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error resending confirmation email: $e')),
-      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error resending confirmation email: $e')),
+        );
+      }
     } finally {
       setState(() {
         _isLoading = false;

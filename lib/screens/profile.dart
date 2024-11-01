@@ -267,7 +267,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                   _detailsCard(
                     context: context,
                     title: "Email address",
-                    details: mapUserDetails?['email_address'] ?? '',
+                    details:
+                        Supabase.instance.client.auth.currentUser?.email ?? '',
                   ),
                   _detailsCard(
                     context: context,
@@ -425,7 +426,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
           await _showEditSingleFieldDialog(context, details, "Username");
       if (newUsername != null) {
         await Supabase.instance.client
-            .from('user')
+            .from('pet_owner')
             .update({'username': newUsername}).eq(
                 'user_id', userSession.user.id); // Use the session user ID
         _fetchUserData(); // Refresh user data

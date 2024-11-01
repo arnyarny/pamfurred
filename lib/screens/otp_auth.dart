@@ -8,7 +8,7 @@ import 'package:pamfurred/screens/successful_registration.dart';
 import '../components/globals.dart';
 
 class OTPAuth extends StatefulWidget {
-  const OTPAuth({super.key});
+  const OTPAuth({super.key, required String email});
 
   @override
   State<OTPAuth> createState() => _OTPAuthState();

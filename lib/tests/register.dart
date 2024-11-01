@@ -1,10 +1,11 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:intl_phone_field/intl_phone_field.dart';
 import 'package:pamfurred/components/custom_appbar.dart';
 import 'package:pamfurred/components/header.dart';
 import 'package:pamfurred/components/screen_transitions.dart';
 import 'package:pamfurred/components/title_text.dart';
-import 'package:pamfurred/screens/email_auth.dart';
+import 'package:pamfurred/screens/otp_input.dart';
 import 'package:supabase_flutter/supabase_flutter.dart'; // Import Supabase package
 
 import '../components/globals.dart';
@@ -132,6 +133,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
       final userId = response.user!.id;
 
       if (response.user != null) {
+        // First, insert the user data into the `user` table
         await Supabase.instance.client.from('user').insert({
           'user_id': userId,
           'phone_number': phoneNumber,
@@ -140,14 +142,20 @@ class _RegisterScreenState extends State<RegisterScreen> {
           'first_name': firstName,
           'last_name': lastName,
         }).select();
-        // Save additional user details (username) in the `pet_owner` table
+
+        // Now, insert into the `pet_owner` table with the existing `user_id`
         await Supabase.instance.client
             .from('pet_owner')
             .insert({'username': username, 'user_id': userId}).select();
 
         if (mounted) {
           // User registered successfully, navigate to OTPAuth screen
-          Navigator.push(context, rightToLeftRoute(const EmailAuth()));
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => OtpVerificationScreen(email: email),
+            ),
+          );
         }
       } else {
         // Handle registration error
@@ -240,11 +248,46 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 ],
               ),
               const SizedBox(height: secondarySizedBox),
-              Row(
-                children: [
-                  Expanded(
-                      child: _buildTextField("Phone Number", "phoneNumber")),
-                ],
+              const SizedBox(height: secondarySizedBox),
+              RichText(
+                text: const TextSpan(children: [
+                  TextSpan(
+                    text: "Phone number ",
+                    style: TextStyle(
+                      color: Colors.black,
+                      fontSize: regularText,
+                    ),
+                  ),
+                  TextSpan(
+                    text: "*",
+                    style: TextStyle(color: primaryColor),
+                  ),
+                ]),
+              ),
+              const SizedBox(height: primarySizedBox),
+              SizedBox(
+                height: 65,
+                child: IntlPhoneField(
+                  cursorColor: Colors.black,
+                  initialCountryCode: 'PH',
+                  onChanged: (phone) {
+                    controllers['phoneNumber']?.text =
+                        phone.completeNumber; // Update the controller value
+                  },
+                  decoration: InputDecoration(
+                    contentPadding: const EdgeInsets.all(10.0),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(
+                        secondaryBorderRadius,
+                      ),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderSide: const BorderSide(color: secondaryColor),
+                      borderRadius:
+                          BorderRadius.circular(secondaryBorderRadius),
+                    ),
+                  ),
+                ),
               ),
               const SizedBox(height: tertiarySizedBox),
               Center(

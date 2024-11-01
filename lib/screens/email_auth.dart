@@ -1,11 +1,9 @@
 import 'dart:async';
-
 import 'package:flutter/material.dart';
 import 'package:pamfurred/components/custom_appbar.dart';
 import 'package:pamfurred/components/screen_transitions.dart';
 import 'package:pamfurred/screens/successful_registration.dart';
 import 'package:supabase_flutter/supabase_flutter.dart'; // Supabase import
-
 import '../components/globals.dart';
 
 class EmailAuth extends StatefulWidget {
@@ -24,7 +22,6 @@ class EmailAuthState extends State<EmailAuth> {
   void initState() {
     super.initState();
     _startTimer();
-    _checkEmailVerificationRepeatedly(); // Start checking email verification
   }
 
   @override
@@ -33,9 +30,9 @@ class EmailAuthState extends State<EmailAuth> {
     super.dispose();
   }
 
-  // Start the timer for countdown to resend the verification email
+  // Start the timer for countdown to resend the confirmation email
   void _startTimer() {
-    _counter = 60;
+    _counter = 30;
     _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
       setState(() {
         if (_counter > 0) {
@@ -47,8 +44,50 @@ class EmailAuthState extends State<EmailAuth> {
     });
   }
 
-  // Resend the email verification link
-  Future<void> _resendVerificationEmail() async {
+  // Check if the user's email is confirmed
+  Future<void> _checkConfirmation() async {
+    setState(() {
+      _isLoading = true;
+    });
+
+    try {
+      final session = Supabase.instance.client.auth.currentSession;
+      final user = session?.user;
+
+      if (user == null) {
+        // User is not logged in
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('User is not logged in.')),
+        );
+        return;
+      }
+
+      // Check if the user's email is confirmed
+      if (user.emailConfirmedAt != null) {
+        // Email is confirmed, navigate to the success screen
+        Navigator.pushReplacement(
+          context,
+          rightToLeftRoute(const SuccessfulRegistration()),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+              content: Text('Please confirm your email to proceed.')),
+        );
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error checking confirmation: $e')),
+      );
+    } finally {
+      setState(() {
+        _isLoading = false;
+      });
+    }
+  }
+
+  // Resend the confirmation email
+  Future<void> _resendConfirmation() async {
     setState(() {
       _isLoading = true;
     });
@@ -58,81 +97,27 @@ class EmailAuthState extends State<EmailAuth> {
       final user = session?.user;
 
       if (user != null) {
-        await Supabase.instance.client.auth.signInWithOtp(email: user.email!);
-        setState(() {
-          _counter = 60; // Restart the timer
-          _startTimer();
-        });
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Verification email resent!')),
-          );
-        }
-      }
-    } catch (e) {
-      if (mounted) {
+        // Resend confirmation email
+        await Supabase.instance.client.auth.api
+            .sendConfirmationEmail(user.email!);
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error sending verification email: $e')),
+          const SnackBar(content: Text('Confirmation email resent!')),
         );
-      }
-    } finally {
-      setState(() {
-        _isLoading = false;
-      });
-    }
-  }
-
-  // Check if the user's email has been authenticated
-  Future<void> _checkEmailVerification() async {
-    setState(() {
-      _isLoading = true;
-    });
-
-    try {
-      // Check if the current user has verified their email
-      final session = Supabase.instance.client.auth.currentSession;
-      final user = session?.user;
-
-      if (user != null && user.emailConfirmedAt != null) {
-        // If the email is verified, redirect to the SuccessfulRegistration screen
-        Navigator.push(
-            context, rightToLeftRoute(const SuccessfulRegistration()));
+        _startTimer(); // Restart the timer
       } else {
-        // If email not verified, show a message
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Please verify your email to proceed.')),
+          const SnackBar(content: Text('User is not logged in.')),
         );
       }
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error verifying user: $e')),
+        SnackBar(content: Text('Error resending confirmation email: $e')),
       );
     } finally {
       setState(() {
         _isLoading = false;
       });
     }
-  }
-
-  // Continuously check for email verification until success or timeout
-  void _checkEmailVerificationRepeatedly() {
-    Timer.periodic(const Duration(seconds: 5), (timer) async {
-      final session = Supabase.instance.client.auth.currentSession;
-      final user = session?.user;
-
-      if (user == null || user.emailConfirmedAt == null) {
-        // Email not verified, continue checking
-        await _checkEmailVerification();
-      } else {
-        // Email verified, stop checking
-        timer.cancel();
-      }
-
-      // If the counter reaches zero, stop checking
-      if (_counter == 0) {
-        timer.cancel();
-      }
-    });
   }
 
   @override
@@ -145,23 +130,21 @@ class EmailAuthState extends State<EmailAuth> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const Text(
-              'Please verify your email by clicking the link sent to your inbox.',
+              'Please check your email for a confirmation link.',
               style:
                   TextStyle(fontSize: regularText, fontWeight: FontWeight.w600),
             ),
             const SizedBox(height: secondarySizedBox),
             Center(
               child: ElevatedButton(
-                onPressed: _isLoading
-                    ? null
-                    : _checkEmailVerification, // Check email verification on press
+                onPressed: _isLoading ? null : _checkConfirmation,
                 style: ButtonStyle(
                   backgroundColor: WidgetStateProperty.all(primaryColor),
                 ),
                 child: _isLoading
                     ? const CircularProgressIndicator(color: Colors.white)
                     : const Text(
-                        'Check Verification',
+                        'Check Confirmation',
                         style: TextStyle(color: Colors.white),
                       ),
               ),
@@ -169,16 +152,16 @@ class EmailAuthState extends State<EmailAuth> {
             const SizedBox(height: secondarySizedBox),
             Center(
               child: Text(
-                'Resend verification email in $_counter seconds',
+                'Resend confirmation email in $_counter seconds',
                 style: const TextStyle(color: greyColor),
               ),
             ),
             const SizedBox(height: secondarySizedBox),
             Center(
               child: TextButton(
-                onPressed: _counter == 0 ? _resendVerificationEmail : null,
+                onPressed: _counter == 0 ? _resendConfirmation : null,
                 child: const Text(
-                  'Resend Verification Email',
+                  'Resend Confirmation Email',
                   style: TextStyle(color: primaryColor),
                 ),
               ),
@@ -188,4 +171,9 @@ class EmailAuthState extends State<EmailAuth> {
       ),
     );
   }
+}
+
+extension on GoTrueClient {
+  get api =>
+      null; // This might be unnecessary if you're already using Supabase's client
 }

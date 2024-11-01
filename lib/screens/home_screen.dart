@@ -378,7 +378,6 @@ class ServiceProvidersWidget extends ConsumerWidget {
                 final sp = serviceProviders[index];
                 final id = sp['sp_id'];
 
-                // Accessing fields based on your data structure
                 final imageUrl = sp['image'] ??
                     'https://tinyurl.com/3tnt6yyy'; // Default image if null
                 final name = sp['name'] ?? 'Unknown'; // Default name if null

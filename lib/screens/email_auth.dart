@@ -100,9 +100,11 @@ class EmailAuthState extends State<EmailAuth> {
         // Resend confirmation email
         await Supabase.instance.client.auth.api
             .sendConfirmationEmail(user.email!);
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Confirmation email resent!')),
-        );
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Confirmation email resent!')),
+          );
+        }
         _startTimer(); // Restart the timer
       } else {
         ScaffoldMessenger.of(context).showSnackBar(

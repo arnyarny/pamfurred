@@ -9,10 +9,10 @@ class OtpVerificationScreen extends StatefulWidget {
   const OtpVerificationScreen({super.key, required this.email});
 
   @override
-  _OtpVerificationScreenState createState() => _OtpVerificationScreenState();
+  OtpVerificationScreenState createState() => OtpVerificationScreenState();
 }
 
-class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
+class OtpVerificationScreenState extends State<OtpVerificationScreen> {
   final TextEditingController _otpController = TextEditingController();
   bool _isLoading = false;
   bool _isResending = false; // Track the state of resending OTP
@@ -58,11 +58,13 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
         }
 
         // Navigate to the home screen or any other screen
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(
-              builder: (context) => const SuccessfulRegistration()),
-        );
+        if (mounted) {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(
+                builder: (context) => const SuccessfulRegistration()),
+          );
+        }
       } else {
         // Handle verification error
         if (mounted) {

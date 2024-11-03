@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pull_to_refresh_flutter3/pull_to_refresh_flutter3.dart';
 
 // Custom header to adjust pull distance
@@ -19,19 +20,21 @@ class CustomHeader extends StatelessWidget {
 }
 
 // Reusable Pull-to-Refresh Widget
-class PullToRefresh extends StatefulWidget {
+class PullToRefresh extends ConsumerStatefulWidget {
   final Widget child; // Any widget can be passed here
+  final List<ProviderOrFamily> providersToRefresh;
 
   const PullToRefresh({
     super.key,
     required this.child,
+    required this.providersToRefresh,
   });
 
   @override
-  PullToRefreshState createState() => PullToRefreshState();
+  ConsumerState<PullToRefresh> createState() => PullToRefreshState();
 }
 
-class PullToRefreshState extends State<PullToRefresh> {
+class PullToRefreshState extends ConsumerState<PullToRefresh> {
   late RefreshController refreshController;
 
   @override
@@ -53,10 +56,16 @@ class PullToRefreshState extends State<PullToRefresh> {
       controller: refreshController,
       header: const CustomHeader(), // Use the custom header here
       onRefresh: () async {
-        await Future.delayed(const Duration(seconds: 1));
-
-        // Notify the controller that the refresh is completed
-        refreshController.refreshCompleted();
+        try {
+          for (var provider in widget.providersToRefresh) {
+            final result = await ref.refresh(provider as Refreshable);
+            // For debugging only
+            print('Provider refreshed: $provider with result: $result');
+          }
+          refreshController.refreshCompleted();
+        } catch (e) {
+          refreshController.refreshFailed();
+        }
       },
       child: widget.child, // Display the passed child widget
     );

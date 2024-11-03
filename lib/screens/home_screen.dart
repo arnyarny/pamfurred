@@ -11,12 +11,15 @@ import 'package:pamfurred/components/title_text.dart';
 import 'package:pamfurred/math_functions/distance_calculator.dart';
 import 'package:pamfurred/components/globals.dart';
 import 'package:pamfurred/components/screen_transitions.dart';
+import 'package:pamfurred/models/package_filter_criteria.dart';
+import 'package:pamfurred/models/service_filter_criteria.dart';
 import 'package:pamfurred/providers/global_providers.dart';
 import 'package:pamfurred/providers/serviceprovider_provider.dart';
-// import 'package:pamfurred/providers/serviceprovider_provider.dart';
+import 'package:pamfurred/providers/sp_profile_provider_packages.dart';
+import 'package:pamfurred/providers/sp_profile_provider_services.dart';
 // import 'package:pamfurred/screens/profile.dart';
 import 'package:pamfurred/screens/search_results.dart';
-import 'package:pamfurred/screens/service_provider_details_screen.dart';
+import 'package:pamfurred/screens/serviceprovider_profile.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
@@ -105,6 +108,12 @@ class HomeScreenState extends ConsumerState<HomeScreen> {
             return true;
           },
           child: PullToRefresh(
+            providersToRefresh: [
+              selectedCategoryIndexProvider,
+              serviceProviderFutureProvider('pet grooming'),
+              serviceProviderFutureProvider('pet boarding'),
+              serviceProviderFutureProvider('veterinary service'),
+            ],
             child: ListView(
               controller: _scrollController,
               physics: const BouncingScrollPhysics(),
@@ -223,7 +232,11 @@ class HomeScreenState extends ConsumerState<HomeScreen> {
       BuildContext context, int index, String title, String assetImage,
       {double height = 350}) {
     return GestureDetector(
-      onTap: () => onItemTap(index),
+      onTap: () {
+        onItemTap(index);
+        ref.read(selectedCategoryIndexProvider.notifier).state =
+                    index;
+      },
       child: Stack(
         children: [
           SizedBox(
@@ -348,7 +361,6 @@ class ServiceProvidersWidget extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    ref.read(selectedSpCategoryProvider.notifier).state = serviceCategory;
     final providerData =
         ref.watch(serviceProviderFutureProvider(serviceCategory));
 
@@ -375,8 +387,7 @@ class ServiceProvidersWidget extends ConsumerWidget {
                   serviceProviders.length > 10 ? 10 : serviceProviders.length,
               itemBuilder: (context, index) {
                 final sp = serviceProviders[index];
-                // Accessing fields based on your data structure
-                final spId = sp['sp_id'];
+
                 final imageUrl = sp['image'] ??
                     'https://tinyurl.com/3tnt6yyy'; // Default image if null
                 final name = sp['name'] ?? 'Unknown'; // Default name if null
@@ -393,14 +404,25 @@ class ServiceProvidersWidget extends ConsumerWidget {
                       const EdgeInsets.symmetric(horizontal: primarySizedBox),
                   child: GestureDetector(
                     onTap: () {
-                      print('Service Provider ID: $spId');
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) =>
-                              ServiceProviderDetailsScreen(sp_id: spId),
-                        ),
-                      );
+                      final spId = sp['sp_id']?.toString() ?? '';
+
+                      if (spId.isEmpty) {
+                        print('Error: Service Provider ID is missing.');
+                        return;
+                      }
+
+                      // Only pass spId here
+                      final serviceFilterCriteria =
+                          ServiceFilterCriteria(spId: spId);
+                      ref.watch(allServicesProvider(serviceFilterCriteria));
+
+                      final packageFilterCriteria =
+                          PackageFilterCriteria(spId: spId);
+                      ref.watch(allPackagesProvider(packageFilterCriteria));
+
+                      ref.read(selectedSpIndexProvider.notifier).state = spId;
+                      Navigator.push(context,
+                          slideUpRoute(const ServiceproviderProfileScreen()));
                     },
                     child: SizedBox(
                       width: 250,

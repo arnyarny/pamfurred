@@ -2,6 +2,7 @@ import 'package:pamfurred/models/cart_item.dart';
 
 class Service implements CartItem {
   const Service({
+    required this.serviceServiceProviderId,
     required this.serviceId,
     required this.serviceName,
     required this.category,
@@ -9,17 +10,22 @@ class Service implements CartItem {
     required this.serviceImage,
     required this.serviceType,
     required this.petType,
+    required this.serviceSize,
   });
-
+  final String serviceServiceProviderId;
   final String serviceId;
   final String serviceName;
-  final String category;
+  final List<String> category;
   final int servicePrice;
   final String serviceImage;
   final List<String> serviceType;
   final List<String> petType;
+  final String serviceSize;
 
   // Override the CartItem getters
+  @override
+  String get serviceProviderId => serviceServiceProviderId;
+
   @override
   String get id => serviceId;
 

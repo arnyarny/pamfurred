@@ -1,110 +1,49 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:pamfurred/models/services.dart';
+import 'package:pamfurred/models/service_filter_criteria.dart';
+import 'package:supabase_flutter/supabase_flutter.dart' as supabase_flutter;
 
-const List<Service> allServices = [
-  Service(
-    serviceId: '1',
-    serviceName: 'Bath',
-    category: 'Pet grooming services',
-    petType: ['Dog'],
-    servicePrice: 120,
-    serviceImage:
-        'https://images.pexels.com/photos/1632061/pexels-photo-1632061.jpeg',
-    serviceType: ['Home service', 'In-clinic'],
-  ),
-  Service(
-    serviceId: '2',
-    serviceName: 'Nail cut',
-    category: 'Pet grooming services',
-    petType: ['Cat'],
-    servicePrice: 340,
-    serviceImage: 'https://tinyurl.com/5n7bu3a8',
-    serviceType: ['Home service'],
-  ),
-  Service(
-    serviceId: '3',
-    serviceName: 'Toothbrush',
-    category: 'Pet grooming services',
-    petType: ['Dog'],
-    servicePrice: 540,
-    serviceImage:
-        'https://images.pexels.com/photos/1629781/pexels-photo-1629781.jpeg',
-    serviceType: ['Home service'],
-  ),
-  Service(
-    serviceId: '4',
-    serviceName: 'X-Ray',
-    category: 'Veterinary services',
-    petType: ['Cat', 'Dog'],
-    servicePrice: 140,
-    serviceImage: 'https://tinyurl.com/mtdukp3d',
-    serviceType: ['In-clinic'],
-  ),
-  Service(
-    serviceId: '5',
-    serviceName: 'Pet sitting',
-    category: 'Pet boarding services',
-    petType: ['Dog'],
-    servicePrice: 290,
-    serviceImage: 'https://tinyurl.com/mtk2exvk',
-    serviceType: ['Home service', 'In-clinic'],
-  ),
-  Service(
-    serviceId: '6',
-    serviceName: 'Haircut',
-    category: 'Pet grooming services',
-    petType: ['Dog'],
-    servicePrice: 440,
-    serviceImage: 'https://tinyurl.com/5n7bu3a8',
-    serviceType: ['In-clinic'],
-  ),
-  Service(
-    serviceId: '7',
-    serviceName: 'Hair color',
-    category: 'Pet grooming services',
-    petType: ['Dog'],
-    servicePrice: 520,
-    serviceImage: 'https://tinyurl.com/yppwfv6m',
-    serviceType: ['Home service', 'In-clinic'],
-  ),
-  Service(
-    serviceId: '8',
-    serviceName: 'Pet walking',
-    category: 'Pet boarding services',
-    petType: ['Rabbit'],
-    servicePrice: 790,
-    serviceImage:
-        'https://images.pexels.com/photos/1632061/pexels-photo-1632061.jpeg',
-    serviceType: ['Home service'],
-  ),
-];
+final supabase = supabase_flutter.Supabase.instance.client;
 
-final servicesProvider = Provider<List<Service>>((ref) {
-  return allServices;
+final allServicesProvider =
+    FutureProvider.family<List<dynamic>, ServiceFilterCriteria>(
+        (ref, filterCriteria) async {
+  final response = await supabase.rpc('get_service_provider_services',
+      params: {'spid': filterCriteria.spId});
+
+  List<dynamic> services = response as List<dynamic>;
+
+  // Apply client-side filtering if needed
+  if (filterCriteria.petType != null) {
+    services = services
+        .where(
+            (service) => filterCriteria.petType!.contains(service['pet_type']))
+        .toList();
+  }
+  if (filterCriteria.serviceType != null) {
+    services = services
+        .where((service) =>
+            filterCriteria.serviceType!.contains(service['service_type']))
+        .toList();
+  }
+  if (filterCriteria.serviceCategory != null) {
+    services = services
+        .where((service) => filterCriteria.serviceCategory!
+            .contains(service['service_category']))
+        .toList();
+  }
+  if (filterCriteria.size != null) {
+    services = services
+        .where((service) => service['size'] == filterCriteria.size)
+        .toList();
+  }
+
+  return services;
 });
 
-// Service type provider
-final serviceTypeProvider = StateNotifierProvider<ServiceTypeNotifier, String>(
-  (ref) => ServiceTypeNotifier(),
-);
-
 class ServiceTypeNotifier extends StateNotifier<String> {
-  ServiceTypeNotifier() : super('Home service');
+  ServiceTypeNotifier() : super('All');
 
   void updateServiceType(String value) {
-    state = value;
-  }
-}
-
-// Pet type provider
-final petTypeProvider = StateNotifierProvider<PetTypeNotifier, String>(
-  (ref) => PetTypeNotifier(),
-);
-
-class PetTypeNotifier extends StateNotifier<String> {
-  PetTypeNotifier() : super('Dog');
-
-  void updatePetType(String value) {
     state = value;
   }
 }

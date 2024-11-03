@@ -388,7 +388,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     Session? userSession = Supabase.instance.client.auth.currentSession;
 
     if (userSession == null) {
-      throw Exception("User not logged in");
+       throw Exception("User not logged in");
     }
 
     if (field == "Name") {

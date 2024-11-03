@@ -6,8 +6,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 class OtpVerificationScreen extends StatefulWidget {
   final String email;
 
-  const OtpVerificationScreen({Key? key, required this.email})
-      : super(key: key);
+  const OtpVerificationScreen({super.key, required this.email});
 
   @override
   _OtpVerificationScreenState createState() => _OtpVerificationScreenState();
@@ -54,7 +53,7 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
         // OTP verification successful
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('OTP verification successful')),
+            const SnackBar(content: Text('OTP verification successful')),
           );
         }
 

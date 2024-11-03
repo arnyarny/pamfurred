@@ -60,7 +60,6 @@ class LoginScreenState extends State<LoginScreen> {
     }
   }
 
-  // Method to authenticate the user
   Future<void> authenticateUser(String email, String password) async {
     setState(() {
       isLoading = true;
@@ -72,27 +71,32 @@ class LoginScreenState extends State<LoginScreen> {
         password: password.trim(),
       );
 
-      if (response.session != null) {
-        // Save session for the logged-in user
-        if (mounted) {
-          // ScaffoldMessenger.of(context).showSnackBar(
-          //   const SnackBar(content: Text('Login successful!')),
-          // );
-        }
-        // Navigate to MainScreen if authentication is successful
-        if (mounted) {
+      if (response.user != null) {
+        // Check if email is verified
+        final isEmailVerified = response.user!.emailConfirmedAt != null;
+
+        if (isEmailVerified) {
+          // Navigate to MainScreen if authentication is successful
           Navigator.pushReplacement(
             context,
             crossFadeRoute(const MainScreen()),
           );
+        } else {
+          // Email not verified - show error message
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Account is not verified by admin.')),
+          );
         }
-      }
-    } on AuthException catch (error) {
-      if (mounted) {
+      } else {
+        // Handle login failure
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(error.message)),
+          const SnackBar(content: Text('Invalid email or password')),
         );
       }
+    } on AuthException catch (error) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(error.message)),
+      );
     } finally {
       setState(() {
         isLoading = false;

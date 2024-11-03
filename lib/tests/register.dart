@@ -144,9 +144,12 @@ class _RegisterScreenState extends State<RegisterScreen> {
         }).select();
 
         // Now, insert into the `pet_owner` table with the existing `user_id`
-        await Supabase.instance.client
-            .from('pet_owner')
-            .insert({'username': username, 'user_id': userId}).select();
+        await Supabase.instance.client.from('pet_owner').insert({
+          'username': username,
+          email: email,
+          'approval_status': 'pending',
+          'user_id': userId
+        }).select();
 
         if (mounted) {
           // User registered successfully, navigate to OTPAuth screen

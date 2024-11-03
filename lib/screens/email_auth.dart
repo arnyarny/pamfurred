@@ -110,9 +110,11 @@ class EmailAuthState extends State<EmailAuth> {
         );
       }
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error resending confirmation email: $e')),
-      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error resending confirmation email: $e')),
+        );
+      }
     } finally {
       setState(() {
         _isLoading = false;

@@ -1,39 +1,49 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:pamfurred/models/service_filter_criteria.dart';
 import 'package:supabase_flutter/supabase_flutter.dart' as supabase_flutter;
 
+final supabase = supabase_flutter.Supabase.instance.client;
 
 final allServicesProvider =
-    FutureProvider.family<List<dynamic>, String>((ref, spId) async {
-  final supabase = supabase_flutter.Supabase.instance.client;
-
+    FutureProvider.family<List<dynamic>, ServiceFilterCriteria>(
+        (ref, filterCriteria) async {
   final response = await supabase.rpc('get_service_provider_services',
-      params: {'spid': spId}); // Call the RPC function with sp_id
+      params: {'spid': filterCriteria.spId});
 
-  return response as List<dynamic>;
+  List<dynamic> services = response as List<dynamic>;
+
+  // Apply client-side filtering if needed
+  if (filterCriteria.petType != null) {
+    services = services
+        .where(
+            (service) => filterCriteria.petType!.contains(service['pet_type']))
+        .toList();
+  }
+  if (filterCriteria.serviceType != null) {
+    services = services
+        .where((service) =>
+            filterCriteria.serviceType!.contains(service['service_type']))
+        .toList();
+  }
+  if (filterCriteria.serviceCategory != null) {
+    services = services
+        .where((service) => filterCriteria.serviceCategory!
+            .contains(service['service_category']))
+        .toList();
+  }
+  if (filterCriteria.size != null) {
+    services = services
+        .where((service) => service['size'] == filterCriteria.size)
+        .toList();
+  }
+
+  return services;
 });
-
-// Service type provider
-final serviceTypeProvider = StateNotifierProvider<ServiceTypeNotifier, String>(
-  (ref) => ServiceTypeNotifier(),
-);
 
 class ServiceTypeNotifier extends StateNotifier<String> {
   ServiceTypeNotifier() : super('All');
 
   void updateServiceType(String value) {
-    state = value;
-  }
-}
-
-// Pet type provider
-final petTypeProvider = StateNotifierProvider<PetTypeNotifier, String>(
-  (ref) => PetTypeNotifier(),
-);
-
-class PetTypeNotifier extends StateNotifier<String> {
-  PetTypeNotifier() : super('All');
-
-  void updatePetType(String value) {
     state = value;
   }
 }

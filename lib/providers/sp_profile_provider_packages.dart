@@ -1,15 +1,44 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:pamfurred/models/package_filter_criteria.dart';
 import 'package:pamfurred/providers/sp_profile_provider_services.dart';
 import 'package:supabase_flutter/supabase_flutter.dart' as supabase_flutter;
 
+final supabase = supabase_flutter.Supabase.instance.client;
+
 final allPackagesProvider =
-    FutureProvider.family<List<dynamic>, String>((ref, spId) async {
-  final supabase = supabase_flutter.Supabase.instance.client;
-
+    FutureProvider.family<List<dynamic>, PackageFilterCriteria>(
+        (ref, filterCriteria) async {
   final response = await supabase.rpc('get_service_provider_packages',
-      params: {'spid': spId}); // Call the RPC function with sp_id
+      params: {'spid': filterCriteria.spId});
 
-  return response as List<dynamic>;
+  List<dynamic> packages = response as List<dynamic>;
+
+  // Apply client-side filtering if needed
+  if (filterCriteria.petType != null) {
+    packages = packages
+        .where(
+            (package) => filterCriteria.petType!.contains(package['pet_type']))
+        .toList();
+  }
+  if (filterCriteria.packageType != null) {
+    packages = packages
+        .where((package) =>
+            filterCriteria.packageType!.contains(package['package_type']))
+        .toList();
+  }
+  if (filterCriteria.packageCategory != null) {
+    packages = packages
+        .where((package) => filterCriteria.packageCategory!
+            .contains(package['package_category']))
+        .toList();
+  }
+  if (filterCriteria.size != null) {
+    packages = packages
+        .where((package) => package['size'] == filterCriteria.size)
+        .toList();
+  }
+
+  return packages;
 });
 
 // Package type provider

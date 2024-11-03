@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:pamfurred/components/globals.dart';
 import 'package:pamfurred/components/header.dart';
-import 'package:pamfurred/components/pull_to_refresh.dart';
+// import 'package:pamfurred/components/pull_to_refresh.dart';
 // import 'package:pamfurred/components/header.dart';
 import 'package:pamfurred/components/title_text.dart';
 
@@ -143,28 +143,31 @@ class NotificationsScreenState extends State<NotificationsScreen> {
               children: [
                 const SizedBox(height: secondarySizedBox),
                 Expanded(
-                  child: PullToRefresh(
-                    child: ListView(
-                      physics: const BouncingScrollPhysics(),
-                      children: [
-                        // Today header and appointments
-                        buildSectionHeader("Today"),
-                        // Today Appointments
-                        ...todayAppointments.map((appointment) {
-                          int index = appointments.indexOf(appointment);
-                          return reusableNotificationCard(index, appointment);
-                        }),
-                        const SizedBox(height: primarySizedBox),
-                        // Earlier Header
-                        buildSectionHeader("Earlier"),
-                        const SizedBox(height: primarySizedBox),
-                        // Earlier Appointments
-                        ...earlierAppointments.map((appointment) {
-                          int index = appointments.indexOf(appointment);
-                          return reusableNotificationCard(index, appointment);
-                        }),
-                      ],
-                    ),
+                  // Remove this comment when backend is implemented in this screen
+                  // child: PullToRefresh(
+                  //   providersToRefresh: [
+
+                  //   ],
+                  child: ListView(
+                    physics: const BouncingScrollPhysics(),
+                    children: [
+                      // Today header and appointments
+                      buildSectionHeader("Today"),
+                      // Today Appointments
+                      ...todayAppointments.map((appointment) {
+                        int index = appointments.indexOf(appointment);
+                        return reusableNotificationCard(index, appointment);
+                      }),
+                      const SizedBox(height: primarySizedBox),
+                      // Earlier Header
+                      buildSectionHeader("Earlier"),
+                      const SizedBox(height: primarySizedBox),
+                      // Earlier Appointments
+                      ...earlierAppointments.map((appointment) {
+                        int index = appointments.indexOf(appointment);
+                        return reusableNotificationCard(index, appointment);
+                      }),
+                    ],
                   ),
                 ),
               ],

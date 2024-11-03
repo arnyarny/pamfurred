@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:pamfurred/components/globals.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:pamfurred/screens/auth_redirect.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -30,7 +31,10 @@ void main() async {
   SystemChrome.setPreferredOrientations([
     DeviceOrientation.portraitUp,
   ]).then((_) {
-    runApp(const MyApp());
+    runApp(const MaterialApp(
+      home: MyApp(),
+      debugShowCheckedModeBanner: false,
+    ));
   });
 }
 
@@ -40,7 +44,20 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ProviderScope(
+      overrides: [
+        appContextProvider.overrideWithValue(context),
+      ],
       child: MaterialApp(
+        localizationsDelegates: const [
+          GlobalMaterialLocalizations.delegate,
+          GlobalWidgetsLocalizations.delegate,
+          GlobalCupertinoLocalizations.delegate,
+        ],
+        supportedLocales: const [
+          Locale('en', ''), // English, no country code
+          Locale('he', ''), // Hebrew, no country code
+          Locale.fromSubtags(languageCode: 'zh'), // Chinese
+        ],
         title: 'Pamfurred',
         debugShowCheckedModeBanner: false,
         theme: ThemeData(

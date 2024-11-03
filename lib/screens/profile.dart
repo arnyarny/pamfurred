@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pamfurred/components/globals.dart';
 import 'package:pamfurred/components/header.dart';
-import 'package:pamfurred/components/pull_to_refresh.dart';
+// import 'package:pamfurred/components/pull_to_refresh.dart';
 import 'package:pamfurred/components/screen_transitions.dart';
 import 'package:pamfurred/components/title_text.dart';
 import 'package:pamfurred/providers/pet_profile_provider.dart';
@@ -97,85 +97,84 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
         body: isLoading
             ? const Center(
                 child: CircularProgressIndicator()) // Show loading spinner
-            : PullToRefresh(
-                child: SingleChildScrollView(
-                  child: Center(
-                    child: SizedBox(
-                      width: screenPadding(context),
-                      child: Column(children: [
-                        const SizedBox(height: tertiarySizedBox),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            :
+            // Remove this comment when backend is implemented in this screen
+            // PullToRefresh(
+            SingleChildScrollView(
+                child: Center(
+                  child: SizedBox(
+                    width: screenPadding(context),
+                    child: Column(children: [
+                      const SizedBox(height: tertiarySizedBox),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          buildSectionHeader(profileData?['username'] ?? ''),
+                          IconButton(
+                            onPressed: _logout,
+                            icon: const Icon(Icons.logout),
+                            iconSize: 25,
+                            color: greyColor,
+                          )
+                        ],
+                      ),
+                      const SizedBox(height: primarySizedBox),
+                      Card(
+                        color: Colors.transparent,
+                        shadowColor: Colors.transparent,
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10),
+                            side: const BorderSide(
+                                width: .15, color: Colors.black)),
+                        child: Column(
                           children: [
-                            buildSectionHeader(profileData?['username'] ?? ''),
-                            IconButton(
-                              onPressed: _logout,
-                              icon: const Icon(Icons.logout),
-                              iconSize: 25,
-                              color: greyColor,
-                            )
+                            Padding(
+                              padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+                              child: Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                children: [
+                                  customTitleText(context, "Pets"),
+                                  const Icon(Icons.edit,
+                                      size: 20, color: primaryColor)
+                                ],
+                              ),
+                            ),
+                            Center(
+                              child: Padding(
+                                padding: const EdgeInsets.only(
+                                    left: tertiarySizedBox,
+                                    right: tertiarySizedBox),
+                                child: SizedBox(
+                                    height: 60,
+                                    child: ListView.builder(
+                                      physics: const BouncingScrollPhysics(),
+                                      scrollDirection: Axis.horizontal,
+                                      itemCount: petProfileData.length +
+                                          1, // Add 1 for the Add button
+                                      itemBuilder: (context, index) {
+                                        // Logic for pet profiles and "Add" button
+                                        final petProfileImage = index <
+                                                petProfileData.length
+                                            ? petProfileData[index]['image'] ??
+                                                ''
+                                            : '';
+                                        return index == petProfileData.length
+                                            ? _buildAddPetButton(context)
+                                            : _buildPetProfile(
+                                                petProfileImage, index);
+                                      },
+                                    )),
+                              ),
+                            ),
                           ],
                         ),
-                        const SizedBox(height: primarySizedBox),
-                        Card(
-                          color: Colors.transparent,
-                          shadowColor: Colors.transparent,
-                          shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(10),
-                              side: const BorderSide(
-                                  width: .15, color: Colors.black)),
-                          child: Column(
-                            children: [
-                              Padding(
-                                padding:
-                                    const EdgeInsets.fromLTRB(16, 16, 16, 8),
-                                child: Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    customTitleText(context, "Pets"),
-                                    const Icon(Icons.edit,
-                                        size: 20, color: primaryColor)
-                                  ],
-                                ),
-                              ),
-                              Center(
-                                child: Padding(
-                                  padding: const EdgeInsets.only(
-                                      left: tertiarySizedBox,
-                                      right: tertiarySizedBox),
-                                  child: SizedBox(
-                                      height: 60,
-                                      child: ListView.builder(
-                                        physics: const BouncingScrollPhysics(),
-                                        scrollDirection: Axis.horizontal,
-                                        itemCount: petProfileData.length +
-                                            1, // Add 1 for the Add button
-                                        itemBuilder: (context, index) {
-                                          // Logic for pet profiles and "Add" button
-                                          final petProfileImage =
-                                              index < petProfileData.length
-                                                  ? petProfileData[index]
-                                                          ['image'] ??
-                                                      ''
-                                                  : '';
-                                          return index == petProfileData.length
-                                              ? _buildAddPetButton(context)
-                                              : _buildPetProfile(
-                                                  petProfileImage, index);
-                                        },
-                                      )),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        const SizedBox(height: primarySizedBox),
-                        _buildDetailsCard(context, "Personal details"),
-                        const SizedBox(height: primarySizedBox),
-                        _buildAccountCard(context),
-                      ]),
-                    ),
+                      ),
+                      const SizedBox(height: primarySizedBox),
+                      _buildDetailsCard(context, "Personal details"),
+                      const SizedBox(height: primarySizedBox),
+                      _buildAccountCard(context),
+                    ]),
                   ),
                 ),
               ),

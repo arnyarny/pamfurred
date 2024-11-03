@@ -2,12 +2,15 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:pamfurred/components/cart_icon.dart';
 import 'package:pamfurred/components/custom_appbar.dart';
-import 'package:pamfurred/components/custom_floating_action_button.dart';
 import 'package:pamfurred/components/globals.dart';
 import 'package:pamfurred/components/regular_text.dart';
 import 'package:pamfurred/components/screen_transitions.dart';
 import 'package:pamfurred/components/title_text.dart';
+import 'package:pamfurred/models/package_filter_criteria.dart';
+import 'package:pamfurred/models/packages.dart';
+import 'package:pamfurred/models/service_filter_criteria.dart';
 import 'package:pamfurred/models/services.dart';
 import 'package:pamfurred/providers/button_pressed_provider.dart';
 import 'package:pamfurred/providers/cart_provider.dart';
@@ -27,7 +30,7 @@ class ServiceproviderProfileScreen extends ConsumerStatefulWidget {
 
   @override
   ConsumerState<ServiceproviderProfileScreen> createState() =>
-      _ServiceproviderProfileScreenState();
+      ServiceproviderProfileScreenState();
 }
 
 // Define providers for each tab’s content
@@ -36,24 +39,24 @@ final aboutTabProvider = FutureProvider<List<Widget>>((ref) async {
   final sp = ref.watch(spIndexProvider);
 
   // Variable for service provider rating, checking null values
-  final displayRating = sp!['rating'].toString();
+  final displayRating = sp?['rating'].toString();
 
   // Ensure 'service_type' is a List<String>
-  List<String> serviceTypes = List<String>.from(sp['service_type'] ?? []);
+  List<String> serviceTypes = List<String>.from(sp?['service_type'] ?? []);
 
   // Ensure 'pets_catered' is a List<String>
-  List<String> petsCatered = List<String>.from(sp['pets_catered'] ?? []);
+  List<String> petsCatered = List<String>.from(sp?['pets_catered'] ?? []);
 
-  final timeOpen = sp['time_open'];
+  final timeOpen = sp?['time_open'];
 
-  final timeClose = sp['time_close'];
+  final timeClose = sp?['time_close'];
 
   return [
     // About tab content
     Center(
-      child: sp.isEmpty
-          ? const CircularProgressIndicator(
-              value: 2,
+      child: sp!.isEmpty
+          ? const Center(
+              child: CircularProgressIndicator(),
             )
           : Column(
               children: [
@@ -65,7 +68,7 @@ final aboutTabProvider = FutureProvider<List<Widget>>((ref) async {
                 const SizedBox(height: secondarySizedBox),
 
                 // Rating display logic (assuming 'displayRating' handles null internally)
-                spDetailsHeader(Icons.star, displayRating),
+                spDetailsHeader(Icons.star, displayRating!),
                 const SizedBox(height: secondarySizedBox),
 
                 spDetailsHeader(
@@ -102,162 +105,209 @@ String formatTime(String timeString) {
   return DateFormat.jm().format(dateTime); // "j" for hour (1-12), "a" for AM/PM
 }
 
-final servicesTabProvider = FutureProvider<List<Widget>>((ref) {
+final servicesTabProvider = FutureProvider<List<Widget>>((ref) async {
   // Retrieve the service provider ID
   final sp = ref.watch(spIndexProvider);
-  final allServices = ref.watch(allServicesProvider(sp!['sp_id']));
 
+  // Define filter criteria
+  final filterCriteria = ServiceFilterCriteria(
+    spId: sp!['sp_id'].toString(),
+    petType: null,
+    serviceType: null,
+    size: null,
+  );
+
+  // Use `allServicesProvider` with `.when` in your UI instead of in the provider body
   return [
-    Center(
-      child: SizedBox(
-        height: 915 - 395,
-        child: allServices.when(
-          data: (servicesList) => Column(
-            children: [
-              const SizedBox(height: tertiarySizedBox),
-              servicesList.isEmpty
-                  ? const Center(
-                      child: Text("No services available"),
-                    )
-                  : Expanded(
-                      child: ListView.builder(
-                        padding: const EdgeInsets.only(bottom: 80),
-                        itemCount: servicesList.length,
-                        itemBuilder: (context, index) {
-                          Service fromMap(Map<String, dynamic> map) {
-                            return Service(
-                              serviceId: map['service_id'] as String? ?? '',
-                              serviceName: map['service_name'] as String? ?? '',
-                              category: map['category'] as String? ?? '',
-                              servicePrice: map['price'] as int? ?? 0,
-                              serviceImage: map['service_image'],
-                              serviceType: (map['service_type'] is List)
-                                  ? List<String>.from(map['service_type'])
-                                  : [],
-                              petType: (map['pet_type'] is List)
-                                  ? List<String>.from(map['pet_type'])
-                                  : [],
-                            );
-                          }
+    Consumer(
+      builder: (context, ref, child) {
+        final allServices = ref.watch(allServicesProvider(filterCriteria));
 
-                          final serviceMap = servicesList[index];
-                          final service = fromMap(serviceMap);
+        return Center(
+          child: SizedBox(
+            height: getScreenHeight(context),
+            child: allServices.when(
+              data: (servicesList) => Column(
+                children: [
+                  const SizedBox(height: tertiarySizedBox),
+                  servicesList.isEmpty
+                      ? const Center(
+                          child: Text("No services available"),
+                        )
+                      : Expanded(
+                          child: ListView.builder(
+                            padding: const EdgeInsets.only(bottom: 80),
+                            itemCount: servicesList.length,
+                            itemBuilder: (context, index) {
+                              Service fromMap(Map<String, dynamic> map) {
+                                return Service(
+                                  serviceServiceProviderId:
+                                      map['sp_id'] as String? ?? '',
+                                  serviceId: map['service_id'] as String? ?? '',
+                                  serviceName:
+                                      map['service_name'] as String? ?? '',
+                                  category:
+                                      map['service_category'] is List<dynamic>
+                                          ? List<String>.from(
+                                              map['service_category']
+                                                  as List<dynamic>)
+                                          : [],
+                                  servicePrice: map['price'] as int? ?? 0,
+                                  serviceImage:
+                                      map['service_image'] as String? ?? '',
+                                  serviceType: map['service_type']
+                                          is List<dynamic>
+                                      ? List<String>.from(
+                                          map['service_type'] as List<dynamic>)
+                                      : [],
+                                  petType: map['pet_type'] is List<dynamic>
+                                      ? List<String>.from(
+                                          map['pet_type'] as List<dynamic>)
+                                      : [],
+                                  serviceSize: map['size'] as String? ?? '',
+                                );
+                              }
 
-                          return Consumer(
-                            builder: (context, watch, child) {
-                              final cartServices =
-                                  ref.watch(cartNotifierProvider);
-                              final isInCart = cartServices.any((cartService) =>
-                                  cartService.id == service.serviceId);
+                              final serviceMap = servicesList[index];
+                              final service = fromMap(serviceMap);
 
-                              return Card(
-                                color: Colors.transparent,
-                                elevation: 0,
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(
-                                      primaryBorderRadius),
-                                ),
-                                child: Row(
-                                  children: [
-                                    ClipRRect(
+                              return Consumer(
+                                builder: (context, ref, child) {
+                                  final cartServices =
+                                      ref.watch(cartNotifierProvider);
+                                  final isInCart = cartServices.any(
+                                      (cartService) =>
+                                          cartService.id == service.serviceId);
+
+                                  return Card(
+                                    color: Colors.transparent,
+                                    elevation: 0,
+                                    shape: RoundedRectangleBorder(
                                       borderRadius: BorderRadius.circular(
                                           primaryBorderRadius),
-                                      child: Image.network(
-                                        service.serviceImage,
-                                        width: 90,
-                                        height: 85,
-                                        fit: BoxFit.cover,
-                                        loadingBuilder:
-                                            (context, child, loadingProgress) {
-                                          if (loadingProgress == null) {
-                                            return child;
-                                          } else {
-                                            return Shimmer.fromColors(
-                                              baseColor: Colors.grey[300]!,
-                                              highlightColor: Colors.grey[100]!,
-                                              child: Container(
+                                    ),
+                                    child: Row(
+                                      children: [
+                                        ClipRRect(
+                                          borderRadius: BorderRadius.circular(
+                                              primaryBorderRadius),
+                                          child: Image.network(
+                                            service.serviceImage,
+                                            width: 90,
+                                            height: 85,
+                                            fit: BoxFit.cover,
+                                            loadingBuilder: (context, child,
+                                                loadingProgress) {
+                                              if (loadingProgress == null) {
+                                                return child;
+                                              } else {
+                                                return Shimmer.fromColors(
+                                                  baseColor: Colors.grey[300]!,
+                                                  highlightColor:
+                                                      Colors.grey[100]!,
+                                                  child: Container(
+                                                    width: 90,
+                                                    height: 85,
+                                                    color: Colors.grey[300],
+                                                  ),
+                                                );
+                                              }
+                                            },
+                                            errorBuilder:
+                                                (context, error, stackTrace) {
+                                              return Container(
                                                 width: 90,
                                                 height: 85,
                                                 color: Colors.grey[300],
-                                              ),
-                                            );
-                                          }
-                                        },
-                                        errorBuilder:
-                                            (context, error, stackTrace) {
-                                          return Container(
-                                            width: 90,
-                                            height: 85,
-                                            color: Colors.grey[300],
-                                            child: const Icon(Icons.error),
-                                          );
-                                        },
-                                      ),
-                                    ),
-                                    const SizedBox(width: tertiarySizedBox),
-                                    Expanded(
-                                      child: Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        children: [
-                                          customTitleText(
-                                              context, service.serviceName),
-                                          Text('₱${service.servicePrice}'),
-                                        ],
-                                      ),
-                                    ),
-                                    SizedBox(
-                                      width: 37,
-                                      child: Center(
-                                        child: CircleAvatar(
-                                          backgroundColor: isInCart
-                                              ? Colors.red
-                                              : secondaryColor,
-                                          child: GestureDetector(
-                                            onTap: () {
-                                              ref
-                                                  .read(buttonPressedProvider
-                                                      .notifier)
-                                                  .setPressed(
-                                                      true); // Set pressed state
+                                                child: const Icon(Icons.error),
+                                              );
                                             },
-                                            child: IconButton(
-                                              icon: Icon(
-                                                isInCart
-                                                    ? Icons.remove
-                                                    : Icons.add,
-                                                color: Colors.white,
-                                                size: 23,
+                                          ),
+                                        ),
+                                        const SizedBox(width: tertiarySizedBox),
+                                        Expanded(
+                                          child: Column(
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
+                                            children: [
+                                              customTitleText(
+                                                  context, service.serviceName),
+                                              Row(
+                                                children: [
+                                                  regularTextWidget(
+                                                      service.serviceSize),
+                                                  regularPrimaryColoredTextWidget(
+                                                      ' • '),
+                                                  Text(
+                                                      '₱${service.servicePrice}'),
+                                                ],
                                               ),
-                                              onPressed: () {
-                                                final cartNotifier = ref.read(
-                                                    cartNotifierProvider
-                                                        .notifier);
-                                                isInCart
-                                                    ? cartNotifier
-                                                        .removeService(service)
-                                                    : cartNotifier
-                                                        .addService(service);
-                                              },
+                                            ],
+                                          ),
+                                        ),
+                                        SizedBox(
+                                          width: 37,
+                                          child: Center(
+                                            child: CircleAvatar(
+                                              backgroundColor: isInCart
+                                                  ? Colors.red
+                                                  : secondaryColor,
+                                              child: GestureDetector(
+                                                onTap: () {
+                                                  ref
+                                                      .read(
+                                                          buttonPressedProvider
+                                                              .notifier)
+                                                      .setPressed(true);
+                                                },
+                                                child: IconButton(
+                                                  icon: Icon(
+                                                    isInCart
+                                                        ? Icons.remove
+                                                        : Icons.add,
+                                                    color: Colors.white,
+                                                    size: 23,
+                                                  ),
+                                                  onPressed: () {
+                                                    final cartNotifier =
+                                                        ref.read(
+                                                            cartNotifierProvider
+                                                                .notifier);
+                                                    isInCart
+                                                        ? cartNotifier
+                                                            .removeService(
+                                                                service)
+                                                        : cartNotifier
+                                                            .addService(
+                                                                service);
+                                                  },
+                                                ),
+                                              ),
                                             ),
                                           ),
                                         ),
-                                      ),
+                                      ],
                                     ),
-                                  ],
-                                ),
+                                  );
+                                },
                               );
                             },
-                          );
-                        },
-                      ),
-                    ),
-            ],
+                          ),
+                        ),
+                ],
+              ),
+              loading: () => Center(
+                child: Container(
+                  color: Colors.white, // White background
+                  padding: const EdgeInsets.all(16.0), // Optional padding
+                  child: const CircularProgressIndicator(),
+                ),
+              ),
+              error: (error, stack) => Center(child: Text('Error: $error')),
+            ),
           ),
-          loading: () => const Center(child: CircularProgressIndicator()),
-          error: (error, stack) => Center(child: Text('Error: $error')),
-        ),
-      ),
+        );
+      },
     ),
   ];
 });
@@ -265,106 +315,214 @@ final servicesTabProvider = FutureProvider<List<Widget>>((ref) {
 final packagesTabProvider = FutureProvider<List<Widget>>((ref) async {
   // Retrieve the service provider ID
   final sp = ref.watch(spIndexProvider);
-  final allServices = ref.watch(allPackagesProvider(sp!['sp_id']));
 
+  if (sp == null) {
+    return [const Center(child: Text("No provider ID available"))];
+  }
+
+  // Define filter criteria
+  final filterCriteria = PackageFilterCriteria(
+    spId: sp['sp_id'].toString(),
+    petType: null,
+    packageType: null,
+    size: null,
+  );
+
+  // Use `allOacakgesProvider` with `.when` in your UI instead of in the provider body
   return [
-    Center(
-      child: SizedBox(
-        height: 915 - 395,
-        child: allServices.when(
-          data: (servicesList) => Column(
-            children: [
-              const SizedBox(height: tertiarySizedBox),
-              servicesList.isEmpty
-                  ? const Center(
-                      child: Text("No packages available"),
-                    )
-                  : Expanded(
-                      child: ListView.builder(
-                        padding: const EdgeInsets.only(bottom: 80),
-                        itemCount: servicesList.length,
-                        // Inside your ListView.builder
-                        itemBuilder: (context, index) {
-                          final service = servicesList[index];
+    Consumer(
+      builder: (context, ref, child) {
+        final allPackages = ref.watch(allPackagesProvider(filterCriteria));
 
-                          // Temporary. The DB should require a package name and its price
-                          final packageName = service['package_name'] ??
-                              'N/A'; // Default value
-                          final price = service['price'] ??
-                              0;
+        return Center(
+          child: SizedBox(
+            height: getScreenHeight(context),
+            child: allPackages.when(
+              data: (packagesList) => Column(
+                children: [
+                  const SizedBox(height: tertiarySizedBox),
+                  packagesList.isEmpty
+                      ? const Center(
+                          child: Text("No services available"),
+                        )
+                      : Expanded(
+                          child: ListView.builder(
+                            padding: const EdgeInsets.only(bottom: 80),
+                            itemCount: packagesList.length,
+                            itemBuilder: (context, index) {
+                              Package fromMap(Map<String, dynamic> map) {
+                                return Package(
+                                    packageServiceProviderId:
+                                        map['sp_id'] as String? ?? '',
+                                    packageId:
+                                        map['package_id'] as String? ?? '',
+                                    packageName:
+                                        map['package_name'] as String? ?? '',
+                                    category: map['package_category'] is List<dynamic>
+                                        ? List<String>.from(
+                                            map['package_category']
+                                                as List<dynamic>)
+                                        : [],
+                                    packagePrice: map['price'] as int? ?? 0,
+                                    packageImage:
+                                        map['package_image'] as String? ?? '',
+                                    packageType: map['package_type'] is List<dynamic>
+                                        ? List<String>.from(map['package_type']
+                                            as List<dynamic>)
+                                        : [],
+                                    petType: map['pet_type'] is List<dynamic>
+                                        ? List<String>.from(
+                                            map['pet_type'] as List<dynamic>)
+                                        : [],
+                                    packageSize: map['size'] as String? ?? '');
+                              }
 
-                          return Card(
-                            color: Colors.transparent,
-                            elevation: 0,
-                            shape: RoundedRectangleBorder(
-                              borderRadius:
-                                  BorderRadius.circular(primaryBorderRadius),
-                            ),
-                            child: Row(
-                              children: [
-                                ClipRRect(
-                                  borderRadius: BorderRadius.circular(
-                                      primaryBorderRadius),
-                                  child: Image.network(
-                                    service['package_image'] ??
-                                        '', // Use an empty string or placeholder image for null
-                                    width: 90,
-                                    height: 85,
-                                    fit: BoxFit.cover,
-                                    loadingBuilder:
-                                        (context, child, loadingProgress) {
-                                      if (loadingProgress == null) {
-                                        return child; // Image loaded successfully
-                                      } else {
-                                        return Shimmer.fromColors(
-                                            baseColor: Colors.grey[300]!,
-                                            highlightColor: Colors.grey[100]!,
-                                            child: Container(
-                                              width: 90,
-                                              height: 85,
-                                              color: Colors.grey[300],
-                                            )); // Shimmer effect while loading
-                                      }
-                                    },
-                                    errorBuilder: (context, error, stackTrace) {
-                                      return Container(
-                                        width: 90,
-                                        height: 85,
-                                        color: Colors.grey[300],
-                                        child: const Icon(Icons.error),
-                                      );
-                                    },
-                                  ),
-                                ),
-                                const SizedBox(width: tertiarySizedBox),
-                                Expanded(
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      customTitleText(context, packageName),
-                                      Text(
-                                          '₱$price'), // Displaying price safely
-                                    ],
-                                  ),
-                                ),
-                              ],
-                            ),
-                          );
-                        },
-                      ),
-                    ),
-            ],
+                              final packageMap = packagesList[index];
+                              final package = fromMap(packageMap);
+
+                              return Consumer(
+                                builder: (context, ref, child) {
+                                  final cartServices =
+                                      ref.watch(cartNotifierProvider);
+                                  final isInCart = cartServices.any(
+                                      (cartService) =>
+                                          cartService.id == package.packageId);
+
+                                  return Card(
+                                    color: Colors.transparent,
+                                    elevation: 0,
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(
+                                          primaryBorderRadius),
+                                    ),
+                                    child: Row(
+                                      children: [
+                                        ClipRRect(
+                                          borderRadius: BorderRadius.circular(
+                                              primaryBorderRadius),
+                                          child: Image.network(
+                                            package.packageImage,
+                                            width: 90,
+                                            height: 85,
+                                            fit: BoxFit.cover,
+                                            loadingBuilder: (context, child,
+                                                loadingProgress) {
+                                              if (loadingProgress == null) {
+                                                return child;
+                                              } else {
+                                                return Shimmer.fromColors(
+                                                  baseColor: Colors.grey[300]!,
+                                                  highlightColor:
+                                                      Colors.grey[100]!,
+                                                  child: Container(
+                                                    width: 90,
+                                                    height: 85,
+                                                    color: Colors.grey[300],
+                                                  ),
+                                                );
+                                              }
+                                            },
+                                            errorBuilder:
+                                                (context, error, stackTrace) {
+                                              return Container(
+                                                width: 90,
+                                                height: 85,
+                                                color: Colors.grey[300],
+                                                child: const Icon(Icons.error),
+                                              );
+                                            },
+                                          ),
+                                        ),
+                                        const SizedBox(width: tertiarySizedBox),
+                                        Expanded(
+                                          child: Column(
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
+                                            children: [
+                                              customTitleText(
+                                                  context, package.packageName),
+                                              Row(
+                                                children: [
+                                                  regularTextWidget(
+                                                      (package.packageSize)),
+                                                  regularPrimaryColoredTextWidget(
+                                                      ' • '),
+                                                  Text(
+                                                      '₱${package.packagePrice}'),
+                                                ],
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                        SizedBox(
+                                          width: 37,
+                                          child: Center(
+                                            child: CircleAvatar(
+                                              backgroundColor: isInCart
+                                                  ? Colors.red
+                                                  : secondaryColor,
+                                              child: GestureDetector(
+                                                onTap: () {
+                                                  ref
+                                                      .read(
+                                                          buttonPressedProvider
+                                                              .notifier)
+                                                      .setPressed(
+                                                          true); // Set pressed state
+                                                },
+                                                child: IconButton(
+                                                  icon: Icon(
+                                                    isInCart
+                                                        ? Icons.remove
+                                                        : Icons.add,
+                                                    color: Colors.white,
+                                                    size: 23,
+                                                  ),
+                                                  onPressed: () {
+                                                    final cartNotifier =
+                                                        ref.read(
+                                                            cartNotifierProvider
+                                                                .notifier);
+                                                    isInCart
+                                                        ? cartNotifier
+                                                            .removePackage(
+                                                                package)
+                                                        : cartNotifier
+                                                            .addPackage(
+                                                                package);
+                                                  },
+                                                ),
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  );
+                                },
+                              );
+                            },
+                          ),
+                        ),
+                ],
+              ),
+              loading: () => Center(
+                child: Container(
+                  color: Colors.white, // White background
+                  padding: const EdgeInsets.all(16.0), // Optional padding
+                  child: const CircularProgressIndicator(),
+                ),
+              ),
+              error: (error, stack) => Center(child: Text('Error: $error')),
+            ),
           ),
-          loading: () => const Center(child: CircularProgressIndicator()),
-          error: (error, stack) => Center(child: Text('Error: $error')),
-        ),
-      ),
-    )
+        );
+      },
+    ),
   ];
 });
 
-class _ServiceproviderProfileScreenState
+class ServiceproviderProfileScreenState
     extends ConsumerState<ServiceproviderProfileScreen> {
   @override
   Widget build(BuildContext context) {
@@ -372,6 +530,14 @@ class _ServiceproviderProfileScreenState
     const defaultImage = 'https://tinyurl.com/3tnt6yyy';
 
     final sp = ref.watch(spIndexProvider);
+
+    // Return a loading indicator with a white background if sp is null
+    if (sp == null) {
+      return const Scaffold(
+        backgroundColor: Colors.white,
+        body: Center(child: CircularProgressIndicator()),
+      );
+    }
 
     // Define tabs titles as static widgets
     final List<Widget> tabTitles = [
@@ -395,16 +561,60 @@ class _ServiceproviderProfileScreenState
 
     return Scaffold(
       backgroundColor: Colors.white,
-      appBar: customAppBar(context),
+      appBar: customAppBarWithTitle(context, sp['name']),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
-      floatingActionButton: customFloatingActionButton(context,
-          buttonText: 'Book appointment', onPressed: () {
-        Navigator.push(context, slideUpRoute(const CartScreen()));
-      }),
-      body: Center(
-        child: Column(
-          children: [
-            if (sp != null)
+      floatingActionButton: GestureDetector(
+        onTap: () {
+          Navigator.push(context, slideUpRoute(const CartScreen()));
+        },
+        child: Container(
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(secondaryBorderRadius),
+            border: Border.all(width: 0.5, color: primaryColor),
+            color: primaryColor,
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.2),
+                spreadRadius: 2,
+                blurRadius: 8,
+                offset: const Offset(2, 4),
+              ),
+            ],
+          ),
+          height: 50,
+          margin: const EdgeInsets.symmetric(horizontal: 30, vertical: 10),
+          child: Padding(
+            padding: const EdgeInsets.only(
+                left: tertiarySizedBox, right: primarySizedBox),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                const CartIcon(),
+                TextButton.icon(
+                    onPressed: () {
+                      Navigator.push(context, slideUpRoute(const CartScreen()));
+                    },
+                    icon: const Icon(
+                      Icons.arrow_forward_ios_outlined,
+                      color: Colors.white,
+                    ),
+                    iconAlignment: IconAlignment.end,
+                    label: const Text(
+                      'Book appointment',
+                      style: TextStyle(
+                          color: Colors.white,
+                          fontSize: regularText,
+                          fontWeight: regularWeight),
+                    )),
+              ],
+            ),
+          ),
+        ),
+      ),
+      body: SingleChildScrollView(
+        child: Center(
+          child: Column(
+            children: [
               Image.network(
                 sp['image'] ?? defaultImage,
                 width: double.infinity,
@@ -437,72 +647,70 @@ class _ServiceproviderProfileScreenState
                   );
                 },
               ),
-            SizedBox(
-              width: screenPadding(context),
-              child: Column(
-                children: [
-                  const SizedBox(height: tertiarySizedBox),
-                  if (sp != null) customTitleText(context, sp['name']),
-                  const SizedBox(height: secondarySizedBox),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.start,
-                    children: List.generate(tabTitles.length, (index) {
-                      return GestureDetector(
-                        onTap: () => ref
-                            .read(selectedTabProvider.notifier)
-                            .state = index.toInt(),
-                        child: Container(
-                          margin: const EdgeInsets.symmetric(
-                              horizontal: primarySizedBox),
-                          decoration: BoxDecoration(
-                            borderRadius:
-                                BorderRadius.circular(quaternaryBorderRadius),
-                            color: selectedIndex == index
-                                ? lighterSecondaryColor
-                                : Colors.transparent,
+              SizedBox(
+                width: screenPadding(context),
+                child: Column(
+                  children: [
+                    const SizedBox(height: tertiarySizedBox),
+                    customTitleText(context, sp['name']),
+                    const SizedBox(height: secondarySizedBox),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      children: List.generate(tabTitles.length, (index) {
+                        return GestureDetector(
+                          onTap: () => ref
+                              .read(selectedTabProvider.notifier)
+                              .state = index.toInt(),
+                          child: Container(
+                            margin: const EdgeInsets.symmetric(
+                                horizontal: primarySizedBox),
+                            decoration: BoxDecoration(
+                              borderRadius:
+                                  BorderRadius.circular(quaternaryBorderRadius),
+                              color: selectedIndex == index
+                                  ? lighterSecondaryColor
+                                  : Colors.transparent,
+                            ),
+                            child: Padding(
+                              padding: const EdgeInsets.all(10),
+                              child: tabTitles[index],
+                            ),
                           ),
-                          child: Padding(
-                            padding: const EdgeInsets.all(10),
-                            child: tabTitles[index],
-                          ),
-                        ),
-                      );
-                    }),
-                  ),
-                  const SizedBox(height: tertiarySizedBox),
-                  asyncTabContent.when(
-                    data: (widgetList) => SizedBox(
-                      height:
-                          getScreenHeight(context) - 395, // Adjust as needed
-                      child: ListView(
-                        children: widgetList,
-                      ),
+                        );
+                      }),
                     ),
-                    loading: () =>
-                        const Center(child: CircularProgressIndicator()),
-                    error: (error, stack) {
-                      debugPrint('Error loading content: $error');
-                      return Center(
-                          child: Text('Error loading content: $error'));
-                    },
-                  ),
-                ],
+                    const SizedBox(height: tertiarySizedBox),
+                    asyncTabContent.when(
+                      data: (widgetList) => SizedBox(
+                        height: getScreenHeight(context) - 395,
+                        child: ListView(
+                          children: widgetList,
+                        ),
+                      ),
+                      loading: () =>
+                          const Center(child: CircularProgressIndicator()),
+                      error: (error, stack) {
+                        return const Text('');
+                      },
+                    ),
+                  ],
+                ),
               ),
-            ),
-            const SizedBox(height: primarySizedBox),
-          ],
+              const SizedBox(height: primarySizedBox),
+            ],
+          ),
         ),
       ),
     );
   }
+}
 
-  TextStyle _getTabTextStyle(bool isSelected) {
-    return TextStyle(
-      color: isSelected ? primaryColor : Colors.black,
-      fontWeight: FontWeight.bold,
-      fontSize: regularText,
-    );
-  }
+TextStyle _getTabTextStyle(bool isSelected) {
+  return TextStyle(
+    color: isSelected ? primaryColor : Colors.black,
+    fontWeight: FontWeight.bold,
+    fontSize: regularText,
+  );
 }
 
 Widget spDetailsHeader(IconData icon, String detail) {

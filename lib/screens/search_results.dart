@@ -22,24 +22,21 @@ class SearchResultsScreen extends ConsumerStatefulWidget {
 }
 
 class SearchResultsScreenState extends ConsumerState<SearchResultsScreen> {
-  // Move the GlobalKey here
   final GlobalKey<ScaffoldState> scaffoldKey = GlobalKey<ScaffoldState>();
 
-  // Variable to track the selected filter (price or location)
   String selectedFilter = 'All';
 
-  // Controller to manage the text field input
   final TextEditingController minRangeController = TextEditingController();
   final TextEditingController maxRangeController = TextEditingController();
-
-  var currentRangeValues = const RangeValues(10, 200);
 
   @override
   void initState() {
     super.initState();
-    // Initialize the TextField with the values of the range
-    minRangeController.text = currentRangeValues.start.toString();
-    maxRangeController.text = currentRangeValues.end.toString();
+    // Initialize the TextField with provider values
+    final minValue = ref.read(minPriceProvider);
+    final maxValue = ref.read(maxPriceProvider);
+    minRangeController.text = minValue.toString();
+    maxRangeController.text = maxValue.toString();
   }
 
   @override
@@ -90,6 +87,9 @@ class SearchResultsScreenState extends ConsumerState<SearchResultsScreen> {
     final city = ref.watch(cityProvider);
     final province = ref.watch(provinceProvider);
 
+    final minValue = ref.watch(minPriceProvider);
+    final maxValue = ref.watch(maxPriceProvider);
+    var currentRangeValues = RangeValues(minValue, maxValue);
     return Drawer(
       child: Container(
         padding: const EdgeInsets.all(secondarySizedBox),

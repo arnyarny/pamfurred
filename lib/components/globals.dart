@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 // fontSize
 const double smallText = 13;
@@ -64,3 +65,8 @@ double deviceWidthDivideOnePointFive(BuildContext context) {
 String toLowercase(String text) {
   return text.toLowerCase();
 }
+
+// Provider to expose app context
+final appContextProvider = Provider<BuildContext>((ref) {
+  throw UnimplementedError('Override appContextProvider with the app context.');
+});

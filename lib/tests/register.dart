@@ -32,6 +32,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
       'password': TextEditingController(),
       'phoneNumber': TextEditingController(), // Added contact number controller
       'username': TextEditingController(), // Added username controller
+      'floorUnitRoom': TextEditingController(),
+      'street': TextEditingController(),
+      'barangay': TextEditingController(),
+      'city': TextEditingController(),
     };
   }
 
@@ -118,6 +122,12 @@ class _RegisterScreenState extends State<RegisterScreen> {
         controllers['phoneNumber']?.text ?? ''; // Capture contact number
     final username = controllers['username']?.text ?? ''; // Capture username
 
+    // For address
+    final floorUnitRoom = controllers['floorUnitRoom']?.text ?? '';
+    final street = controllers['street']?.text ?? '';
+    final barangay = controllers['barangay']?.text ?? '';
+    final city = controllers['city']?.text ?? '';
+
     try {
       // Call Supabase Auth to sign up the user with email and password
       final response = await Supabase.instance.client.auth.signUp(
@@ -132,8 +142,22 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
       final userId = response.user!.id;
 
-      if (response.user != null) {
-        // First, insert the user data into the `user` table
+      // Insert address data into the `address` table
+      final addressResponse = await Supabase.instance.client
+          .from('address')
+          .insert({
+            'floor_unit_room': floorUnitRoom,
+            'street': street,
+            'barangay': barangay,
+            'city': city,
+          })
+          .select('address_id')
+          .single();
+
+      if (response.user != null && addressResponse['address_id'] != null) {
+        final String addressId = addressResponse['address_id'];
+
+        // Second, insert the user data into the `user` table
         await Supabase.instance.client.from('user').insert({
           'user_id': userId,
           'phone_number': phoneNumber,
@@ -141,6 +165,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
           'user_type': 'pet_owner',
           'first_name': firstName,
           'last_name': lastName,
+          'address_id': addressId
         }).select();
 
         // Now, insert into the `pet_owner` table with the existing `user_id`
@@ -220,6 +245,34 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   Expanded(child: _buildTextField("First name", "firstName")),
                   const SizedBox(width: primarySizedBox),
                   Expanded(child: _buildTextField("Last name", "lastName")),
+                ],
+              ),
+              const SizedBox(height: secondarySizedBox),
+              customTitleText(context, "Address"),
+              const SizedBox(height: secondarySizedBox),
+              Row(
+                children: [
+                  Expanded(
+                      child:
+                          _buildTextField("Floor/Unit/Room", "floorUnitRoom")),
+                  const SizedBox(width: primarySizedBox),
+                  Expanded(child: _buildTextField("Street name", "street")),
+                ],
+              ),
+              const SizedBox(height: secondarySizedBox),
+              Row(
+                children: [
+                  Expanded(
+                      child: _buildTextField(
+                          "Barangay", "barangay")), // Username field added here
+                ],
+              ),
+              const SizedBox(height: secondarySizedBox),
+              Row(
+                children: [
+                  Expanded(
+                      child: _buildTextField(
+                          "City", "city")), // Username field added here
                 ],
               ),
               const SizedBox(height: secondarySizedBox),

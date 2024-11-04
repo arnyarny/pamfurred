@@ -565,6 +565,7 @@ class ServiceproviderProfileScreenState
       floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
       floatingActionButton: GestureDetector(
         onTap: () {
+          // Navigator.push(context, slideUpRoute(const SuccessfulAppointment()));
           Navigator.push(context, slideUpRoute(const CartScreen()));
         },
         child: Container(

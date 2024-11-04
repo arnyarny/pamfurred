@@ -75,16 +75,16 @@
 //                     const SizedBox(height: secondarySizedBox),
 
 //                     // Appointment date and time
-//                     getAppointmentTitle(context, 'Date and time'),
-//                     const SizedBox(height: primarySizedBox),
-//                     getAppointmentDetail(context, 'Appointment date and time'),
+//                     // getAppointmentTitle(context, 'Date and time'),
+//                     // const SizedBox(height: primarySizedBox),
+//                     // getAppointmentDetail(context, 'Appointment date and time'),
 
-//                     const SizedBox(height: secondarySizedBox),
+//                     // const SizedBox(height: secondarySizedBox),
 
 //                     // Appointed pet
-//                     getAppointmentTitle(context, 'Pet'),
-//                     const SizedBox(height: primarySizedBox),
-//                     getAppointmentDetail(context, 'Pet name'),
+//                     // getAppointmentTitle(context, 'Pet'),
+//                     // const SizedBox(height: primarySizedBox),
+//                     // getAppointmentDetail(context, 'Pet name'),
 
 //                     const SizedBox(height: secondarySizedBox),
 

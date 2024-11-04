@@ -2,8 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pamfurred/components/custom_appbar.dart';
 import 'package:pamfurred/components/globals.dart';
+import 'package:pamfurred/components/screen_transitions.dart';
 // import 'package:pamfurred/components/screen_transitions.dart';
 import 'package:pamfurred/providers/cart_provider.dart';
+import 'package:pamfurred/screens/choose_date_and_time.dart';
 // import 'package:pamfurred/screens/successful_appointment.dart';
 import 'package:shimmer/shimmer.dart';
 
@@ -84,11 +86,13 @@ class _CartScreenState extends ConsumerState<CartScreen> {
                   onPressed: cartProducts.isEmpty
                       ? null // Disable button if cart is empty
                       : () {
+                        Navigator.push(context,
+                              rightToLeftRoute(const ChooseDateAndTimeScreen()));
                           // Navigator.push(context,
                           //     rightToLeftRoute(const SuccessfulAppointment()));
                         },
                   child: const Text(
-                    'Book now',
+                    'Next',
                     style: TextStyle(
                       fontSize: regularText,
                       fontWeight: regularWeight,

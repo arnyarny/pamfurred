@@ -1,16 +1,29 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
-// Sample list of timeslots - replace with actual timeslot fetching logic.
-final availableTimeslotsProvider =
-    FutureProvider.family<List<dynamic>, String>((ref, spId) async {
+final serviceProviderAvailableTimeslotsProvider =
+    FutureProvider.family<List<String>, TimeslotParams>((ref, params) async {
   final supabase = Supabase.instance.client;
   final response = await supabase
-      .from('app')
-      .select(
-          'sp_id, image, name, rating, latitude, longitude, sentiment_label, category, user:user_id(user_type)')
-      .eq('user.user_type', 'service_provider')
-      .eq('service_provider.service_provider_id', spId);
+      .from('service_provider_availability')
+      .select('timeslots')
+      .eq('sp_id', params.spId)
+      .eq('availability_date', params.selectedDate)
+      .single();
 
-  return response as List<dynamic>;
+  if (response.error != null) {
+    throw Exception(response.error!.message);
+  }
+
+  final timeslots = (response.data['timeslots'] as List<dynamic>)
+      .map((e) => e.toString())
+      .toList();
+  return timeslots;
 });
+
+class TimeslotParams {
+  final String spId;
+  final String selectedDate;
+
+  TimeslotParams({required this.spId, required this.selectedDate});
+}

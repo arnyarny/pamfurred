@@ -19,8 +19,9 @@ class ProfileScreen extends ConsumerStatefulWidget {
 }
 
 class _ProfileScreenState extends ConsumerState<ProfileScreen> {
-  Map<String, dynamic>? profileData; // Store user data
-  Map<String, dynamic>? mapUserDetails; // Store user data
+  Map<String, dynamic>? profileData;
+  Map<String, dynamic>? mapUserDetails;
+  Map<String, dynamic>? mapUserAddress;
   bool isLoading = true; // Loading state
 
   @override
@@ -62,9 +63,18 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
           .eq('user_id', userId) // Query based on the current user's ID
           .single();
 
+      final String addressId = userDetails['address_id'];
+
+      final addressDetails = await Supabase.instance.client
+          .from('address')
+          .select()
+          .eq('address_id', addressId)
+          .single();
+
       setState(() {
         profileData = username;
         mapUserDetails = userDetails;
+        mapUserAddress = addressDetails;
         isLoading = false;
       });
     } catch (e) {
@@ -266,14 +276,13 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                   _detailsCard(
                     context: context,
                     title: "Email address",
-                    details:
-                        Supabase.instance.client.auth.currentUser?.email ?? '',
+                    details: profileData?['email'] ?? '',
                   ),
                   _detailsCard(
                     context: context,
                     title: "Address",
                     details:
-                        "${mapUserDetails?['door_no'] ?? ''}, ${mapUserDetails?['street'] ?? ''}, ${mapUserDetails?['barangay'] ?? ''}, ${mapUserDetails?['city'] ?? ''}",
+                        "${mapUserAddress?['floor_unit_room'] ?? ''}, ${mapUserAddress?['street'] ?? ''}, ${mapUserAddress?['barangay'] ?? ''}, ${mapUserAddress?['city'] ?? ''}",
                   ),
                 ],
               ),
@@ -370,7 +379,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                     customRegularWeightTitleText(context, title),
                     const SizedBox(height: 8),
                     Text(details ?? '',
-                        style: const TextStyle(color: greyColor)),
+                        style: const TextStyle(color: greyColor, overflow: TextOverflow.ellipsis)),
                   ],
                 ),
               ),
@@ -388,7 +397,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     Session? userSession = Supabase.instance.client.auth.currentSession;
 
     if (userSession == null) {
-       throw Exception("User not logged in");
+      throw Exception("User not logged in");
     }
 
     if (field == "Name") {
@@ -415,8 +424,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
           await _showEditSingleFieldDialog(context, details, "Email Address");
       if (newEmail != null) {
         await Supabase.instance.client
-            .from('user')
-            .update({'email_address': newEmail}).eq(
+            .from('pet_owner')
+            .update({'email': newEmail}).eq(
                 'user_id', userSession.user.id); // Use the session user ID
         _fetchUserData(); // Refresh user data
       }

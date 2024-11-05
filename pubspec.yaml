@@ -101,9 +101,6 @@ dependencies:
   # Riverpod
   flutter_riverpod: ^2.5.1
 
-  #Riverpod annotation
-  riverpod_annotation: ^2.3.5
-
   custom_radio_grouped_button: any
 
   pull_to_refresh_flutter3: ^2.0.2
@@ -114,6 +111,14 @@ dependencies:
   connectivity_plus: 5.0.2
 
   app_settings: ^5.1.1
+
+  confetti: ^0.8.0
+
+  flutter_typeahead: ^5.2.0
+  http: ^1.2.2
+  nominatim_flutter: ^0.0.3
+
+  google_places_autocomplete_text_field: ^0.1.3
 
 dev_dependencies:
   flutter_test:

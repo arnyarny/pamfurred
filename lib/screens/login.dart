@@ -53,10 +53,7 @@ class LoginScreenState extends State<LoginScreen> {
 
     if (session != null) {
       // User is already logged in
-      Navigator.pushReplacement(
-        context,
-        crossFadeRoute(const MainScreen()), // No need to pass userId
-      );
+      Navigator.push(context, slideUpRoute(const MainScreen()));
     }
   }
 

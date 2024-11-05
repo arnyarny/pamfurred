@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart'; // For Flutter UI components like Scaffold, Navigator, MaterialPageRoute, etc.
+import 'package:pamfurred/components/screen_transitions.dart';
 import 'package:pamfurred/screens/login.dart';
 import 'package:pamfurred/screens/main_screen.dart';
 import 'package:supabase_flutter/supabase_flutter.dart'; // For using Supabase in Flutter
@@ -26,14 +27,10 @@ class AuthRedirectState extends State<AuthRedirect> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (session != null) {
         // User is logged in, navigate to Home Screen
-        Navigator.of(context).pushReplacement(
-          MaterialPageRoute(builder: (context) => const MainScreen()),
-        );
+        Navigator.push(context, slideUpRoute(const MainScreen()));
       } else {
         // User is not logged in, navigate to Login Screen
-        Navigator.of(context).pushReplacement(
-          MaterialPageRoute(builder: (context) => const LoginScreen()),
-        );
+        Navigator.push(context, slideUpRoute(const LoginScreen()));
       }
     });
   }

@@ -7,11 +7,11 @@ import 'package:pamfurred/components/custom_appbar.dart';
 import 'package:pamfurred/components/globals.dart';
 import 'package:pamfurred/components/regular_text.dart';
 import 'package:pamfurred/components/screen_transitions.dart';
+import 'package:pamfurred/components/sentiment_label.dart';
 import 'package:pamfurred/components/title_text.dart';
+import 'package:pamfurred/math_functions/distance_calculator.dart';
 import 'package:pamfurred/models/package_filter_criteria.dart';
-import 'package:pamfurred/models/packages.dart';
 import 'package:pamfurred/models/service_filter_criteria.dart';
-import 'package:pamfurred/models/services.dart';
 import 'package:pamfurred/providers/button_pressed_provider.dart';
 import 'package:pamfurred/providers/cart_provider.dart';
 // import 'package:pamfurred/models/services.dart';
@@ -20,7 +20,8 @@ import 'package:pamfurred/providers/global_providers.dart';
 import 'package:pamfurred/providers/serviceprovider_provider.dart';
 import 'package:pamfurred/providers/sp_profile_provider_packages.dart';
 import 'package:pamfurred/providers/sp_profile_provider_services.dart';
-import 'package:pamfurred/screens/cart_screen.dart';
+import 'package:pamfurred/providers/user_id.dart';
+import 'package:pamfurred/screens/appointment/cart_screen.dart';
 // import 'package:pamfurred/providers/sp_profile_provider_services.dart';
 import 'package:shimmer/shimmer.dart';
 import 'package:intl/intl.dart';
@@ -38,6 +39,9 @@ final aboutTabProvider = FutureProvider<List<Widget>>((ref) async {
   // Retrieve the service provider ID
   final sp = ref.watch(spIndexProvider);
 
+  // Pet owner user ID
+  String userId = ref.watch(userIdProvider).toString();
+
   // Variable for service provider rating, checking null values
   final displayRating = sp?['rating'].toString();
 
@@ -51,6 +55,8 @@ final aboutTabProvider = FutureProvider<List<Widget>>((ref) async {
 
   final timeClose = sp?['time_close'];
 
+  double latitude = sp?['latitude'];
+  double longitude = sp?['longitude'];
   return [
     // About tab content
     Center(
@@ -60,31 +66,58 @@ final aboutTabProvider = FutureProvider<List<Widget>>((ref) async {
             )
           : Column(
               children: [
+                spSentimentLabelHeader(CupertinoIcons.text_bubble,
+                    sentimentLabelTextWidget(sp['sentiment_label'])),
+                const SizedBox(height: secondarySizedBox),
+
+                spDistanceDetailsHeader(
+                  CupertinoIcons.location,
+                  FutureBuilder<String?>(
+                    future: getDistanceToTarget(userId, latitude, longitude),
+                    builder: (context, snapshot) {
+                      if (snapshot.hasError) {
+                        return regularTextWidget(
+                            'Error: ${snapshot.error}'); // Display error message if there's an error
+                      } else if (snapshot.hasData) {
+                        // Check if the data is not null
+                        return regularTextWidget(snapshot.data ??
+                            'Distance not available'); // Display the calculated distance
+                      } else {
+                        return regularTextWidget(
+                            ''); // Handle the case where there is no data
+                      }
+                    },
+                  ),
+                ),
+                const SizedBox(height: secondarySizedBox),
+
                 // This is temporary. Remove this when it's ensured that we don't take null addresses from service providers
                 sp.isNotEmpty
                     ? spDetailsHeader(
-                        CupertinoIcons.location_solid, sp['address'] ?? 'N/A')
+                        Icons.location_on_outlined, sp['address'] ?? 'N/A')
                     : spDetailsHeader(CupertinoIcons.location_solid, 'N/A'),
                 const SizedBox(height: secondarySizedBox),
 
                 // Rating display logic (assuming 'displayRating' handles null internally)
-                spDetailsHeader(Icons.star, displayRating!),
+                spDetailsHeader(Icons.star_border, displayRating!),
                 const SizedBox(height: secondarySizedBox),
 
                 spDetailsHeader(
-                  Icons.home_repair_service,
+                  Icons.home_repair_service_outlined,
                   serviceTypes.join(', '),
                 ),
                 const SizedBox(height: secondarySizedBox),
 
-                spDetailsHeader(Icons.access_time_filled,
+                spDetailsHeader(Icons.access_time,
                     'Opens from ${formatTime(timeOpen)} to ${formatTime(timeClose)}'),
                 const SizedBox(height: secondarySizedBox),
 
-                spDetailsHeader(Icons.call, sp['phone_number'] ?? 'N/A'),
+                spDetailsHeader(
+                    Icons.call_outlined, sp['phone_number'] ?? 'N/A'),
                 const SizedBox(height: secondarySizedBox),
 
-                spDetailsHeader(Icons.pets, 'Caters ${petsCatered.join(', ')}'),
+                spDetailsHeader(
+                    CupertinoIcons.heart, 'Caters ${petsCatered.join(', ')}'),
                 const SizedBox(height: secondarySizedBox),
               ],
             ),
@@ -111,13 +144,12 @@ final servicesTabProvider = FutureProvider<List<Widget>>((ref) async {
 
   // Define filter criteria
   final filterCriteria = ServiceFilterCriteria(
-    spId: sp!['sp_id'].toString(),
+    spId: sp?['sp_id'].toString() ?? '',
     petType: null,
     serviceType: null,
     size: null,
   );
 
-  // Use `allServicesProvider` with `.when` in your UI instead of in the provider body
   return [
     Consumer(
       builder: (context, ref, child) {
@@ -131,45 +163,13 @@ final servicesTabProvider = FutureProvider<List<Widget>>((ref) async {
                 children: [
                   const SizedBox(height: tertiarySizedBox),
                   servicesList.isEmpty
-                      ? const Center(
-                          child: Text("No services available"),
-                        )
+                      ? const Center(child: Text("No services available"))
                       : Expanded(
                           child: ListView.builder(
                             padding: const EdgeInsets.only(bottom: 80),
                             itemCount: servicesList.length,
                             itemBuilder: (context, index) {
-                              Service fromMap(Map<String, dynamic> map) {
-                                return Service(
-                                  serviceServiceProviderId:
-                                      map['sp_id'] as String? ?? '',
-                                  serviceId: map['service_id'] as String? ?? '',
-                                  serviceName:
-                                      map['service_name'] as String? ?? '',
-                                  category:
-                                      map['service_category'] is List<dynamic>
-                                          ? List<String>.from(
-                                              map['service_category']
-                                                  as List<dynamic>)
-                                          : [],
-                                  servicePrice: map['price'] as int? ?? 0,
-                                  serviceImage:
-                                      map['service_image'] as String? ?? '',
-                                  serviceType: map['service_type']
-                                          is List<dynamic>
-                                      ? List<String>.from(
-                                          map['service_type'] as List<dynamic>)
-                                      : [],
-                                  petType: map['pet_type'] is List<dynamic>
-                                      ? List<String>.from(
-                                          map['pet_type'] as List<dynamic>)
-                                      : [],
-                                  serviceSize: map['size'] as String? ?? '',
-                                );
-                              }
-
-                              final serviceMap = servicesList[index];
-                              final service = fromMap(serviceMap);
+                              final service = servicesList[index];
 
                               return Consumer(
                                 builder: (context, ref, child) {
@@ -239,7 +239,7 @@ final servicesTabProvider = FutureProvider<List<Widget>>((ref) async {
                                                   regularPrimaryColoredTextWidget(
                                                       ' • '),
                                                   Text(
-                                                      '₱${service.servicePrice}'),
+                                                      '₱${service.servicePrice}')
                                                 ],
                                               ),
                                             ],
@@ -298,8 +298,8 @@ final servicesTabProvider = FutureProvider<List<Widget>>((ref) async {
               ),
               loading: () => Center(
                 child: Container(
-                  color: Colors.white, // White background
-                  padding: const EdgeInsets.all(16.0), // Optional padding
+                  color: Colors.white,
+                  padding: const EdgeInsets.all(16.0),
                   child: const CircularProgressIndicator(),
                 ),
               ),
@@ -328,7 +328,6 @@ final packagesTabProvider = FutureProvider<List<Widget>>((ref) async {
     size: null,
   );
 
-  // Use `allOacakgesProvider` with `.when` in your UI instead of in the provider body
   return [
     Consumer(
       builder: (context, ref, child) {
@@ -342,43 +341,13 @@ final packagesTabProvider = FutureProvider<List<Widget>>((ref) async {
                 children: [
                   const SizedBox(height: tertiarySizedBox),
                   packagesList.isEmpty
-                      ? const Center(
-                          child: Text("No services available"),
-                        )
+                      ? const Center(child: Text("No services available"))
                       : Expanded(
                           child: ListView.builder(
                             padding: const EdgeInsets.only(bottom: 80),
                             itemCount: packagesList.length,
                             itemBuilder: (context, index) {
-                              Package fromMap(Map<String, dynamic> map) {
-                                return Package(
-                                    packageServiceProviderId:
-                                        map['sp_id'] as String? ?? '',
-                                    packageId:
-                                        map['package_id'] as String? ?? '',
-                                    packageName:
-                                        map['package_name'] as String? ?? '',
-                                    category: map['package_category'] is List<dynamic>
-                                        ? List<String>.from(
-                                            map['package_category']
-                                                as List<dynamic>)
-                                        : [],
-                                    packagePrice: map['price'] as int? ?? 0,
-                                    packageImage:
-                                        map['package_image'] as String? ?? '',
-                                    packageType: map['package_type'] is List<dynamic>
-                                        ? List<String>.from(map['package_type']
-                                            as List<dynamic>)
-                                        : [],
-                                    petType: map['pet_type'] is List<dynamic>
-                                        ? List<String>.from(
-                                            map['pet_type'] as List<dynamic>)
-                                        : [],
-                                    packageSize: map['size'] as String? ?? '');
-                              }
-
-                              final packageMap = packagesList[index];
-                              final package = fromMap(packageMap);
+                              final package = packagesList[index];
 
                               return Consumer(
                                 builder: (context, ref, child) {
@@ -444,11 +413,11 @@ final packagesTabProvider = FutureProvider<List<Widget>>((ref) async {
                                               Row(
                                                 children: [
                                                   regularTextWidget(
-                                                      (package.packageSize)),
+                                                      package.packageSize),
                                                   regularPrimaryColoredTextWidget(
                                                       ' • '),
                                                   Text(
-                                                      '₱${package.packagePrice}'),
+                                                      '₱${package.packagePrice}')
                                                 ],
                                               ),
                                             ],
@@ -467,8 +436,7 @@ final packagesTabProvider = FutureProvider<List<Widget>>((ref) async {
                                                       .read(
                                                           buttonPressedProvider
                                                               .notifier)
-                                                      .setPressed(
-                                                          true); // Set pressed state
+                                                      .setPressed(true);
                                                 },
                                                 child: IconButton(
                                                   icon: Icon(
@@ -590,7 +558,11 @@ class ServiceproviderProfileScreenState
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const CartIcon(),
+                const CartIcon(
+                  iconColor: lighterSecondaryColor,
+                  borderColor: Colors.white,
+                  badgeColor: Colors.black,
+                ),
                 TextButton.icon(
                     onPressed: () {
                       Navigator.push(context, slideUpRoute(const CartScreen()));
@@ -683,7 +655,7 @@ class ServiceproviderProfileScreenState
                     const SizedBox(height: tertiarySizedBox),
                     asyncTabContent.when(
                       data: (widgetList) => SizedBox(
-                        height: getScreenHeight(context) - 395,
+                        height: getScreenHeight(context),
                         child: ListView(
                           children: widgetList,
                         ),
@@ -724,6 +696,40 @@ Widget spDetailsHeader(IconData icon, String detail) {
           Icon(icon, size: 20, color: const Color.fromARGB(255, 26, 10, 10)),
           const SizedBox(width: secondarySizedBox),
           regularTextWidget(detail),
+        ],
+      ),
+      const SizedBox(height: secondarySizedBox),
+    ],
+  );
+}
+
+Widget spDistanceDetailsHeader(IconData icon, Widget distanceFutureBuilder) {
+  return Column(
+    mainAxisAlignment: MainAxisAlignment.center,
+    children: [
+      Row(
+        mainAxisAlignment: MainAxisAlignment.start,
+        children: [
+          Icon(icon, size: 20, color: const Color.fromARGB(255, 26, 10, 10)),
+          const SizedBox(width: secondarySizedBox),
+          distanceFutureBuilder,
+        ],
+      ),
+      const SizedBox(height: secondarySizedBox),
+    ],
+  );
+}
+
+spSentimentLabelHeader(IconData icon, Widget sentimentLabelTextWidget) {
+  return Column(
+    mainAxisAlignment: MainAxisAlignment.center,
+    children: [
+      Row(
+        mainAxisAlignment: MainAxisAlignment.start,
+        children: [
+          Icon(icon, size: 20, color: const Color.fromARGB(255, 26, 10, 10)),
+          const SizedBox(width: secondarySizedBox),
+          sentimentLabelTextWidget
         ],
       ),
       const SizedBox(height: secondarySizedBox),

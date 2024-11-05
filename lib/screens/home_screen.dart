@@ -8,18 +8,21 @@ import 'package:pamfurred/components/pull_to_refresh.dart';
 import 'package:pamfurred/components/rating_widget.dart';
 import 'package:pamfurred/components/sentiment_label.dart';
 import 'package:pamfurred/components/title_text.dart';
-import 'package:pamfurred/math_functions/distance_calculator.dart';
 import 'package:pamfurred/components/globals.dart';
 import 'package:pamfurred/components/screen_transitions.dart';
+import 'package:pamfurred/math_functions/distance_calculator.dart';
 import 'package:pamfurred/models/package_filter_criteria.dart';
 import 'package:pamfurred/models/service_filter_criteria.dart';
 import 'package:pamfurred/providers/global_providers.dart';
 import 'package:pamfurred/providers/serviceprovider_provider.dart';
 import 'package:pamfurred/providers/sp_profile_provider_packages.dart';
 import 'package:pamfurred/providers/sp_profile_provider_services.dart';
+import 'package:pamfurred/backend_logic_files/store_location.dart';
+import 'package:pamfurred/providers/user_id.dart';
+import 'package:pamfurred/screens/location_permission.dart';
 // import 'package:pamfurred/screens/profile.dart';
 import 'package:pamfurred/screens/search_results.dart';
-import 'package:pamfurred/screens/serviceprovider_profile.dart';
+import 'package:pamfurred/screens/appointment/serviceprovider_profile.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
@@ -39,6 +42,17 @@ class HomeScreenState extends ConsumerState<HomeScreen> {
   void initState() {
     super.initState();
     _scrollController.addListener(_scrollListener);
+    LocationService locationService = LocationService();
+    locationService.determinePosition(context).then((position) {
+      final userId = ref.watch(userIdProvider);
+      storeLocation(position.latitude, position.longitude, userId!);
+
+      // Successfully got the position.
+      print("Current position: ${position.latitude}, ${position.longitude}");
+    }).catchError((error) {
+      // Handle errors appropriately
+      print(error);
+    });
   }
 
   void _scrollListener() {
@@ -234,8 +248,7 @@ class HomeScreenState extends ConsumerState<HomeScreen> {
     return GestureDetector(
       onTap: () {
         onItemTap(index);
-        ref.read(selectedCategoryIndexProvider.notifier).state =
-                    index;
+        ref.read(selectedCategoryIndexProvider.notifier).state = index;
       },
       child: Stack(
         children: [
@@ -391,11 +404,15 @@ class ServiceProvidersWidget extends ConsumerWidget {
                 final imageUrl = sp['image'] ??
                     'https://tinyurl.com/3tnt6yyy'; // Default image if null
                 final name = sp['name'] ?? 'Unknown'; // Default name if null
-                final rating =
-                    sp['rating'].toString(); // Default rating if null
-                final latitude = sp['latitude'] ?? 0.0; // Default latitude
-                final longitude = sp['longitude'] ?? 0.0; // Default longitude
+                final rating = sp['rating'].toString();
+                final spLatitude = sp['latitude']; // Default latitude
+                final spLongitude = sp['longitude']; // Default longitude
+                double latitude = double.tryParse(spLatitude.toString()) ?? 0.0;
+                double longitude =
+                    double.tryParse(spLongitude.toString()) ?? 0.0;
                 final sentimentLabel = sp['sentiment_label'];
+
+                String userId = ref.read(userIdProvider).toString();
 
                 print(imageUrl);
 
@@ -509,8 +526,41 @@ class ServiceProvidersWidget extends ConsumerWidget {
                                   children: [
                                     const Icon(CupertinoIcons.location,
                                         size: 19),
-                                    Text(
-                                        calculateDistance(latitude, longitude)),
+                                    FutureBuilder<String?>(
+                                      future: getDistanceToTarget(
+                                          userId, latitude, longitude),
+                                      builder: (context, snapshot) {
+                                        if (snapshot.hasError) {
+                                          return SizedBox(
+                                            width: 85,
+                                            height: 20,
+                                            child: Text(
+                                                'Error: ${snapshot.error}',
+                                                overflow:
+                                                    TextOverflow.ellipsis),
+                                          ); // Display error message if there's an error
+                                        } else if (snapshot.hasData) {
+                                          // Check if the data is not null
+                                          return SizedBox(
+                                            width: 85,
+                                            height: 20,
+                                            child: Text(
+                                                snapshot.data ??
+                                                    'Distance not available',
+                                                overflow:
+                                                    TextOverflow.ellipsis),
+                                          ); // Display the calculated distance
+                                        } else {
+                                          return const SizedBox(
+                                            width: 85,
+                                            height: 20,
+                                            child: Text('',
+                                                overflow:
+                                                    TextOverflow.ellipsis),
+                                          ); // Handle the case where there is no data
+                                        }
+                                      },
+                                    ),
                                   ],
                                 ),
                               ],

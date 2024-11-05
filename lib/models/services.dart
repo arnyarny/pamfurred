@@ -9,7 +9,7 @@ class Service implements CartItem {
     required this.servicePrice,
     required this.serviceImage,
     required this.serviceType,
-    required this.petType,
+    required this.servicePetType,
     required this.serviceSize,
   });
   final String serviceServiceProviderId;
@@ -19,7 +19,7 @@ class Service implements CartItem {
   final int servicePrice;
   final String serviceImage;
   final List<String> serviceType;
-  final List<String> petType;
+  final List<String> servicePetType;
   final String serviceSize;
 
   // Override the CartItem getters
@@ -37,4 +37,10 @@ class Service implements CartItem {
 
   @override
   String get name => serviceName;
+
+  @override
+  List<String> get petType => servicePetType;
+
+  @override
+  String get size => serviceSize;
 }

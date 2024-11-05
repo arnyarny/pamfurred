@@ -91,11 +91,6 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     }
   }
 
-  String convertToAsterisks(String text) {
-    return '*' *
-        text.length; // Create a string of asterisks with the same length
-  }
-
   @override
   Widget build(BuildContext context) {
     // Access the list of pet profiles

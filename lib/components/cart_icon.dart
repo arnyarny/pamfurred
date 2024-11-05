@@ -2,10 +2,19 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pamfurred/components/globals.dart';
 import 'package:pamfurred/providers/cart_provider.dart';
-import 'package:pamfurred/screens/cart_screen.dart';
+import 'package:pamfurred/screens/appointment/cart_screen.dart';
 
 class CartIcon extends ConsumerWidget {
-  const CartIcon({super.key});
+  final Color iconColor;
+  final Color borderColor;
+  final Color badgeColor;
+
+  const CartIcon({
+    super.key,
+    required this.iconColor,
+    required this.borderColor,
+    required this.badgeColor,
+  });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -19,8 +28,7 @@ class CartIcon extends ConsumerWidget {
               return const CartScreen();
             }));
           },
-          icon: const Icon(Icons.shopping_bag_outlined,
-              color: lighterSecondaryColor), // Set icon color
+          icon: Icon(Icons.shopping_bag_outlined, color: iconColor),
         ),
         Positioned(
           top: 5,
@@ -39,12 +47,12 @@ class CartIcon extends ConsumerWidget {
                 ),
               ],
               borderRadius: BorderRadius.circular(10),
-              color: Colors.white,
+              color: borderColor,
             ),
             child: Text(
               numberOfItemsInCart.toString(),
-              style: const TextStyle(
-                  color: Colors.black,
+              style: TextStyle(
+                  color: badgeColor,
                   fontSize: smallText,
                   fontWeight: boldWeight),
             ),

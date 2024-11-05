@@ -10,6 +10,7 @@ import 'package:pamfurred/providers/global_providers.dart';
 import 'package:pamfurred/providers/search_results_provider.dart';
 import 'package:pamfurred/components/custom_appbar.dart';
 import 'package:pamfurred/components/globals.dart';
+import 'package:pamfurred/providers/user_id.dart';
 import 'package:pamfurred/screens/pin_location.dart';
 import 'package:shimmer/shimmer.dart';
 
@@ -383,6 +384,7 @@ class ResultsListWidget extends ConsumerWidget {
           itemBuilder: (context, index) {
             var provider = providers[index];
 
+            String userId = ref.watch(userIdProvider).toString();
             return SizedBox(
               height: 150,
               child: Column(
@@ -493,10 +495,24 @@ class ResultsListWidget extends ConsumerWidget {
                                       children: [
                                         const Icon(CupertinoIcons.location,
                                             size: 19),
-                                        Text(
-                                          calculateDistance(
+                                        FutureBuilder<String?>(
+                                          future: getDistanceToTarget(
+                                              userId,
                                               provider['latitude'],
                                               provider['longitude']),
+                                          builder: (context, snapshot) {
+                                            if (snapshot.hasError) {
+                                              return Text(
+                                                  'Error: ${snapshot.error}'); // Display error message if there's an error
+                                            } else if (snapshot.hasData) {
+                                              // Check if the data is not null
+                                              return Text(snapshot.data ??
+                                                  'Distance not available'); // Display the calculated distance
+                                            } else {
+                                              return const Text(
+                                                  ''); // Handle the case where there is no data
+                                            }
+                                          },
                                         ),
                                       ],
                                     ),

@@ -22,7 +22,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   Map<String, dynamic>? profileData;
   Map<String, dynamic>? mapUserDetails;
   Map<String, dynamic>? mapUserAddress;
-  bool isLoading = true; // Loading state
+  bool isLoading = true;
 
   @override
   void initState() {
@@ -379,7 +379,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                     customRegularWeightTitleText(context, title),
                     const SizedBox(height: 8),
                     Text(details ?? '',
-                        style: const TextStyle(color: greyColor, overflow: TextOverflow.ellipsis)),
+                        style: const TextStyle(
+                            color: greyColor, overflow: TextOverflow.ellipsis)),
                   ],
                 ),
               ),
@@ -441,14 +442,23 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
       }
     } else if (field == "Address") {
       final newAddressValues = await _showEditAddressDialog(context);
+      final userId = userSession.user.id; // Get user ID from session
+      final userDetails = await Supabase.instance.client
+          .from('user')
+          .select()
+          .eq('user_id', userId) // Query based on the current user's ID
+          .single();
+
+      final String addressId = userDetails['address_id'];
       if (newAddressValues != null) {
         await Supabase.instance.client
             .from('address') // Assuming you have an address table
             .update({
-          'street': newAddressValues[0],
-          'barangay': newAddressValues[1],
-          'city': newAddressValues[2],
-        }).eq('user_id', userSession.user.id); // Use the session user ID
+          'floor_unit_room': newAddressValues[0] ?? '',
+          'street': newAddressValues[1] ?? '',
+          'barangay': newAddressValues[2] ?? '',
+          'city': newAddressValues[3] ?? '',
+        }).eq('address_id', addressId); // Use the session user ID
         _fetchUserData(); // Refresh user data
       }
     }
@@ -523,12 +533,14 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   }
 
   Future<List<String?>?> _showEditAddressDialog(BuildContext context) {
+    TextEditingController floorUnitRoomController =
+        TextEditingController(text: mapUserAddress?['floor_unit_room'] ?? '');
     TextEditingController streetController =
-        TextEditingController(text: profileData?['street'] ?? '');
+        TextEditingController(text: mapUserAddress?['street'] ?? '');
     TextEditingController barangayController =
-        TextEditingController(text: profileData?['barangay'] ?? '');
+        TextEditingController(text: mapUserAddress?['barangay'] ?? '');
     TextEditingController cityController =
-        TextEditingController(text: profileData?['city'] ?? '');
+        TextEditingController(text: mapUserAddress?['city'] ?? '');
 
     return showDialog<List<String?>?>(
       context: context,
@@ -538,6 +550,10 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
+              TextField(
+                  controller: floorUnitRoomController,
+                  decoration:
+                      const InputDecoration(labelText: "Floor/Unit/Room")),
               TextField(
                   controller: streetController,
                   decoration: const InputDecoration(labelText: "Street")),
@@ -555,6 +571,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                 child: const Text('Cancel')),
             TextButton(
               onPressed: () => Navigator.of(context).pop([
+                floorUnitRoomController.text,
                 streetController.text,
                 barangayController.text,
                 cityController.text

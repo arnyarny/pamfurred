@@ -53,7 +53,7 @@ final sortSearchResultsByLocation =
   final longitude = ref.read(longProvider);
 
   final response =
-      await supabase.rpc('get_service_providers_sorted_by_distance', params: {
+      await supabase.rpc('get_service_providers_by_distance', params: {
     'service_category_param': category,
     'latitude_param': latitude,
     'longitude_param': longitude,

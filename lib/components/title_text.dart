@@ -13,7 +13,10 @@ Text customRegularWeightTitleText(BuildContext context, String text) {
   return Text(
     text,
     style: const TextStyle(
-        fontSize: regularText, fontWeight: regularWeight, color: Colors.black),
+        fontSize: regularText,
+        fontWeight: regularWeight,
+        color: Colors.black,
+        overflow: TextOverflow.ellipsis),
   );
 }
 

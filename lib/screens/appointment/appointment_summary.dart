@@ -6,6 +6,7 @@ import 'package:pamfurred/components/screen_transitions.dart';
 import 'package:pamfurred/components/title_text.dart';
 import 'package:pamfurred/models/packages.dart';
 import 'package:pamfurred/models/services.dart';
+import 'package:pamfurred/providers/appointment_provider.dart';
 import 'package:pamfurred/providers/cart_provider.dart';
 import 'package:pamfurred/providers/serviceprovider_provider.dart';
 import 'package:pamfurred/providers/user_id.dart';
@@ -59,6 +60,8 @@ class AppointmentSummaryScreenState
 
     final appointmentId = response['appointment_id'];
     print('Appointment created with ID: $appointmentId');
+    ref.read(appointmentIdProvider.notifier).state = appointmentId.toString();
+
     return appointmentId;
   }
 

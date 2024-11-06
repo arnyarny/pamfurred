@@ -72,6 +72,8 @@ class Appointment {
   }
 }
 
+final appointmentIdProvider = StateProvider<String>((ref) => '');
+
 // Provider for AppointmentNotifier
 final appointmentProvider =
     StateNotifierProvider<AppointmentNotifier, List<Appointment>>((ref) {

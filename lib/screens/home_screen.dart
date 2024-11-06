@@ -524,8 +524,6 @@ class ServiceProvidersWidget extends ConsumerWidget {
                                 ratingWidget(rating),
                                 Row(
                                   children: [
-                                    const Icon(CupertinoIcons.location,
-                                        size: 19),
                                     FutureBuilder<String?>(
                                       future: getDistanceToTarget(
                                           userId, latitude, longitude),
@@ -541,14 +539,21 @@ class ServiceProvidersWidget extends ConsumerWidget {
                                           ); // Display error message if there's an error
                                         } else if (snapshot.hasData) {
                                           // Check if the data is not null
-                                          return SizedBox(
-                                            width: 85,
-                                            height: 20,
-                                            child: Text(
-                                                snapshot.data ??
-                                                    'Distance not available',
-                                                overflow:
-                                                    TextOverflow.ellipsis),
+                                          return Row(
+                                            children: [
+                                              const Icon(
+                                                  CupertinoIcons.location,
+                                                  size: 19),
+                                              SizedBox(
+                                                width: 85,
+                                                height: 20,
+                                                child: Text(
+                                                    snapshot.data ??
+                                                        'Distance not available',
+                                                    overflow:
+                                                        TextOverflow.ellipsis),
+                                              ),
+                                            ],
                                           ); // Display the calculated distance
                                         } else {
                                           return const SizedBox(

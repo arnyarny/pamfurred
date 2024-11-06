@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pamfurred/components/globals.dart';
+import 'package:pamfurred/components/screen_transitions.dart';
 import 'package:pamfurred/providers/cart_provider.dart';
 import 'package:pamfurred/screens/appointment/cart_screen.dart';
 
@@ -24,9 +25,7 @@ class CartIcon extends ConsumerWidget {
       children: [
         IconButton(
           onPressed: () {
-            Navigator.push(context, MaterialPageRoute(builder: (context) {
-              return const CartScreen();
-            }));
+            Navigator.push(context, slideUpRoute(const CartScreen()));
           },
           icon: Icon(Icons.shopping_bag_outlined, color: iconColor),
         ),

@@ -7,6 +7,7 @@ import 'package:pamfurred/components/screen_transitions.dart';
 import 'package:pamfurred/components/title_text.dart';
 import 'package:pamfurred/models/packages.dart';
 import 'package:pamfurred/models/services.dart';
+import 'package:pamfurred/providers/appointment_provider.dart';
 import 'package:pamfurred/providers/cart_provider.dart';
 import 'package:pamfurred/providers/serviceprovider_provider.dart';
 import 'package:pamfurred/screens/main_screen.dart';
@@ -44,7 +45,6 @@ class SuccessfulAppointmentState extends ConsumerState<SuccessfulAppointment> {
     _confettiController.dispose();
     super.dispose();
   }
-
 
   @override
   Widget build(BuildContext context) {
@@ -117,14 +117,20 @@ class SuccessfulAppointmentState extends ConsumerState<SuccessfulAppointment> {
                   ],
                 ),
                 const SizedBox(height: tertiarySizedBox),
-                Row(
+                Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    customRegularWeightTitleText(context, 'Appointment ID:'),
+                    customTitleText(context, 'Appointment ID:'),
                     const SizedBox(
-                      width: primarySizedBox,
+                      height: primarySizedBox,
                     ),
-                    customTitleText(context, '1234'),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        getAppointmentDetail(
+                            context, ref.watch(appointmentIdProvider).toString()),
+                      ],
+                    )
                   ],
                 ),
                 const SizedBox(height: tertiarySizedBox),

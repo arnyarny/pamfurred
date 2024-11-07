@@ -16,9 +16,13 @@ final visibilityProvider = StateNotifierProvider<VisibilityState, bool>((ref) {
   return VisibilityState();
 });
 
-// final showAddIconProvider = StateProvider<bool>((ref) => false);
+// Provider to manage the selected tab index (in the ServiceProviderScreen)
+final appointmentIdProvider = StateProvider<String>((ref) => '');
 
 // Provider to manage the selected tab index (in the ServiceProviderScreen)
 final selectedTabProvider = StateProvider<int>((ref) => 0);
+
+// Provider to hold the selected pet profile id
+final selectedPetIdProvider = StateProvider<String>((ref) => '');
 
 final selectedCategoryIndexProvider = StateProvider<int>((ref) => 0);

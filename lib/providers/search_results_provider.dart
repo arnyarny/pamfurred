@@ -9,8 +9,8 @@ final hasDetectedAddressProvider = StateProvider<bool>((ref) => false);
 final streetProvider = StateProvider<String>((ref) => '');
 final cityProvider = StateProvider<String>((ref) => '');
 final provinceProvider = StateProvider<String>((ref) => '');
-final latProvider = StateProvider<double>((ref) => 0);
-final longProvider = StateProvider<double>((ref) => 0);
+final latProvider = StateProvider<double?>((ref) => null);
+final longProvider = StateProvider<double?>((ref) => null);
 
 // Price providers
 final minPriceProvider = StateProvider<double>((ref) => 0);
@@ -21,7 +21,8 @@ final searchResultsServiceProviders =
     FutureProvider.family<List<dynamic>, String>((ref, category) async {
   final supabase = Supabase.instance.client;
 
-  final response = await supabase.rpc('get_service_providers', params: {
+  final response =
+      await supabase.rpc('get_service_providers_by_category', params: {
     'service_category_param': category,
   });
 

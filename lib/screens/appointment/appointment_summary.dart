@@ -6,8 +6,8 @@ import 'package:pamfurred/components/screen_transitions.dart';
 import 'package:pamfurred/components/title_text.dart';
 import 'package:pamfurred/models/packages.dart';
 import 'package:pamfurred/models/services.dart';
-import 'package:pamfurred/providers/appointment_provider.dart';
 import 'package:pamfurred/providers/cart_provider.dart';
+import 'package:pamfurred/providers/global_providers.dart';
 import 'package:pamfurred/providers/serviceprovider_provider.dart';
 import 'package:pamfurred/providers/user_id.dart';
 import 'package:pamfurred/screens/appointment/successful_appointment.dart';
@@ -41,7 +41,7 @@ class AppointmentSummaryScreenState
     final petOwnerIdFromUserTable = await supabase
         .from('pet_owner')
         .select('pet_owner_id')
-        .eq('user_id', petOwnerId)
+        .eq('pet_owner_id', petOwnerId)
         .single();
 
     final response = await supabase
@@ -153,7 +153,7 @@ class AppointmentSummaryScreenState
                                   // date: '2024-11-05',
                                   // time: '10:00 AM',
                                   totalAmount: total,
-                                  appointmentStatus: 'upcoming',
+                                  appointmentStatus: 'Upcoming',
                                   // appointmentType: 'standard',
                                 );
 

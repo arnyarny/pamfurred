@@ -8,6 +8,7 @@ import 'package:pamfurred/components/globals.dart';
 import 'package:pamfurred/components/regular_text.dart';
 import 'package:pamfurred/components/screen_transitions.dart';
 import 'package:pamfurred/components/sentiment_label.dart';
+import 'package:pamfurred/components/time_and_date_formatter.dart';
 import 'package:pamfurred/components/title_text.dart';
 import 'package:pamfurred/math_functions/distance_calculator.dart';
 import 'package:pamfurred/models/package_filter_criteria.dart';
@@ -24,7 +25,6 @@ import 'package:pamfurred/providers/user_id.dart';
 import 'package:pamfurred/screens/appointment/cart_screen.dart';
 // import 'package:pamfurred/providers/sp_profile_provider_services.dart';
 import 'package:shimmer/shimmer.dart';
-import 'package:intl/intl.dart';
 
 class ServiceproviderProfileScreen extends ConsumerStatefulWidget {
   const ServiceproviderProfileScreen({super.key});
@@ -39,6 +39,8 @@ final aboutTabProvider = FutureProvider<List<Widget>>((ref) async {
   // Retrieve the service provider ID
   final sp = ref.watch(spIndexProvider);
 
+  print('SP ID: ${sp?['sp_id']}');
+
   // Pet owner user ID
   String userId = ref.watch(userIdProvider).toString();
 
@@ -46,7 +48,8 @@ final aboutTabProvider = FutureProvider<List<Widget>>((ref) async {
   final displayRating = sp?['rating'].toString();
 
   // Ensure 'service_type' is a List<String>
-  List<String> serviceTypes = List<String>.from(sp?['service_type'] ?? []);
+  List<String> serviceTypes =
+      List<String>.from(sp?['service_package_type'] ?? []);
 
   // Ensure 'pets_catered' is a List<String>
   List<String> petsCatered = List<String>.from(sp?['pets_catered'] ?? []);
@@ -57,6 +60,7 @@ final aboutTabProvider = FutureProvider<List<Widget>>((ref) async {
 
   double latitude = sp?['latitude'];
   double longitude = sp?['longitude'];
+
   return [
     // About tab content
     Center(
@@ -124,19 +128,6 @@ final aboutTabProvider = FutureProvider<List<Widget>>((ref) async {
     ),
   ];
 });
-
-String formatTime(String timeString) {
-  // Parse the time string into a DateTime object
-  final timeParts = timeString.split(':');
-  final hour = int.parse(timeParts[0]);
-  final minute = int.parse(timeParts[1]);
-
-  // Create a DateTime object (using a default date since we only care about time)
-  final dateTime = DateTime(0, 1, 1, hour, minute);
-
-  // Format it to a readable string (e.g., "8 AM" or "5 PM")
-  return DateFormat.jm().format(dateTime); // "j" for hour (1-12), "a" for AM/PM
-}
 
 final servicesTabProvider = FutureProvider<List<Widget>>((ref) async {
   // Retrieve the service provider ID

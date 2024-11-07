@@ -317,7 +317,7 @@ class ResultsListWidget extends ConsumerWidget {
     // Get the current value of the selected results sorter
     final checkResultsSorter = ref.watch(sortResultsProvider);
 
-    final providerDataAsync = checkResultsSorter == 'All'
+    final providerDataAsync = checkResultsSorter == 'All' || checkResultsSorter == ''
         ? ref.watch(searchResultsServiceProviders(
             checkSelectedServiceCategory(selectedIndex)))
         : checkResultsSorter == 'Location'

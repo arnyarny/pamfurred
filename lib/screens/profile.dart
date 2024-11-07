@@ -3,11 +3,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pamfurred/components/globals.dart';
 import 'package:pamfurred/components/header.dart';
 // import 'package:pamfurred/components/pull_to_refresh.dart';
-import 'package:pamfurred/components/screen_transitions.dart';
 import 'package:pamfurred/components/title_text.dart';
 import 'package:pamfurred/providers/pet_profile_provider.dart';
+import 'package:pamfurred/providers/user_id.dart';
 import 'package:pamfurred/screens/login.dart';
-import 'package:pamfurred/screens/pet_profile.dart';
 import 'package:shimmer/shimmer.dart';
 import 'package:supabase_flutter/supabase_flutter.dart'; // Import Supabase
 
@@ -54,7 +53,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
       final username = await Supabase.instance.client
           .from('pet_owner')
           .select()
-          .eq('user_id', userId) // Query based on the current user's ID
+          .eq('pet_owner_id', userId) // Query based on the current user's ID
           .single();
 
       final userDetails = await Supabase.instance.client
@@ -98,8 +97,10 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
 
   @override
   Widget build(BuildContext context) {
+    // Access user ID
+    final userId = ref.watch(userIdProvider);
     // Access the list of pet profiles
-    final petProfileData = ref.watch(petProfileProvider);
+    final petProfileData = ref.watch(petProfileProvider(userId!));
 
     return SafeArea(
       child: Scaffold(
@@ -157,23 +158,34 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                                     right: tertiarySizedBox),
                                 child: SizedBox(
                                     height: 60,
-                                    child: ListView.builder(
-                                      physics: const BouncingScrollPhysics(),
-                                      scrollDirection: Axis.horizontal,
-                                      itemCount: petProfileData.length +
-                                          1, // Add 1 for the Add button
-                                      itemBuilder: (context, index) {
-                                        // Logic for pet profiles and "Add" button
-                                        final petProfileImage = index <
-                                                petProfileData.length
-                                            ? petProfileData[index]['image'] ??
-                                                ''
-                                            : '';
-                                        return index == petProfileData.length
-                                            ? _buildAddPetButton(context)
-                                            : _buildPetProfile(
-                                                petProfileImage, index);
+                                    child: petProfileData.when(
+                                      data: (data) {
+                                        return ListView.builder(
+                                          physics:
+                                              const BouncingScrollPhysics(),
+                                          scrollDirection: Axis.horizontal,
+                                          itemCount: data.length +
+                                              1, // Add 1 for the Add button
+                                          itemBuilder: (context, index) {
+                                            // Logic for pet profiles and "Add" button
+                                            final petProfileImage = index <
+                                                    data.length
+                                                ? data[index]['pet_image'] ?? ''
+                                                : '';
+                                            return index == data.length
+                                                ? _buildAddPetButton(context)
+                                                : _buildPetProfile(
+                                                    petProfileImage, index);
+                                          },
+                                        );
                                       },
+                                      error: (error, _) =>
+                                          SelectableText('Error: $error'),
+                                      loading: () => const SizedBox(
+                                        height: 60,
+                                        child: Center(
+                                            child: CircularProgressIndicator()),
+                                      ),
                                     )),
                               ),
                             ),
@@ -213,10 +225,10 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
           bottom: tertiarySizedBox),
       child: GestureDetector(
         onTap: () {
-          Navigator.push(
-            context,
-            slideUpRoute(PetProfileScreen(petId: index + 1)),
-          );
+          // Navigator.push(
+          //   context,
+          //   slideUpRoute(PetProfileScreen(petId: index + 1)),
+          // );
         },
         child: ClipOval(
           child: Image.network(

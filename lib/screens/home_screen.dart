@@ -45,7 +45,7 @@ class HomeScreenState extends ConsumerState<HomeScreen> {
     LocationService locationService = LocationService();
     locationService.determinePosition(context).then((position) {
       final userId = ref.watch(userIdProvider);
-      storeLocation(position.latitude, position.longitude, userId!);
+      storeLocation(position.latitude, position.longitude, userId);
 
       // Successfully got the position.
       print("Current position: ${position.latitude}, ${position.longitude}");

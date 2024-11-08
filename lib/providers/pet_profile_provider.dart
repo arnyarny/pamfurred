@@ -1,4 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:pamfurred/providers/user_id.dart';
 import 'package:supabase_flutter/supabase_flutter.dart' as supabase_flutter;
 
 // The petProfileProvider fetches the pet profiles with the owner details
@@ -7,7 +8,7 @@ final petProfileProvider =
   final supabase = supabase_flutter.Supabase.instance.client;
 
   // Call the Supabase function to get the pet profiles with owner information
-    final response = await supabase.rpc('get_pet_profiles_with_owner', params: {
+  final response = await supabase.rpc('get_pet_profiles_with_owner', params: {
     'pet_owner_id_param': petOwnerId,
   });
 
@@ -32,19 +33,20 @@ final serviceProviderFutureProviderWithoutCategory =
 
 // FutureProvider.family to fetch a specific pet by id
 final fetchPetByIdProvider =
-    FutureProvider.family<Map<String, dynamic>, int>((ref, petId) async {
-  // Watch the petProfileProvider for data
-  final petProfilesAsyncValue =
-      await ref.read(petProfileProvider('some_category').future);
+    FutureProvider.family<Map<String, dynamic>?, String>((ref, petId) async {
+  // Get the user ID from the userIdProvider
+  final userId = ref.watch(userIdProvider);
 
-  // If data is available, find the pet with the given petId
-  final pet = petProfilesAsyncValue.firstWhere((pet) => pet["pet_id"] == petId,
-      orElse: () => {});
+  print('User ID: $userId');
 
-  // If the pet is not found, throw an error
-  if (pet.isEmpty) {
-    throw Exception("Pet with ID $petId not found.");
-  }
+  // Fetch pet profiles for the user
+  final petProfiles = await ref.read(petProfileProvider(userId).future);
+
+  // Find the pet with the given petId in the fetched profiles
+  final pet = petProfiles.firstWhere(
+    (pet) => pet['pet_profile_id'] == petId,
+    orElse: () => <String, dynamic>{},
+  );
 
   return pet;
 });

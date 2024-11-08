@@ -2,6 +2,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:pamfurred/components/capitalize_first_letter.dart';
 import 'package:pamfurred/components/cart_icon.dart';
 import 'package:pamfurred/components/custom_appbar.dart';
 import 'package:pamfurred/components/globals.dart';
@@ -222,7 +223,7 @@ final servicesTabProvider = FutureProvider<List<Widget>>((ref) async {
                                                 CrossAxisAlignment.start,
                                             children: [
                                               customTitleText(
-                                                  context, service.serviceName),
+                                                  context, capitalizeFirstLetter(service.serviceName)),
                                               Row(
                                                 children: [
                                                   regularTextWidget(
@@ -400,7 +401,7 @@ final packagesTabProvider = FutureProvider<List<Widget>>((ref) async {
                                                 CrossAxisAlignment.start,
                                             children: [
                                               customTitleText(
-                                                  context, package.packageName),
+                                                  context, capitalizeFirstLetter(package.packageName)),
                                               Row(
                                                 children: [
                                                   regularTextWidget(

@@ -3,23 +3,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:pamfurred/components/time_and_date_formatter.dart';
 import 'package:pamfurred/components/title_text.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:pamfurred/providers/appointments_provider.dart';
+import 'package:pamfurred/providers/user_id.dart';
 import '../components/globals.dart';
-
-// Assuming you have a function to fetch appointment details from Supabase
-Future<Map<String, dynamic>> fetchAppointmentDetails() async {
-  final supabase = Supabase.instance.client;
-
-  final response =
-      await supabase.rpc('get_appointment_details_with_services_and_packages');
-
-  final dataList = List<Map<String, dynamic>>.from(response);
-  if (dataList.isEmpty) {
-    throw Exception('No appointment details found.');
-  }
-
-  return {'appointments': dataList};
-}
 
 class AppointmentsScreen extends ConsumerStatefulWidget {
   const AppointmentsScreen({super.key});
@@ -41,7 +27,7 @@ class AppointmentsScreenState extends ConsumerState<AppointmentsScreen>
   // Create a provider for fetching appointment details
   final appointmentDetailsProvider =
       FutureProvider<Map<String, dynamic>>((ref) async {
-    return await fetchAppointmentDetails();
+    return await fetchAppointmentDetails(ref.watch(userIdProvider).toString());
   });
 
   @override
@@ -62,7 +48,9 @@ class AppointmentsScreenState extends ConsumerState<AppointmentsScreen>
     final appointmentAsyncValue = ref.watch(appointmentDetailsProvider);
 
     return Scaffold(
+      backgroundColor: Colors.white,
       appBar: AppBar(
+        backgroundColor: Colors.white,
         automaticallyImplyLeading: false,
         toolbarHeight: 20,
         elevation: 0,
@@ -158,13 +146,16 @@ class AppointmentsScreenState extends ConsumerState<AppointmentsScreen>
           child: Column(mainAxisSize: MainAxisSize.min, children: <Widget>[
             ListTile(
               title: customBoldWeightRegularText(context,
-                  '${appointment['user_id'] ?? 'N/A'}'), // Fallback if null
+                  '${appointment['establishment_name'] ?? 'N/A'}'), // Fallback if null
               subtitle: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: <Widget>[
                   const SizedBox(height: primarySizedBox),
                   Text(
-                    appointment['appointment_date'] == null ? 'N/A' : formatDate(appointment['appointment_date']), // Fallback if null
+                    appointment['appointment_date'] == null
+                        ? 'N/A'
+                        : formatDate(appointment[
+                            'appointment_date']), // Fallback if null
                     style: const TextStyle(color: darkGreyColor),
                   ),
                   const SizedBox(height: primarySizedBox),

@@ -53,7 +53,7 @@ class LoginScreenState extends State<LoginScreen> {
 
     if (session != null) {
       // User is already logged in
-      Navigator.push(context, slideUpRoute(const MainScreen()));
+      Navigator.push(context, slideUpRoute(MainScreen()));
     }
   }
 
@@ -76,7 +76,7 @@ class LoginScreenState extends State<LoginScreen> {
           // Navigate to MainScreen if authentication is successful
           Navigator.pushReplacement(
             context,
-            crossFadeRoute(const MainScreen()),
+            crossFadeRoute(MainScreen()),
           );
         } else {
           // Email not verified - show error message

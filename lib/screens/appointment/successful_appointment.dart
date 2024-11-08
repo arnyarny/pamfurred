@@ -1,6 +1,6 @@
-import 'package:confetti/confetti.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:pamfurred/components/confetti.dart';
 import 'package:pamfurred/components/custom_padded_button.dart';
 import 'package:pamfurred/components/regular_text.dart';
 import 'package:pamfurred/components/screen_transitions.dart';
@@ -24,27 +24,6 @@ class SuccessfulAppointment extends ConsumerStatefulWidget {
 class SuccessfulAppointmentState extends ConsumerState<SuccessfulAppointment> {
   Map<String, dynamic>? mapAppointmentDetails;
   bool isLoading = true; // Loading state
-
-  // Confetti controller for center explosion
-  late ConfettiController _confettiController;
-
-  @override
-  void initState() {
-    super.initState();
-    // Initialize confetti controller for 2 seconds
-    _confettiController =
-        ConfettiController(duration: const Duration(seconds: 2));
-
-    // Play confetti explosively
-    _confettiController.play();
-  }
-
-  @override
-  void dispose() {
-    // Dispose of the confetti controller
-    _confettiController.dispose();
-    super.dispose();
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -71,26 +50,7 @@ class SuccessfulAppointmentState extends ConsumerState<SuccessfulAppointment> {
               ),
             ),
             // Center confetti widget
-            ConfettiWidget(
-              numberOfParticles: 250,
-              maximumSize: const Size(20, 10),
-              confettiController: _confettiController,
-              blastDirectionality:
-                  BlastDirectionality.explosive, // Explosive effect
-              shouldLoop: false,
-              colors: const [
-                Colors.yellow,
-                Colors.red,
-                primaryColor,
-                secondaryColor,
-                lighterSecondaryColor,
-                lightRedColor
-              ],
-              maxBlastForce: 100, // Increase blast force for more explosion
-              minBlastForce: 10, // Minimum blast force
-              gravity: 0.5, // Control how quickly confetti falls
-              child: Container(), // Placeholder for the widget
-            ),
+            const ConfettiDisplay(),
             Center(
                 child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
@@ -127,8 +87,8 @@ class SuccessfulAppointmentState extends ConsumerState<SuccessfulAppointment> {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        getAppointmentDetail(
-                            context, ref.watch(appointmentIdProvider).toString()),
+                        getAppointmentDetail(context,
+                            ref.watch(appointmentIdProvider).toString()),
                       ],
                     )
                   ],
@@ -180,7 +140,7 @@ class SuccessfulAppointmentState extends ConsumerState<SuccessfulAppointment> {
                         // Clear the cart when this button is pressed
                         ref.read(cartNotifierProvider.notifier).clearCart();
                         Navigator.push(
-                            context, crossFadeRoute(const MainScreen()));
+                            context, crossFadeRoute(MainScreen()));
                       }),
                 )
               ],

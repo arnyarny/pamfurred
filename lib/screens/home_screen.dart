@@ -1,18 +1,22 @@
+import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:pamfurred/components/capitalize_first_letter.dart';
 import 'package:pamfurred/components/custom_appbar.dart';
 import 'package:pamfurred/components/custom_padded_button.dart';
 import 'package:pamfurred/components/pull_to_refresh.dart';
 import 'package:pamfurred/components/rating_widget.dart';
 import 'package:pamfurred/components/sentiment_label.dart';
+import 'package:pamfurred/components/time_and_date_formatter.dart';
 import 'package:pamfurred/components/title_text.dart';
 import 'package:pamfurred/components/globals.dart';
 import 'package:pamfurred/components/screen_transitions.dart';
 import 'package:pamfurred/math_functions/distance_calculator.dart';
 import 'package:pamfurred/models/package_filter_criteria.dart';
 import 'package:pamfurred/models/service_filter_criteria.dart';
+import 'package:pamfurred/providers/appointments_provider.dart';
 import 'package:pamfurred/providers/global_providers.dart';
 import 'package:pamfurred/providers/serviceprovider_provider.dart';
 import 'package:pamfurred/providers/sp_profile_provider_packages.dart';
@@ -20,6 +24,7 @@ import 'package:pamfurred/providers/sp_profile_provider_services.dart';
 import 'package:pamfurred/backend_logic_files/store_location.dart';
 import 'package:pamfurred/providers/user_id.dart';
 import 'package:pamfurred/screens/location_permission.dart';
+import 'package:pamfurred/screens/main_screen.dart';
 // import 'package:pamfurred/screens/profile.dart';
 import 'package:pamfurred/screens/search_results.dart';
 import 'package:pamfurred/screens/appointment/serviceprovider_profile.dart';
@@ -168,57 +173,97 @@ class HomeScreenState extends ConsumerState<HomeScreen> {
     return Row(children: [customTitleText(context, title)]);
   }
 
+  final appointmentDetailsProvider =
+      FutureProvider<Map<String, dynamic>>((ref) async {
+    final userId = ref.watch(userIdProvider).toString();
+    return await fetchAppointmentDetails(userId);
+  });
+
   Widget _upcomingAppointmentCard() {
-    return Card(
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(secondaryBorderRadius),
-      ),
-      elevation: 1.5,
-      color: lighterSecondaryColor,
-      child: const SizedBox(
-        width: double.infinity,
-        height: 85,
-        child: Padding(
-          padding: EdgeInsets.all(16.0),
-          child: Column(
-            children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.start,
-                children: [
-                  Text(
-                    'January 2, 2024, 9 am',
-                    style: TextStyle(
-                      color: Colors.black,
-                      fontSize: regularText,
-                    ),
-                  ),
-                ],
-              ),
-              SizedBox(height: primarySizedBox),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.start,
-                children: [
-                  Text(
-                    'Paws and Claws Pet Station',
-                    style: TextStyle(
-                      color: Colors.black,
-                      fontWeight: FontWeight.bold,
-                      fontSize: regularText,
-                    ),
-                  ),
-                ],
-              ),
-            ],
+    final appointmentDetails = ref.watch(appointmentDetailsProvider);
+    return appointmentDetails.when(
+      data: (data) {
+        // Extract the list of appointments from the returned map
+        final appointments = data['appointments'] as List<Map<String, dynamic>>;
+
+        // Filter appointments to show only those with 'appointment_status' of 'Upcoming'
+        final upcomingAppointments = appointments.where((appointment) {
+          return appointment['appointment_status'] == 'Upcoming';
+        }).toList();
+
+        return Card(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(secondaryBorderRadius),
           ),
-        ),
-      ),
+          elevation: 1.5,
+          color: lighterSecondaryColor,
+          child: CarouselSlider(
+            options: CarouselOptions(
+              height: 130,
+              autoPlay: true,
+              autoPlayInterval: const Duration(seconds: 3),
+              enlargeCenterPage: true,
+              viewportFraction: 0.9,
+            ),
+            items: upcomingAppointments.map((appointment) {
+              return Builder(
+                builder: (BuildContext context) {
+                  return SizedBox(
+                    width: double.infinity,
+                    height: 100,
+                    child: Padding(
+                      padding: const EdgeInsets.all(tertiarySizedBox),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            capitalizeFirstLetter(
+                                appointment['establishment_name']),
+                            style: const TextStyle(
+                                color: Colors.black,
+                                fontSize: regularText,
+                                fontWeight: boldWeight),
+                          ),
+                          const SizedBox(height: secondarySizedBox),
+                          Text(
+                              formatDate(
+                                  appointment['appointment_date'] ?? 'N/A'),
+                              style: const TextStyle(
+                                color: darkGreyColor,
+                                fontSize: regularText,
+                              )),
+                          const SizedBox(height: secondarySizedBox),
+                          Text(
+                            appointment['appointment_time'] == null
+                                ? 'N/A'
+                                : formatTime(appointment['appointment_time']),
+                            style: const TextStyle(
+                              color: Colors.black,
+                              fontSize: smallText,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  );
+                },
+              );
+            }).toList(),
+          ),
+        );
+      },
+      loading: () => const Center(child: CircularProgressIndicator()),
+      error: (error, stackTrace) => Center(child: Text('Error: $error')),
     );
   }
 
   Widget _viewAppointmentsButton() {
     return customPaddedTextButton(
       text: "View appointments",
-      onPressed: () {},
+      onPressed: () {
+        mainScreenKey.currentState
+            ?.switchToPage(1); // Switch to Appointments page
+      },
     );
   }
 

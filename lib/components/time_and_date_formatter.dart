@@ -19,7 +19,7 @@ String formatDate(String date) {
   try {
     parsedDate = inputFormat.parse(date);
   } catch (e) {
-    return 'Invalid Date'; // Return this in case of parsing errors
+    return 'Invalid Date';
   }
 
   final DateFormat outputFormat = DateFormat('MMMM d, yyyy');

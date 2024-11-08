@@ -27,7 +27,7 @@ class AuthRedirectState extends State<AuthRedirect> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (session != null) {
         // User is logged in, navigate to Home Screen
-        Navigator.push(context, slideUpRoute(const MainScreen()));
+        Navigator.push(context, slideUpRoute(MainScreen()));
       } else {
         // User is not logged in, navigate to Login Screen
         Navigator.push(context, slideUpRoute(const LoginScreen()));

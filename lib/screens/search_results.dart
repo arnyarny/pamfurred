@@ -1,6 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:pamfurred/components/capitalize_first_letter.dart';
 import 'package:pamfurred/components/rating_widget.dart';
 import 'package:pamfurred/components/screen_transitions.dart';
 import 'package:pamfurred/components/sentiment_label.dart';
@@ -317,17 +318,18 @@ class ResultsListWidget extends ConsumerWidget {
     // Get the current value of the selected results sorter
     final checkResultsSorter = ref.watch(sortResultsProvider);
 
-    final providerDataAsync = checkResultsSorter == 'All' || checkResultsSorter == ''
-        ? ref.watch(searchResultsServiceProviders(
-            checkSelectedServiceCategory(selectedIndex)))
-        : checkResultsSorter == 'Location'
-            ? ref.watch(sortSearchResultsByLocation(
+    final providerDataAsync =
+        checkResultsSorter == 'All' || checkResultsSorter == ''
+            ? ref.watch(searchResultsServiceProviders(
                 checkSelectedServiceCategory(selectedIndex)))
-            : checkResultsSorter == 'Price'
-                ? ref.watch(sortSearchResultsByPrice(
+            : checkResultsSorter == 'Location'
+                ? ref.watch(sortSearchResultsByLocation(
                     checkSelectedServiceCategory(selectedIndex)))
-                : ref.watch(searchResultsServiceProviders(
-                    checkSelectedServiceCategory(selectedIndex)));
+                : checkResultsSorter == 'Price'
+                    ? ref.watch(sortSearchResultsByPrice(
+                        checkSelectedServiceCategory(selectedIndex)))
+                    : ref.watch(searchResultsServiceProviders(
+                        checkSelectedServiceCategory(selectedIndex)));
 
     return Expanded(
       child: providerDataAsync.when(
@@ -397,8 +399,7 @@ class ResultsListWidget extends ConsumerWidget {
                                     Expanded(
                                       child: customTitleText(
                                         context,
-                                        provider['name'] ??
-                                            'No name', // Default name if null
+                                        capitalizeFirstLetter(provider['name']), // Default name if null
                                       ),
                                     ),
                                     ratingWidget(provider['rating'].toString()),
@@ -408,8 +409,7 @@ class ResultsListWidget extends ConsumerWidget {
                                     height:
                                         primarySizedBox), // Ensure primarySizedBox is defined
                                 Text(
-                                  provider['service_name'] ??
-                                      'No service', // Default service if null
+                                  capitalizeFirstLetter(provider['service_name']), // Default service if null
                                   style: const TextStyle(
                                     fontSize:
                                         regularText, // Ensure regularText is defined
@@ -446,8 +446,6 @@ class ResultsListWidget extends ConsumerWidget {
                                     ),
                                     Row(
                                       children: [
-                                        const Icon(CupertinoIcons.location,
-                                            size: 19),
                                         FutureBuilder<String?>(
                                           future: getDistanceToTarget(
                                               userId,
@@ -459,8 +457,15 @@ class ResultsListWidget extends ConsumerWidget {
                                                   'Error: ${snapshot.error}'); // Display error message if there's an error
                                             } else if (snapshot.hasData) {
                                               // Check if the data is not null
-                                              return Text(snapshot.data ??
-                                                  'Distance not available'); // Display the calculated distance
+                                              return Row(
+                                                children: [
+                                                  const Icon(
+                                                      CupertinoIcons.location,
+                                                      size: 19),
+                                                  Text(snapshot.data ??
+                                                      'Distance not available'),
+                                                ],
+                                              ); // Display the calculated distance
                                             } else {
                                               return const Text(
                                                   ''); // Handle the case where there is no data

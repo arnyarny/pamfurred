@@ -72,7 +72,7 @@ class _SuccessfulRegistrationState extends State<SuccessfulRegistration> {
                   child: TextButton(
                     onPressed: () {
                       Navigator.push(
-                          context, crossFadeRoute(const MainScreen()));
+                          context, crossFadeRoute(MainScreen()));
                     },
                     style: ButtonStyle(
                       shape: WidgetStateProperty.all<RoundedRectangleBorder>(

@@ -199,7 +199,7 @@ class HomeScreenState extends ConsumerState<HomeScreen> {
           color: lighterSecondaryColor,
           child: CarouselSlider(
             options: CarouselOptions(
-              height: 130,
+              height: 115,
               autoPlay: true,
               autoPlayInterval: const Duration(seconds: 3),
               enlargeCenterPage: true,
@@ -210,9 +210,9 @@ class HomeScreenState extends ConsumerState<HomeScreen> {
                 builder: (BuildContext context) {
                   return SizedBox(
                     width: double.infinity,
-                    height: 100,
+                    height: 95,
                     child: Padding(
-                      padding: const EdgeInsets.all(tertiarySizedBox),
+                      padding: const EdgeInsets.fromLTRB(tertiarySizedBox, tertiarySizedBox,tertiarySizedBox, 0),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
@@ -229,7 +229,7 @@ class HomeScreenState extends ConsumerState<HomeScreen> {
                               formatDate(
                                   appointment['appointment_date'] ?? 'N/A'),
                               style: const TextStyle(
-                                color: darkGreyColor,
+                                color: Colors.black,
                                 fontSize: regularText,
                               )),
                           const SizedBox(height: secondarySizedBox),
@@ -238,7 +238,7 @@ class HomeScreenState extends ConsumerState<HomeScreen> {
                                 ? 'N/A'
                                 : formatTime(appointment['appointment_time']),
                             style: const TextStyle(
-                              color: Colors.black,
+                              color: darkGreyColor,
                               fontSize: smallText,
                             ),
                           ),

@@ -36,6 +36,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
 
   void _logout() async {
     setState(() {
+      ref.read(visibilityProvider.notifier).setVisible(false);
       isLoading = true;
     });
 
@@ -139,7 +140,11 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                                       color: Colors.white),
                                 )
                               : IconButton(
-                                  onPressed: _logout,
+                                  onPressed: () {
+                                    // Set visibility to false when loading
+
+                                    _logout();
+                                  },
                                   icon: const Icon(Icons.logout),
                                   iconSize: 25,
                                   color: greyColor,

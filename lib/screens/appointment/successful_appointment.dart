@@ -101,7 +101,7 @@ class SuccessfulAppointmentState extends ConsumerState<SuccessfulAppointment> {
                       // Service provider name
                       getAppointmentTitle(context, 'Service provider'),
                       const SizedBox(height: primarySizedBox),
-                      getAppointmentDetail(context, sp!['name']),
+                      getAppointmentDetail(context, sp!['service_provider_name']),
 
                       const SizedBox(height: secondarySizedBox),
 

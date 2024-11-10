@@ -120,7 +120,7 @@ class AppointmentSummaryScreenState
                   const SizedBox(height: tertiarySizedBox),
                   getAppointmentTitle(context, 'Service provider'),
                   const SizedBox(height: primarySizedBox),
-                  getAppointmentDetail(context, sp!['name']),
+                  getAppointmentDetail(context, sp!['service_provider_name']),
                   const SizedBox(height: secondarySizedBox),
                   if (services.isNotEmpty)
                     getAppointmentTitle(context, 'Services'),

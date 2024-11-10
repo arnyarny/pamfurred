@@ -4,12 +4,14 @@ import 'package:supabase_flutter/supabase_flutter.dart' as supabase_flutter;
 final serviceProviderFutureProvider =
     FutureProvider.family<List<dynamic>, String>((ref, category) async {
   final supabase = supabase_flutter.Supabase.instance.client;
-  final response = await supabase
-      .from('service_provider')
-      .select(
-          'sp_id, image, name, rating, sentiment_label, category')
-      .contains('category', '["$category"]');
 
+  // Perform the query with the 'contains' operator
+  final response = await supabase
+      .from('service_provider_with_categories_and_sentiment')
+      .select('*')
+      .contains('unique_categories', '["$category"]');
+
+  // Return the data as List<dynamic>
   return response as List<dynamic>;
 });
 
@@ -17,9 +19,8 @@ final serviceProviderFutureProviderWithoutCategory =
     FutureProvider<List<dynamic>>((ref) async {
   final supabase = supabase_flutter.Supabase.instance.client;
   final response = await supabase
-      .from('service_provider')
-      .select(
-          '*');
+      .from('service_provider_with_categories_and_sentiment')
+      .select('*');
 
   return response as List<dynamic>;
 });

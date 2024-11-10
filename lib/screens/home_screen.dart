@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pamfurred/components/capitalize_first_letter.dart';
 import 'package:pamfurred/components/custom_appbar.dart';
 import 'package:pamfurred/components/custom_padded_button.dart';
+import 'package:pamfurred/components/error_builder.dart';
 import 'package:pamfurred/components/pull_to_refresh.dart';
 import 'package:pamfurred/components/rating_widget.dart';
 import 'package:pamfurred/components/sentiment_label.dart';
@@ -50,7 +51,7 @@ class HomeScreenState extends ConsumerState<HomeScreen> {
     LocationService locationService = LocationService();
     locationService.determinePosition(context).then((position) {
       final userId = ref.watch(userIdProvider);
-      storeLocation(position.latitude, position.longitude, userId);
+      storeLocation(position.latitude, position.longitude, userId!);
 
       // Successfully got the position.
       print("Current position: ${position.latitude}, ${position.longitude}");
@@ -182,89 +183,140 @@ class HomeScreenState extends ConsumerState<HomeScreen> {
   Widget _upcomingAppointmentCard() {
     final appointmentDetails = ref.watch(appointmentDetailsProvider);
     return appointmentDetails.when(
-      data: (data) {
-        // Extract the list of appointments from the returned map
-        final appointments = data['appointments'] as List<Map<String, dynamic>>;
+        data: (data) {
+          // Extract the list of appointments from the returned map
+          final appointments =
+              data['appointments'] as List<Map<String, dynamic>>;
 
-        // Filter appointments to show only those with 'appointment_status' of 'Upcoming'
-        final upcomingAppointments = appointments.where((appointment) {
-          return appointment['appointment_status'] == 'Upcoming';
-        }).toList();
+          // Filter appointments to show only those with 'appointment_status' of 'Upcoming'
+          final upcomingAppointments = appointments.where((appointment) {
+            return appointment['appointment_status'] == 'Upcoming';
+          }).toList();
 
-        return Card(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(secondaryBorderRadius),
-          ),
-          elevation: 1.5,
-          color: lighterSecondaryColor,
-          child: CarouselSlider(
-            options: CarouselOptions(
-              height: 115,
-              autoPlay: true,
-              autoPlayInterval: const Duration(seconds: 3),
-              enlargeCenterPage: true,
-              viewportFraction: 0.9,
-            ),
-            items: upcomingAppointments.map((appointment) {
-              return Builder(
-                builder: (BuildContext context) {
-                  return SizedBox(
-                    width: double.infinity,
-                    height: 95,
-                    child: Padding(
-                      padding: const EdgeInsets.fromLTRB(tertiarySizedBox, tertiarySizedBox,tertiarySizedBox, 0),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            capitalizeFirstLetter(
-                                appointment['establishment_name']),
-                            style: const TextStyle(
-                                color: Colors.black,
-                                fontSize: regularText,
-                                fontWeight: boldWeight),
-                          ),
-                          const SizedBox(height: secondarySizedBox),
-                          Text(
-                              formatDate(
-                                  appointment['appointment_date'] ?? 'N/A'),
-                              style: const TextStyle(
-                                color: Colors.black,
-                                fontSize: regularText,
-                              )),
-                          const SizedBox(height: secondarySizedBox),
-                          Text(
-                            appointment['appointment_time'] == null
-                                ? 'N/A'
-                                : formatTime(appointment['appointment_time']),
-                            style: const TextStyle(
-                              color: darkGreyColor,
-                              fontSize: smallText,
-                            ),
-                          ),
-                        ],
+          return upcomingAppointments.isEmpty
+              ? const Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      SizedBox(height: secondarySizedBox),
+                      Icon(Icons.event_busy, size: 40, color: primaryColor),
+                      SizedBox(height: secondarySizedBox),
+                      Text(
+                        "No upcoming appointments yet!",
+                        style: TextStyle(
+                            fontSize: regularText, color: darkGreyColor),
                       ),
+                      SizedBox(height: primarySizedBox),
+                      Text(
+                        "Browse service providers to book an appointment.",
+                        style: TextStyle(fontSize: smallText, color: greyColor),
+                      ),
+                      SizedBox(height: primarySizedBox),
+                    ],
+                  ),
+                )
+              : Card(
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(secondaryBorderRadius),
+                  ),
+                  elevation: 1.5,
+                  color: lighterSecondaryColor,
+                  child: CarouselSlider(
+                    options: CarouselOptions(
+                      height: 115,
+                      autoPlay: true,
+                      autoPlayInterval: const Duration(seconds: 3),
+                      enlargeCenterPage: true,
+                      viewportFraction: 0.9,
                     ),
-                  );
-                },
-              );
-            }).toList(),
-          ),
-        );
-      },
-      loading: () => const Center(child: CircularProgressIndicator()),
-      error: (error, stackTrace) => Center(child: Text('Error: $error')),
-    );
+                    items: upcomingAppointments.map((appointment) {
+                      return Builder(
+                        builder: (BuildContext context) {
+                          return SizedBox(
+                            width: double.infinity,
+                            height: 95,
+                            child: Padding(
+                              padding: const EdgeInsets.fromLTRB(
+                                  tertiarySizedBox,
+                                  tertiarySizedBox,
+                                  tertiarySizedBox,
+                                  0),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    capitalizeFirstLetter(
+                                        appointment['establishment_name']),
+                                    style: const TextStyle(
+                                        color: Colors.black,
+                                        fontSize: regularText,
+                                        fontWeight: boldWeight),
+                                  ),
+                                  const SizedBox(height: secondarySizedBox),
+                                  Text(
+                                      formatDate(
+                                          appointment['appointment_date'] ??
+                                              'N/A'),
+                                      style: const TextStyle(
+                                        color: Colors.black,
+                                        fontSize: regularText,
+                                      )),
+                                  const SizedBox(height: secondarySizedBox),
+                                  Text(
+                                    appointment['appointment_time'] == null
+                                        ? 'N/A'
+                                        : formatTime(
+                                            appointment['appointment_time']),
+                                    style: const TextStyle(
+                                      color: darkGreyColor,
+                                      fontSize: smallText,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          );
+                        },
+                      );
+                    }).toList(),
+                  ),
+                );
+        },
+        loading: () => const Center(child: CircularProgressIndicator()),
+        error: (error, _) {
+          print(error);
+          return const ErrorMessage();
+        });
   }
 
   Widget _viewAppointmentsButton() {
-    return customPaddedTextButton(
-      text: "View appointments",
-      onPressed: () {
-        mainScreenKey.currentState
-            ?.switchToPage(1); // Switch to Appointments page
-      },
-    );
+    final appointmentDetails = ref.watch(appointmentDetailsProvider);
+    return appointmentDetails.when(
+        data: (data) {
+          // Extract the list of appointments from the returned map
+          final appointments =
+              data['appointments'] as List<Map<String, dynamic>>;
+
+          // Filter appointments to show only those with 'appointment_status' of 'Upcoming'
+          final upcomingAppointments = appointments.where((appointment) {
+            return appointment['appointment_status'] == 'Upcoming';
+          }).toList();
+
+          return upcomingAppointments.isEmpty
+              ? const SizedBox.shrink()
+              : customPaddedTextButton(
+                  text: "View appointments",
+                  onPressed: () {
+                    mainScreenKey.currentState
+                        ?.switchToPage(1); // Switch to Appointments page
+                  },
+                );
+        },
+        loading: () => const Center(child: SizedBox()),
+        error: (error, _) {
+          print(error);
+          return const ErrorMessage();
+        });
   }
 
   Widget _serviceSelection(BuildContext context) {
@@ -427,7 +479,10 @@ class ServiceProvidersWidget extends ConsumerWidget {
               height: 150,
               child: Center(child: CircularProgressIndicator()),
             ),
-        error: (error, _) => SelectableText('Error: $error'),
+        error: (error, _) {
+          print(error);
+          return const ErrorMessage();
+        },
         data: (serviceProviders) {
           if (serviceProviders.isEmpty) {
             return const SizedBox(
@@ -446,18 +501,20 @@ class ServiceProvidersWidget extends ConsumerWidget {
               itemBuilder: (context, index) {
                 final sp = serviceProviders[index];
 
-                final imageUrl = sp['image'] ??
+                final imageUrl = sp['service_provider_image'] ??
                     'https://tinyurl.com/3tnt6yyy'; // Default image if null
-                final name = sp['name'] ?? 'Unknown'; // Default name if null
-                final rating = sp['rating'].toString();
-                final spLatitude = sp['latitude']; // Default latitude
-                final spLongitude = sp['longitude']; // Default longitude
+                final name = capitalizeFirstLetter(sp['service_provider_name']);
+                final rating =
+                    (sp['average_rating'] as double).toStringAsFixed(1);
+
+                final spLatitude = sp['latitude'];
+                final spLongitude = sp['longitude'];
                 double latitude = double.tryParse(spLatitude.toString()) ?? 0.0;
                 double longitude =
                     double.tryParse(spLongitude.toString()) ?? 0.0;
                 final sentimentLabel = sp['sentiment_label'];
 
-                String userId = ref.read(userIdProvider).toString();
+                String userId = ref.watch(userIdProvider).toString();
 
                 print(imageUrl);
 
@@ -590,7 +647,9 @@ class ServiceProvidersWidget extends ConsumerWidget {
                                                   CupertinoIcons.location,
                                                   size: 19),
                                               SizedBox(
-                                                width: 85,
+                                                width: snapshot.data == 'Nearby'
+                                                    ? 50
+                                                    : 85,
                                                 height: 20,
                                                 child: Text(
                                                     snapshot.data ??

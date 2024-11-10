@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:pamfurred/components/custom_padded_button.dart';
 import 'package:pamfurred/components/globals.dart';
 import 'package:pamfurred/components/header.dart';
 import 'package:pamfurred/components/screen_transitions.dart';
@@ -36,8 +37,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
 
   void _logout() async {
     setState(() {
-      ref.read(visibilityProvider.notifier).setVisible(false);
       isLoading = true;
+      ref.read(visibilityProvider.notifier).setVisible(false);
     });
 
     await Supabase.instance.client.auth.signOut();
@@ -46,6 +47,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
       setState(() {
         isLoading = false;
       });
+
       Navigator.push(context, crossFadeRoute(const LoginScreen()));
     }
   }
@@ -111,119 +113,146 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   Widget build(BuildContext context) {
     // Access user ID
     final userId = ref.watch(userIdProvider);
+
+    // If userId is null (loading or not logged in), show a loading spinner
+    if (userId == null) {
+      return const Center(child: CircularProgressIndicator());
+    }
+
     // Access the list of pet profiles
     final petProfileData = ref.watch(petProfileProvider(userId));
 
     return SafeArea(
       child: Scaffold(
         backgroundColor: Colors.white,
-        body: isLoading
-            ? const Center(
-                child: CircularProgressIndicator()) // Show loading spinner
-            :
-            // Remove this comment when backend is implemented in this screen
-            // PullToRefresh(
-            SingleChildScrollView(
-                physics: const BouncingScrollPhysics(),
-                child: Center(
-                  child: SizedBox(
-                    width: screenPadding(context),
-                    child: Column(children: [
-                      const SizedBox(height: tertiarySizedBox),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        body: petProfileData.when(
+          loading: () => const Center(
+              child: CircularProgressIndicator()), // Show loading spinner
+          error: (error, stackTrace) =>
+              Center(child: Text('Error: $error')), // Show error message
+          data: (data) => SingleChildScrollView(
+            physics: const BouncingScrollPhysics(),
+            child: Center(
+              child: SizedBox(
+                width: screenPadding(context),
+                child: Column(
+                  children: [
+                    const SizedBox(height: tertiarySizedBox),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        buildSectionHeader(profileData?['username'] ?? ''),
+                        IconButton(
+                          onPressed: () {
+                            // Set visibility to false when loading
+                            _logout();
+                          },
+                          icon: const Icon(Icons.logout),
+                          iconSize: 25,
+                          color: greyColor,
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: primarySizedBox),
+                    Card(
+                      color: Colors.white.withOpacity(0.9),
+                      shadowColor: Colors.grey.withOpacity(0.2),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
+                        side:
+                            const BorderSide(width: 0.15, color: Colors.black),
+                      ),
+                      child: Column(
                         children: [
-                          buildSectionHeader(profileData?['username'] ?? ''),
-                          isLoading
-                              ? const Center(
-                                  child: CircularProgressIndicator(
-                                      color: Colors.white),
-                                )
-                              : IconButton(
-                                  onPressed: () {
-                                    // Set visibility to false when loading
-
-                                    _logout();
-                                  },
-                                  icon: const Icon(Icons.logout),
-                                  iconSize: 25,
-                                  color: greyColor,
-                                ),
+                          Padding(
+                            padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                customTitleText(context, "Pets"),
+                                data.isNotEmpty
+                                    ? const Icon(Icons.edit,
+                                        size: 20, color: primaryColor)
+                                    : const SizedBox.shrink(),
+                              ],
+                            ),
+                          ),
+                          Center(
+                            child: Padding(
+                              padding: const EdgeInsets.only(
+                                left: tertiarySizedBox,
+                                right: tertiarySizedBox,
+                              ),
+                              child: SizedBox(
+                                height: data.isNotEmpty
+                                    ? 60
+                                    : 180, // Increased height for more space in empty state
+                                child: data.isEmpty
+                                    ? Center(
+                                        child: Column(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.center,
+                                          children: [
+                                            const Icon(Icons.pets,
+                                                size: 40, color: primaryColor),
+                                            const SizedBox(
+                                                height: secondarySizedBox),
+                                            const Text("No pets yet! 🐾",
+                                                style: TextStyle(
+                                                    fontSize: regularText,
+                                                    color: darkGreyColor)),
+                                            const SizedBox(
+                                                height: primarySizedBox),
+                                            const Text(
+                                                "Add your first pet to get started!",
+                                                style: TextStyle(
+                                                    fontSize: smallText,
+                                                    color: darkGreyColor)),
+                                            const SizedBox(
+                                                height: tertiarySizedBox),
+                                            customPaddedTextButton(
+                                              text: 'Add Pet',
+                                              onPressed: () {},
+                                            ),
+                                            const SizedBox(
+                                                height: tertiarySizedBox),
+                                          ],
+                                        ),
+                                      )
+                                    : ListView.builder(
+                                        physics: const BouncingScrollPhysics(),
+                                        scrollDirection: Axis.horizontal,
+                                        itemCount: data.length +
+                                            1, // Add 1 for the Add button
+                                        itemBuilder: (context, index) {
+                                          final petProfileImage =
+                                              index < data.length
+                                                  ? data[index]['pet_image']
+                                                  : '';
+                                          return index == data.length
+                                              ? _buildAddPetButton(context)
+                                              : _buildPetProfile(
+                                                  petProfileImage,
+                                                  data[index]
+                                                      ['pet_profile_id']);
+                                        },
+                                      ),
+                              ),
+                            ),
+                          ),
                         ],
                       ),
-                      const SizedBox(height: primarySizedBox),
-                      Card(
-                        color: Colors.transparent,
-                        shadowColor: Colors.transparent,
-                        shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(10),
-                            side: const BorderSide(
-                                width: .15, color: Colors.black)),
-                        child: Column(
-                          children: [
-                            Padding(
-                              padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
-                              child: Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
-                                children: [
-                                  customTitleText(context, "Pets"),
-                                  const Icon(Icons.edit,
-                                      size: 20, color: primaryColor)
-                                ],
-                              ),
-                            ),
-                            Center(
-                              child: Padding(
-                                padding: const EdgeInsets.only(
-                                    left: tertiarySizedBox,
-                                    right: tertiarySizedBox),
-                                child: SizedBox(
-                                    height: 60,
-                                    child: petProfileData.when(
-                                      data: (data) {
-                                        return ListView.builder(
-                                          physics:
-                                              const BouncingScrollPhysics(),
-                                          scrollDirection: Axis.horizontal,
-                                          itemCount: data.length +
-                                              1, // Add 1 for the Add button
-                                          itemBuilder: (context, index) {
-                                            // Logic for pet profiles and "Add" button
-                                            final petProfileImage =
-                                                index < data.length
-                                                    ? data[index]['pet_image']
-                                                    : '';
-                                            return index == data.length
-                                                ? _buildAddPetButton(context)
-                                                : _buildPetProfile(
-                                                    petProfileImage,
-                                                    data[index]
-                                                        ['pet_profile_id']);
-                                          },
-                                        );
-                                      },
-                                      error: (error, _) =>
-                                          SelectableText('Error: $error'),
-                                      loading: () => const SizedBox(
-                                        height: 60,
-                                        child: Center(
-                                            child: CircularProgressIndicator()),
-                                      ),
-                                    )),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(height: primarySizedBox),
-                      _buildDetailsCard(context, "Personal details"),
-                      const SizedBox(height: primarySizedBox),
-                      _buildAccountCard(context),
-                    ]),
-                  ),
+                    ),
+                    const SizedBox(height: primarySizedBox),
+                    _buildDetailsCard(context, "Personal details"),
+                    const SizedBox(height: primarySizedBox),
+                    _buildAccountCard(context),
+                  ],
                 ),
               ),
+            ),
+          ),
+        ),
       ),
     );
   }

@@ -7,28 +7,27 @@ import 'package:pamfurred/screens/notifications.dart';
 import 'package:pamfurred/screens/profile.dart';
 import '../components/bottom_navbar.dart';
 
-// Global key to access MainScreenState from anywhere
+// Declare the GlobalKey once, outside of any widget tree
 final GlobalKey<MainScreenState> mainScreenKey = GlobalKey<MainScreenState>();
 
 class MainScreen extends ConsumerStatefulWidget {
-  MainScreen({Key? key}) : super(key: mainScreenKey); // Assign global key
+  MainScreen({Key? key})
+      : super(key: mainScreenKey); // Use global key for MainScreen
 
   @override
   MainScreenState createState() => MainScreenState();
 }
 
 class MainScreenState extends ConsumerState<MainScreen> {
-  // PageController to manage PageView
   final PageController _pageController = PageController();
-  final double bottomNavHeight =
-      60.0; // Define the height of the bottom nav bar
+  final double bottomNavHeight = 60.0;
 
   // Current index is managed by Riverpod provider
   int get currentIndex => ref.watch(bottomNavBarIndexProvider);
 
-  // Method to switch pages and update both the PageView and bottom nav index
+  // Method to switch pages
   void switchToPage(int index) {
-    ref.read(bottomNavBarIndexProvider.notifier).state = index; // Update index
+    ref.read(bottomNavBarIndexProvider.notifier).state = index;
     _pageController.animateToPage(
       index,
       duration: const Duration(milliseconds: 300),
@@ -44,9 +43,8 @@ class MainScreenState extends ConsumerState<MainScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final isVisible = ref.watch(visibilityProvider); // Bottom nav visibility
+    final isVisible = ref.watch(visibilityProvider);
 
-    // List of screens managed by the PageView
     final List<Widget> screens = [
       const HomeScreen(),
       const AppointmentsScreen(),

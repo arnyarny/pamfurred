@@ -19,6 +19,7 @@ import 'package:pamfurred/providers/cart_provider.dart';
 // import 'package:pamfurred/models/services.dart';
 // import 'package:pamfurred/providers/cart_provider.dart';
 import 'package:pamfurred/providers/global_providers.dart';
+import 'package:pamfurred/providers/pet_profile_provider.dart';
 import 'package:pamfurred/providers/serviceprovider_provider.dart';
 import 'package:pamfurred/providers/sp_profile_provider_packages.dart';
 import 'package:pamfurred/providers/sp_profile_provider_services.dart';
@@ -46,14 +47,14 @@ final aboutTabProvider = FutureProvider<List<Widget>>((ref) async {
   String userId = ref.watch(userIdProvider).toString();
 
   // Variable for service provider rating, checking null values
-  final displayRating = sp?['rating'].toString();
+  final displayRating = (sp?['average_rating'] as double).toStringAsFixed(1);
 
   // Ensure 'service_type' is a List<String>
   List<String> serviceTypes =
-      List<String>.from(sp?['service_package_type'] ?? []);
+      List<String>.from(sp?['unique_package_service_types'] ?? []);
 
   // Ensure 'pets_catered' is a List<String>
-  List<String> petsCatered = List<String>.from(sp?['pets_catered'] ?? []);
+  List<String> petsCatered = List<String>.from(sp?['unique_pet_types'] ?? []);
 
   final timeOpen = sp?['time_open'];
 
@@ -61,6 +62,8 @@ final aboutTabProvider = FutureProvider<List<Widget>>((ref) async {
 
   double latitude = sp?['latitude'];
   double longitude = sp?['longitude'];
+
+  String fullAddress = sp?['full_address'];
 
   return [
     // About tab content
@@ -98,8 +101,7 @@ final aboutTabProvider = FutureProvider<List<Widget>>((ref) async {
 
                 // This is temporary. Remove this when it's ensured that we don't take null addresses from service providers
                 sp.isNotEmpty
-                    ? spDetailsHeader(
-                        Icons.location_on_outlined, sp['address'] ?? 'N/A')
+                    ? spDetailsHeader(Icons.location_on_outlined, fullAddress)
                     : spDetailsHeader(CupertinoIcons.location_solid, 'N/A'),
                 const SizedBox(height: secondarySizedBox),
 
@@ -133,6 +135,11 @@ final aboutTabProvider = FutureProvider<List<Widget>>((ref) async {
 final servicesTabProvider = FutureProvider<List<Widget>>((ref) async {
   // Retrieve the service provider ID
   final sp = ref.watch(spIndexProvider);
+  // Access user ID
+  final userId = ref.watch(userIdProvider);
+
+  // Access the list of pet profiles
+  final petProfileData = ref.watch(petProfileProvider(userId!));
 
   // Define filter criteria
   final filterCriteria = ServiceFilterCriteria(
@@ -153,7 +160,7 @@ final servicesTabProvider = FutureProvider<List<Widget>>((ref) async {
             child: allServices.when(
               data: (servicesList) => Column(
                 children: [
-                  const SizedBox(height: tertiarySizedBox),
+                  // const SizedBox(height: tertiarySizedBox),
                   servicesList.isEmpty
                       ? const Center(child: Text("No services available"))
                       : Expanded(
@@ -223,7 +230,9 @@ final servicesTabProvider = FutureProvider<List<Widget>>((ref) async {
                                                 CrossAxisAlignment.start,
                                             children: [
                                               customTitleText(
-                                                  context, capitalizeFirstLetter(service.serviceName)),
+                                                  context,
+                                                  capitalizeFirstLetter(
+                                                      service.serviceName)),
                                               Row(
                                                 children: [
                                                   regularTextWidget(
@@ -331,7 +340,7 @@ final packagesTabProvider = FutureProvider<List<Widget>>((ref) async {
             child: allPackages.when(
               data: (packagesList) => Column(
                 children: [
-                  const SizedBox(height: tertiarySizedBox),
+                  // const SizedBox(height: tertiarySizedBox),
                   packagesList.isEmpty
                       ? const Center(child: Text("No services available"))
                       : Expanded(
@@ -401,7 +410,9 @@ final packagesTabProvider = FutureProvider<List<Widget>>((ref) async {
                                                 CrossAxisAlignment.start,
                                             children: [
                                               customTitleText(
-                                                  context, capitalizeFirstLetter(package.packageName)),
+                                                  context,
+                                                  capitalizeFirstLetter(
+                                                      package.packageName)),
                                               Row(
                                                 children: [
                                                   regularTextWidget(
@@ -521,7 +532,7 @@ class ServiceproviderProfileScreenState
 
     return Scaffold(
       backgroundColor: Colors.white,
-      appBar: customAppBarWithTitle(context, sp['name']),
+      appBar: customAppBarWithTitle(context, sp['service_provider_name']),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
       floatingActionButton: GestureDetector(
         onTap: () {
@@ -581,11 +592,12 @@ class ServiceproviderProfileScreenState
           child: Column(
             children: [
               Image.network(
-                sp['image'] ?? defaultImage,
+                sp['service_provider_image'] ?? defaultImage,
                 width: double.infinity,
                 height: 200,
-                fit:
-                    sp['image'] == defaultImage ? BoxFit.contain : BoxFit.cover,
+                fit: sp['service_provider_image'] == defaultImage
+                    ? BoxFit.contain
+                    : BoxFit.cover,
                 loadingBuilder: (BuildContext context, Widget child,
                     ImageChunkEvent? loadingProgress) {
                   return loadingProgress == null
@@ -617,7 +629,7 @@ class ServiceproviderProfileScreenState
                 child: Column(
                   children: [
                     const SizedBox(height: tertiarySizedBox),
-                    customTitleText(context, sp['name']),
+                    customTitleText(context, sp['service_provider_name']),
                     const SizedBox(height: secondarySizedBox),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.start,

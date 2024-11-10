@@ -40,7 +40,7 @@ final fetchPetByIdProvider =
   print('User ID: $userId');
 
   // Fetch pet profiles for the user
-  final petProfiles = await ref.read(petProfileProvider(userId).future);
+  final petProfiles = await ref.read(petProfileProvider(userId!).future);
 
   // Find the pet with the given petId in the fetched profiles
   final pet = petProfiles.firstWhere(

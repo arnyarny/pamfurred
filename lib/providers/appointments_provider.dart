@@ -9,9 +9,6 @@ Future<Map<String, dynamic>> fetchAppointmentDetails(String petOwnerId) async {
   });
 
   final dataList = List<Map<String, dynamic>>.from(response);
-  if (dataList.isEmpty) {
-    throw Exception('No appointment details found.');
-  }
 
   return {'appointments': dataList};
 }

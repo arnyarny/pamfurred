@@ -4,11 +4,14 @@ import 'package:pamfurred/components/globals.dart';
 import 'package:pamfurred/models/cart_item.dart';
 import 'package:pamfurred/models/services.dart';
 import 'package:pamfurred/models/packages.dart';
+import 'package:pamfurred/providers/user_id.dart';
 
+// CartNotifier now requires the userId as a parameter
 class CartNotifier extends StateNotifier<Set<CartItem>> {
-  CartNotifier(this.context) : super({});
+  CartNotifier(this.context, this.userId) : super({});
 
   final BuildContext context;
+  final String? userId; // Store the userId for further use
 
   // Helper to get a unique set of provider IDs in the cart
   Set<String> get uniqueProviderIds {
@@ -18,21 +21,16 @@ class CartNotifier extends StateNotifier<Set<CartItem>> {
   // Check for conflicts based on service attributes
   bool _isConflict(Service service) {
     for (final item in state) {
-      print(
-          'Checking conflict for service: ${service.id} against item: ${item.id}');
       if (item.serviceProviderId != service.serviceProviderId) {
-        print('Conflict found: Different service providers');
-        return true;
+        return true; // Conflict found: Different service providers
       }
       if (item.size != service.size) {
-        print('Conflict found: Different sizes');
-        return true;
+        return true; // Conflict found: Different sizes
       }
       bool petTypeConflict =
           item.petType.toSet().intersection(service.petType.toSet()).isEmpty;
       if (petTypeConflict) {
-        print('Conflict found: No matching pet types');
-        return true;
+        return true; // Conflict found: No matching pet types
       }
     }
     return false; // No conflict found
@@ -40,25 +38,16 @@ class CartNotifier extends StateNotifier<Set<CartItem>> {
 
   bool _isPackageConflict(Package package) {
     for (final item in state) {
-      // Check if the provider ID matches
       if (item.serviceProviderId != package.serviceProviderId) {
-        return true; // Conflict if provider ID does not match
+        return true; // Conflict found: Different service providers
       }
-
-      // Check if sizes match
       if (item.size != package.size) {
-        return true; // Conflict if sizes do not match
+        return true; // Conflict found: Different sizes
       }
-
-      // Allow selection if there is at least one matching pet type
       bool petTypeConflict =
           item.petType.toSet().intersection(package.petType.toSet()).isEmpty;
       if (petTypeConflict) {
-        // If there's no matching pet type and we have already selected something else, declare conflict
-        // But if we have selected nothing yet, we should allow adding the package
-        if (state.isNotEmpty) {
-          return true; // Conflict if no matching pet types
-        }
+        return true; // Conflict found: No matching pet types
       }
     }
     return false; // No conflict found
@@ -76,7 +65,6 @@ class CartNotifier extends StateNotifier<Set<CartItem>> {
 
   void addPackage(Package package) {
     if (_isPackageConflict(package)) {
-      print('Package conflict detected, showing dialog');
       _showProviderConflictDialog();
       return;
     }
@@ -96,13 +84,12 @@ class CartNotifier extends StateNotifier<Set<CartItem>> {
           ),
           title: const Row(
             children: [
-              Icon(Icons.warning_amber_rounded, color: Colors.red, size: 30),
-              SizedBox(width: 10),
-              Text('Error',
+              Text('Oops!',
                   style: TextStyle(
                       fontWeight: boldWeight,
                       overflow: TextOverflow.ellipsis,
-                      fontSize: titleFont)),
+                      fontSize: titleFont,
+                      color: primaryColor)),
             ],
           ),
           content: const Text(
@@ -141,11 +128,12 @@ class CartNotifier extends StateNotifier<Set<CartItem>> {
   }
 }
 
-// Create a provider for CartNotifier
+// Create a provider for CartNotifier that also listens for the userIdProvider
 final cartNotifierProvider =
     StateNotifierProvider<CartNotifier, Set<CartItem>>((ref) {
   final context = ref.read(appContextProvider);
-  return CartNotifier(context);
+  final userId = ref.watch(userIdProvider); // Watch the current user ID
+  return CartNotifier(context, userId);
 });
 
 // Provider to calculate the total price of all items in the cart

@@ -1,20 +1,21 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:email_validator/email_validator.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pamfurred/components/screen_transitions.dart';
 import 'package:pamfurred/screens/main_screen.dart';
 import 'package:pamfurred/tests/register.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../components/globals.dart';
 
-class LoginScreen extends StatefulWidget {
+class LoginScreen extends ConsumerStatefulWidget {
   const LoginScreen({super.key});
 
   @override
   LoginScreenState createState() => LoginScreenState();
 }
 
-class LoginScreenState extends State<LoginScreen> {
+class LoginScreenState extends ConsumerState<LoginScreen> {
   final formKey = GlobalKey<FormState>();
   final emailController = TextEditingController();
   final passwordController = TextEditingController();
@@ -54,6 +55,14 @@ class LoginScreenState extends State<LoginScreen> {
     if (session != null) {
       // User is already logged in
       Navigator.push(context, slideUpRoute(MainScreen()));
+    } else {
+      // If there's no session, stay on the login screen and display a message or widget
+      setState(() {
+        // Display a message or trigger a state update to notify the user
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('No session found, please log in')),
+        );
+      });
     }
   }
 
@@ -74,6 +83,8 @@ class LoginScreenState extends State<LoginScreen> {
 
         if (isEmailVerified) {
           // Navigate to MainScreen if authentication is successful
+          mainScreenKey.currentState
+              ?.switchToPage(0); // Make sure the user goes to the home screen
           Navigator.pushReplacement(
             context,
             crossFadeRoute(MainScreen()),

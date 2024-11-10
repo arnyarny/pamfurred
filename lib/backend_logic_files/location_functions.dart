@@ -36,7 +36,7 @@ Future<Map<String, dynamic>?> retrieveLocation(String userId) async {
 // Provider to fetch address details based on location coordinates
 final addressProvider = FutureProvider<Map<String, String>>((ref) async {
   final userId = ref.read(userIdProvider);
-  final location = await retrieveLocation(userId);
+  final location = await retrieveLocation(userId!);
   if (location != null) {
     return await fetchAddress(location['latitude'], location['longitude']);
   }

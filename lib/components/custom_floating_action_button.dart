@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:pamfurred/components/globals.dart';
 
 Widget customFloatingActionButton(BuildContext context,
-    {required String buttonText, required VoidCallback onPressed}) {
+    {required String buttonText, required VoidCallback onPressed, required ValueKey<bool> key}) {
   const double elevatedButtonHeight = 50;
   return Container(
     decoration: BoxDecoration(

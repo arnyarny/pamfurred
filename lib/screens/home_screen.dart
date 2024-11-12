@@ -52,9 +52,6 @@ class HomeScreenState extends ConsumerState<HomeScreen> {
     locationService.determinePosition(context).then((position) {
       final userId = ref.watch(userIdProvider);
       storeLocation(position.latitude, position.longitude, userId!);
-
-      // Successfully got the position.
-      print("Current position: ${position.latitude}, ${position.longitude}");
     }).catchError((error) {
       // Handle errors appropriately
       print(error);
@@ -129,6 +126,7 @@ class HomeScreenState extends ConsumerState<HomeScreen> {
           },
           child: PullToRefresh(
             providersToRefresh: [
+              appointmentDetailsProvider,
               selectedCategoryIndexProvider,
               serviceProviderFutureProvider('pet grooming'),
               serviceProviderFutureProvider('pet boarding'),
@@ -515,9 +513,6 @@ class ServiceProvidersWidget extends ConsumerWidget {
                 final sentimentLabel = sp['sentiment_label'];
 
                 String userId = ref.watch(userIdProvider).toString();
-
-                print(imageUrl);
-
                 return Padding(
                   padding:
                       const EdgeInsets.symmetric(horizontal: primarySizedBox),
@@ -576,8 +571,8 @@ class ServiceProvidersWidget extends ConsumerWidget {
                                       width: double.infinity,
                                       height: 150,
                                       fit: sp['image'] == null
-                                          ? BoxFit.contain
-                                          : BoxFit.cover,
+                                          ? BoxFit.cover
+                                          : BoxFit.contain,
                                       loadingBuilder: (BuildContext context,
                                           Widget child,
                                           ImageChunkEvent? loadingProgress) {

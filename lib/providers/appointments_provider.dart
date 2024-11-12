@@ -1,3 +1,5 @@
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:pamfurred/providers/user_id.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 Future<Map<String, dynamic>> fetchAppointmentDetails(String petOwnerId) async {
@@ -12,3 +14,9 @@ Future<Map<String, dynamic>> fetchAppointmentDetails(String petOwnerId) async {
 
   return {'appointments': dataList};
 }
+
+// Create a provider for fetching appointment details
+final appointmentDetailsProvider =
+    FutureProvider<Map<String, dynamic>>((ref) async {
+  return await fetchAppointmentDetails(ref.watch(userIdProvider).toString());
+});

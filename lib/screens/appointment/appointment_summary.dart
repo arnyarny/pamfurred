@@ -38,6 +38,9 @@ class AppointmentSummaryScreenState
   }) async {
     final supabase = Supabase.instance.client;
 
+    // Retrieve the service provider ID
+    final sp = ref.watch(spIndexProvider);
+
     final petOwnerIdFromUserTable = await supabase
         .from('pet_owner')
         .select('pet_owner_id')
@@ -48,6 +51,7 @@ class AppointmentSummaryScreenState
         .from('appointment')
         .insert({
           'pet_owner_id': petOwnerIdFromUserTable['pet_owner_id'],
+          'sp_id': sp?['sp_id'],
           // 'appointment_address': address,
           // 'appointment_date': date,
           // 'appointment_time': time,
@@ -94,6 +98,8 @@ class AppointmentSummaryScreenState
         await supabase.from('appointment_item').insert(appointmentItems);
 
     print('Appointment items inserted successfully: $response');
+
+    return response;
   }
 
   @override

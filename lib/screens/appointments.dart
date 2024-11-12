@@ -4,7 +4,6 @@ import 'package:intl/intl.dart';
 import 'package:pamfurred/components/time_and_date_formatter.dart';
 import 'package:pamfurred/components/title_text.dart';
 import 'package:pamfurred/providers/appointments_provider.dart';
-import 'package:pamfurred/providers/user_id.dart';
 import '../components/globals.dart';
 
 class AppointmentsScreen extends ConsumerStatefulWidget {
@@ -23,12 +22,6 @@ class AppointmentsScreenState extends ConsumerState<AppointmentsScreen>
     'Done': Colors.green,
     'Cancelled': const Color.fromRGBO(160, 62, 6, 1),
   };
-
-  // Create a provider for fetching appointment details
-  final appointmentDetailsProvider =
-      FutureProvider<Map<String, dynamic>>((ref) async {
-    return await fetchAppointmentDetails(ref.watch(userIdProvider).toString());
-  });
 
   @override
   void initState() {

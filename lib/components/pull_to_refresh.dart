@@ -15,6 +15,8 @@ class CustomHeader extends StatelessWidget {
       idleText: '',
       releaseText: '',
       height: 100.0, // Adjust height for pull distance
+      completeDuration: Duration(seconds: 1),
+      releaseIcon: Icon(Icons.refresh),
     );
   }
 }
@@ -58,9 +60,11 @@ class PullToRefreshState extends ConsumerState<PullToRefresh> {
       onRefresh: () async {
         try {
           for (var provider in widget.providersToRefresh) {
-            final result = await ref.refresh(provider as Refreshable);
+            // ignore: unused_result
+            await ref.refresh(provider as Refreshable);
+            // final result = await ref.refresh(provider as Refreshable);
             // For debugging only
-            print('Provider refreshed: $provider with result: $result');
+            // print('Provider refreshed: $provider with result: $result');
           }
           refreshController.refreshCompleted();
         } catch (e) {

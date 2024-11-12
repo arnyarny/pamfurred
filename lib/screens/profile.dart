@@ -6,6 +6,7 @@ import 'package:pamfurred/components/header.dart';
 import 'package:pamfurred/components/screen_transitions.dart';
 // import 'package:pamfurred/components/pull_to_refresh.dart';
 import 'package:pamfurred/components/title_text.dart';
+import 'package:pamfurred/providers/cart_provider.dart';
 import 'package:pamfurred/providers/global_providers.dart';
 import 'package:pamfurred/providers/pet_profile_provider.dart';
 import 'package:pamfurred/providers/user_id.dart';
@@ -37,6 +38,9 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
 
   void _logout() async {
     setState(() {
+      // Clear the cart when logout is pressed
+      ref.read(cartNotifierProvider.notifier).clearCart();
+
       isLoading = true;
       ref.read(visibilityProvider.notifier).setVisible(false);
     });

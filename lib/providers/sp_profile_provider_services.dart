@@ -34,29 +34,36 @@ final allServicesProvider =
     );
   }).toList();
 
-  // Apply client-side filtering
-  if (filterCriteria.petType != null) {
-    serviceList = serviceList
-        .where((service) =>
-            service.servicePetType.any(filterCriteria.petType!.contains))
-        .toList();
+  // Apply client-side filtering based on string matches
+
+  // Filter by petType if it is provided
+  if (filterCriteria.petType != null && filterCriteria.petType!.isNotEmpty) {
+    serviceList = serviceList.where((service) {
+      return service.servicePetType.contains(filterCriteria.petType);
+    }).toList();
   }
-  if (filterCriteria.serviceType != null) {
-    serviceList = serviceList
-        .where((service) =>
-            service.serviceType.any(filterCriteria.serviceType!.contains))
-        .toList();
+
+  // Filter by serviceType if it is provided
+  if (filterCriteria.serviceType != null &&
+      filterCriteria.serviceType!.isNotEmpty) {
+    serviceList = serviceList.where((service) {
+      return service.serviceType.contains(filterCriteria.serviceType);
+    }).toList();
   }
-  if (filterCriteria.serviceCategory != null) {
-    serviceList = serviceList
-        .where((service) =>
-            service.category.any(filterCriteria.serviceCategory!.contains))
-        .toList();
+
+  // Filter by serviceCategory if it is provided
+  if (filterCriteria.serviceCategory != null &&
+      filterCriteria.serviceCategory!.isNotEmpty) {
+    serviceList = serviceList.where((service) {
+      return service.category.contains(filterCriteria.serviceCategory);
+    }).toList();
   }
-  if (filterCriteria.size != null) {
-    serviceList = serviceList
-        .where((service) => service.serviceSize == filterCriteria.size)
-        .toList();
+
+  // Filter by size if it is provided
+  if (filterCriteria.size != null && filterCriteria.size!.isNotEmpty) {
+    serviceList = serviceList.where((service) {
+      return service.serviceSize == filterCriteria.size;
+    }).toList();
   }
 
   return serviceList;
@@ -83,27 +90,4 @@ final specificServiceProvider = FutureProvider.autoDispose
   );
 
   return specificService as Map<String, dynamic>; // Return the specific service
-});
-
-class ServiceTypeNotifier extends StateNotifier<String> {
-  ServiceTypeNotifier() : super('All');
-
-  void updateServiceType(String value) {
-    state = value;
-  }
-}
-
-// Provider to manage the list of service options
-final serviceOptionsProvider = Provider<List<String>>((ref) {
-  return [
-    'Pet grooming services',
-    'Pet boarding services',
-    'Veterinary services',
-    'All'
-  ];
-});
-
-// Provider to manage the selected service category
-final selectedServiceCategoryProvider = StateProvider<String>((ref) {
-  return 'All'; // Adjust default value if needed
 });

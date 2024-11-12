@@ -1,9 +1,9 @@
 class ServiceFilterCriteria {
   final String spId;
   final String? serviceId;
-  final List<String>? petType;
-  final List<String>? serviceType;
-  final List<String>? serviceCategory;
+  final String? petType;
+  final String? serviceType;
+  final String? serviceCategory;
   final String? size;
 
   ServiceFilterCriteria({

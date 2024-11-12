@@ -6,7 +6,8 @@ import 'package:supabase_flutter/supabase_flutter.dart' as supabase_flutter;
 final supabase = supabase_flutter.Supabase.instance.client;
 
 final allPackagesProvider =
-    FutureProvider.family<List<Package>, PackageFilterCriteria>((ref, filterCriteria) async {
+    FutureProvider.family<List<Package>, PackageFilterCriteria>(
+        (ref, filterCriteria) async {
   final response = await supabase.rpc('get_service_provider_packages',
       params: {'spid': filterCriteria.spId});
 
@@ -33,58 +34,37 @@ final allPackagesProvider =
     );
   }).toList();
 
-  // Apply client-side filtering
-  if (filterCriteria.petType != null) {
-    packageList = packageList
-        .where((package) =>
-            package.packagePetType.any(filterCriteria.petType!.contains))
-        .toList();
+  // Apply client-side filtering based on string matches
+
+  // Filter by petType if it is provided
+  if (filterCriteria.petType != null && filterCriteria.petType!.isNotEmpty) {
+    packageList = packageList.where((package) {
+      return package.packagePetType.contains(filterCriteria.petType);
+    }).toList();
   }
-  if (filterCriteria.packageType != null) {
-    packageList = packageList
-        .where((package) =>
-            package.packageType.any(filterCriteria.packageType!.contains))
-        .toList();
+
+  // Filter by packageType if it is provided
+  if (filterCriteria.packageType != null &&
+      filterCriteria.packageType!.isNotEmpty) {
+    packageList = packageList.where((package) {
+      return package.packageType.contains(filterCriteria.packageType);
+    }).toList();
   }
-  if (filterCriteria.packageCategory != null) {
-    packageList = packageList
-        .where((package) =>
-            package.category.any(filterCriteria.packageCategory!.contains))
-        .toList();
+
+  // Filter by packageCategory if it is provided
+  if (filterCriteria.packageCategory != null &&
+      filterCriteria.packageCategory!.isNotEmpty) {
+    packageList = packageList.where((package) {
+      return package.category.contains(filterCriteria.packageCategory);
+    }).toList();
   }
-  if (filterCriteria.size != null) {
-    packageList = packageList
-        .where((package) => package.packageSize == filterCriteria.size)
-        .toList();
+
+  // Filter by size if it is provided
+  if (filterCriteria.size != null && filterCriteria.size!.isNotEmpty) {
+    packageList = packageList.where((package) {
+      return package.packageSize == filterCriteria.size;
+    }).toList();
   }
 
   return packageList;
-});
-
-// Package type provider
-final packageTypeProvider = StateNotifierProvider<PackageTypeNotifier, String>(
-  (ref) => PackageTypeNotifier(),
-);
-
-class PackageTypeNotifier extends StateNotifier<String> {
-  PackageTypeNotifier() : super('Home service');
-
-  void updatePackageType(String value) {
-    state = value;
-  }
-}
-
-// Provider to manage the list of service options
-final packageOptionsProvider = Provider<List<String>>((ref) {
-  return [
-    'Grooming Package',
-    'Boarding Package',
-    'Health Check Package',
-    'All'
-  ];
-});
-
-// Provider to manage the selected service category
-final selectedPackageCategoryProvider = StateProvider<String>((ref) {
-  return 'All'; // Adjust default value if needed
 });

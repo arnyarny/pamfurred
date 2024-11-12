@@ -45,3 +45,12 @@ final spIndexProvider = Provider<Map<String, dynamic>?>((ref) {
     orElse: () => null,
   );
 });
+
+// Provider to manage the selected package or service category for booking appointment
+final selectedAppointmentCategoryProvider = StateProvider<String>((ref) => '');
+
+// Provider to manage the selected package or service type for booking appointment
+final selectedAppointmentPackageServiceTypeProvider = StateProvider<String>((ref) => '');
+
+// Provider to manage the selected pet type for booking appointment
+final selectedAppointmentPetTypeProvider = StateProvider<String>((ref) => '');

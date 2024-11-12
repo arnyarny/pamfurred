@@ -19,10 +19,9 @@ class PetProfileScreenState extends ConsumerState<PetProfileScreen> {
 
   @override
   Widget build(BuildContext context) {
+    
     final petProfileId = ref.watch(selectedPetIdProvider);
-    print('petProfileId: $petProfileId');
     final asyncPet = ref.watch(fetchPetByIdProvider(petProfileId));
-    print('asyncPet: $asyncPet');
 
     return Scaffold(
       backgroundColor: Colors.white,

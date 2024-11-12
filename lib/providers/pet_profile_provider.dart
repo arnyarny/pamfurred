@@ -18,19 +18,6 @@ final petProfileProvider =
   return dataList;
 });
 
-// Fetch service provider details
-final serviceProviderFutureProviderWithoutCategory =
-    FutureProvider<List<Map<String, dynamic>>>((ref) async {
-  final supabase = supabase_flutter.Supabase.instance.client;
-
-  final response = await supabase.from('service_provider').select('*');
-
-  // Ensure response is cast to List<Map<String, dynamic>>
-  final dataList = List<Map<String, dynamic>>.from(response);
-
-  return dataList;
-});
-
 // FutureProvider.family to fetch a specific pet by id
 final fetchPetByIdProvider =
     FutureProvider.family<Map<String, dynamic>?, String>((ref, petId) async {

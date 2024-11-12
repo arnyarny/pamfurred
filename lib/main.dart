@@ -1,9 +1,11 @@
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:pamfurred/components/globals.dart';
-import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:pamfurred/firebase_options.dart';
 import 'package:pamfurred/screens/auth_redirect.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -26,6 +28,15 @@ void main() async {
   } catch (e) {
     print("Supabase initialization failed: $e");
     return; // You might want to handle the failure gracefully
+  }
+
+  try {
+    await Firebase.initializeApp(
+        options: DefaultFirebaseOptions.currentPlatform);
+  } catch (e) {
+    print("Firebase initialization failed: $e");
+    // Optionally, you can show an error message or handle it gracefully
+    return; // Exit early if Firebase initialization fails
   }
 
   SystemChrome.setPreferredOrientations([

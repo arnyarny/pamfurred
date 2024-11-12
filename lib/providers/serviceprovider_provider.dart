@@ -50,7 +50,15 @@ final spIndexProvider = Provider<Map<String, dynamic>?>((ref) {
 final selectedAppointmentCategoryProvider = StateProvider<String>((ref) => '');
 
 // Provider to manage the selected package or service type for booking appointment
-final selectedAppointmentPackageServiceTypeProvider = StateProvider<String>((ref) => '');
+final selectedAppointmentPackageServiceTypeProvider =
+    StateProvider<String>((ref) => '');
 
 // Provider to manage the selected pet type for booking appointment
 final selectedAppointmentPetTypeProvider = StateProvider<String>((ref) => '');
+
+// Provider to manage the selected pet type index for booking appointment
+final selectedAppointmentPetTypeIndexProvider =
+    StateProvider<String>((ref) => '');
+
+// To make sure the selected pet remains as the default when revisiting a screen
+final selectedPetProfileIdProvider = StateProvider<String?>((ref) => null);

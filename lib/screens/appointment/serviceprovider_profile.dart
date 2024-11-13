@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pamfurred/components/capitalize_first_letter.dart';
 import 'package:pamfurred/components/cart_icon.dart';
-import 'package:pamfurred/components/custom_appbar.dart';
 import 'package:pamfurred/components/custom_floating_action_button.dart';
 import 'package:pamfurred/components/globals.dart';
 import 'package:pamfurred/components/regular_text.dart';
@@ -28,6 +27,15 @@ import 'package:pamfurred/screens/appointment/cart_screen.dart';
 import 'package:pamfurred/screens/appointment/choose_appointment_pref.dart';
 // import 'package:pamfurred/providers/sp_profile_provider_services.dart';
 import 'package:shimmer/shimmer.dart';
+
+// Function to reset providers to null/blank when willBookProvider is false
+void resetProviders(WidgetRef ref) {
+  ref.read(selectedAppointmentCategoryProvider.notifier).state = '';
+  ref.read(selectedAppointmentPackageServiceTypeProvider.notifier).state = '';
+  ref.read(selectedAppointmentPetTypeProvider.notifier).state = '';
+  ref.read(selectedAppointmentPetTypeIndexProvider.notifier).state = '';
+  ref.read(selectedPetProfileIdProvider.notifier).state = null;
+}
 
 class ServiceproviderProfileScreen extends ConsumerStatefulWidget {
   const ServiceproviderProfileScreen({super.key});
@@ -141,6 +149,7 @@ final servicesTabProvider = FutureProvider<List<Widget>>((ref) async {
     spId: sp?['sp_id'].toString() ?? '',
     petType: ref.watch(selectedAppointmentPetTypeProvider),
     serviceType: ref.watch(selectedAppointmentPackageServiceTypeProvider),
+    serviceCategory: ref.watch(selectedAppointmentCategoryProvider),
     size: null,
   );
 
@@ -173,6 +182,7 @@ final servicesTabProvider = FutureProvider<List<Widget>>((ref) async {
                                       (cartService) =>
                                           cartService.id == service.serviceId);
 
+                                  bool willBook = ref.watch(willBookProvider);
                                   return Card(
                                     color: Colors.transparent,
                                     elevation: 0,
@@ -241,47 +251,51 @@ final servicesTabProvider = FutureProvider<List<Widget>>((ref) async {
                                             ],
                                           ),
                                         ),
-                                        SizedBox(
-                                          width: 37,
-                                          child: Center(
-                                            child: CircleAvatar(
-                                              backgroundColor: isInCart
-                                                  ? Colors.red
-                                                  : secondaryColor,
-                                              child: GestureDetector(
-                                                onTap: () {
-                                                  ref
-                                                      .read(
-                                                          buttonPressedProvider
-                                                              .notifier)
-                                                      .setPressed(true);
-                                                },
-                                                child: IconButton(
-                                                  icon: Icon(
-                                                    isInCart
-                                                        ? Icons.remove
-                                                        : Icons.add,
-                                                    color: Colors.white,
-                                                    size: 23,
+                                        willBook
+                                            ? SizedBox(
+                                                width: 37,
+                                                child: Center(
+                                                  child: CircleAvatar(
+                                                    backgroundColor: isInCart
+                                                        ? Colors.red
+                                                        : secondaryColor,
+                                                    child: GestureDetector(
+                                                      onTap: () {
+                                                        ref
+                                                            .read(
+                                                                buttonPressedProvider
+                                                                    .notifier)
+                                                            .setPressed(true);
+                                                      },
+                                                      child: IconButton(
+                                                        icon: Icon(
+                                                          isInCart
+                                                              ? Icons.remove
+                                                              : Icons.add,
+                                                          color: Colors.white,
+                                                          size: 23,
+                                                        ),
+                                                        onPressed: () {
+                                                          final cartNotifier =
+                                                              ref.read(
+                                                                  cartNotifierProvider
+                                                                      .notifier);
+                                                          // Add or remove service based on `isInCart`
+                                                          isInCart
+                                                              ? cartNotifier
+                                                                  .removeService(
+                                                                      service)
+                                                              : cartNotifier
+                                                                  .addService(
+                                                                      service);
+                                                        },
+                                                      ),
+                                                    ),
                                                   ),
-                                                  onPressed: () {
-                                                    final cartNotifier =
-                                                        ref.read(
-                                                            cartNotifierProvider
-                                                                .notifier);
-                                                    isInCart
-                                                        ? cartNotifier
-                                                            .removeService(
-                                                                service)
-                                                        : cartNotifier
-                                                            .addService(
-                                                                service);
-                                                  },
                                                 ),
-                                              ),
-                                            ),
-                                          ),
-                                        ),
+                                              )
+                                            : const SizedBox
+                                                .shrink(), // Makes sure the widget is hidden when `willBook` is false
                                       ],
                                     ),
                                   );
@@ -321,6 +335,7 @@ final packagesTabProvider = FutureProvider<List<Widget>>((ref) async {
     spId: sp['sp_id'].toString(),
     petType: ref.watch(selectedAppointmentPetTypeProvider),
     packageType: ref.watch(selectedAppointmentPackageServiceTypeProvider),
+    packageCategory: ref.watch(selectedAppointmentCategoryProvider),
     size: null,
   );
 
@@ -353,6 +368,7 @@ final packagesTabProvider = FutureProvider<List<Widget>>((ref) async {
                                       (cartService) =>
                                           cartService.id == package.packageId);
 
+                                  bool willBook = ref.watch(willBookProvider);
                                   return Card(
                                     color: Colors.transparent,
                                     elevation: 0,
@@ -421,47 +437,51 @@ final packagesTabProvider = FutureProvider<List<Widget>>((ref) async {
                                             ],
                                           ),
                                         ),
-                                        SizedBox(
-                                          width: 37,
-                                          child: Center(
-                                            child: CircleAvatar(
-                                              backgroundColor: isInCart
-                                                  ? Colors.red
-                                                  : secondaryColor,
-                                              child: GestureDetector(
-                                                onTap: () {
-                                                  ref
-                                                      .read(
-                                                          buttonPressedProvider
-                                                              .notifier)
-                                                      .setPressed(true);
-                                                },
-                                                child: IconButton(
-                                                  icon: Icon(
-                                                    isInCart
-                                                        ? Icons.remove
-                                                        : Icons.add,
-                                                    color: Colors.white,
-                                                    size: 23,
+                                        willBook
+                                            ? SizedBox(
+                                                width: 37,
+                                                child: Center(
+                                                  child: CircleAvatar(
+                                                    backgroundColor: isInCart
+                                                        ? Colors.red
+                                                        : secondaryColor,
+                                                    child: GestureDetector(
+                                                      onTap: () {
+                                                        ref
+                                                            .read(
+                                                                buttonPressedProvider
+                                                                    .notifier)
+                                                            .setPressed(true);
+                                                      },
+                                                      child: IconButton(
+                                                        icon: Icon(
+                                                          isInCart
+                                                              ? Icons.remove
+                                                              : Icons.add,
+                                                          color: Colors.white,
+                                                          size: 23,
+                                                        ),
+                                                        onPressed: () {
+                                                          final cartNotifier =
+                                                              ref.read(
+                                                                  cartNotifierProvider
+                                                                      .notifier);
+                                                          // Add or remove service based on `isInCart`
+                                                          isInCart
+                                                              ? cartNotifier
+                                                                  .removePackage(
+                                                                      package)
+                                                              : cartNotifier
+                                                                  .addPackage(
+                                                                      package);
+                                                        },
+                                                      ),
+                                                    ),
                                                   ),
-                                                  onPressed: () {
-                                                    final cartNotifier =
-                                                        ref.read(
-                                                            cartNotifierProvider
-                                                                .notifier);
-                                                    isInCart
-                                                        ? cartNotifier
-                                                            .removePackage(
-                                                                package)
-                                                        : cartNotifier
-                                                            .addPackage(
-                                                                package);
-                                                  },
                                                 ),
-                                              ),
-                                            ),
-                                          ),
-                                        ),
+                                              )
+                                            : const SizedBox
+                                                .shrink(), // Makes sure the widget is hidden when `willBook` is false
                                       ],
                                     ),
                                   );
@@ -490,14 +510,14 @@ final packagesTabProvider = FutureProvider<List<Widget>>((ref) async {
 
 class ServiceproviderProfileScreenState
     extends ConsumerState<ServiceproviderProfileScreen> {
-  bool willBook = false;
-
   @override
   Widget build(BuildContext context) {
     final selectedIndex = ref.watch(selectedTabProvider).toInt();
     const defaultImage = 'https://tinyurl.com/3tnt6yyy';
 
     final sp = ref.watch(spIndexProvider);
+
+    bool willBook = ref.watch(willBookProvider);
 
     // Return a loading indicator with a white background if sp is null
     if (sp == null) {
@@ -529,7 +549,68 @@ class ServiceproviderProfileScreenState
 
     return Scaffold(
       backgroundColor: Colors.white,
-      appBar: customAppBarWithTitle(context, sp['service_provider_name']),
+      appBar: AppBar(
+        backgroundColor: Colors.white,
+        toolbarHeight: 70,
+        title: Padding(
+          padding: const EdgeInsets.only(top: 10.0),
+          child: Text(sp['service_provider_name']),
+        ),
+        leading: Padding(
+          padding: const EdgeInsets.fromLTRB(20, 20, 0, 20),
+          child: IconButton(
+            icon: const Icon(Icons.arrow_back_ios, color: Colors.black),
+            onPressed: () {
+              // Custom action on back button press
+              Navigator.pop(context);
+            },
+          ),
+        ),
+        actions: <Widget>[
+          AnimatedOpacity(
+            opacity: willBook
+                ? 1.0
+                : 0.0, // Fade in when `willBook` is true, fade out when false
+            duration: const Duration(
+                milliseconds: 300), // Duration for the fade effect
+            child: willBook
+                ? Padding(
+                    padding: const EdgeInsets.only(right: 20),
+                    child: TextButton(
+                        onPressed: () {
+                          setState(() {
+                            ref.read(willBookProvider.notifier).state = false;
+                            // If willBook is false, reset the providers
+                            resetProviders(ref);
+                          });
+                        },
+                        style: ButtonStyle(
+                            shape:
+                                WidgetStateProperty.all<RoundedRectangleBorder>(
+                              RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(
+                                    secondaryBorderRadius),
+                              ),
+                            ),
+                            backgroundColor: WidgetStateProperty.all<Color>(
+                              primaryColor,
+                            )),
+                        child: const Padding(
+                          padding: EdgeInsets.all(.2),
+                          child: Text(
+                            'Cancel',
+                            style: TextStyle(
+                                color: Colors.white,
+                                fontSize: smallText,
+                                fontWeight: FontWeight.normal),
+                          ),
+                        )),
+                  )
+                : const SizedBox
+                    .shrink(), // When `willBook` is false, the widget is hidden
+          ),
+        ],
+      ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
       floatingActionButton: AnimatedSwitcher(
         duration:
@@ -605,10 +686,14 @@ class ServiceproviderProfileScreenState
                 key: ValueKey<bool>(
                     willBook), // Key to differentiate the widgets
                 onPressed: () {
-                  Navigator.push(context,
-                      slideUpRoute(const ChooseAppointmentPreferencesScreen()));
+                  showModalBottomSheet(
+                    context: context,
+                    builder: (context) => const SizedBox(
+                        height: 380,
+                        child: ChooseAppointmentPreferencesScreen()),
+                  );
                   setState(() {
-                    willBook = true;
+                    ref.read(willBookProvider.notifier).state = true;
                   });
                 },
               ),
@@ -692,10 +777,13 @@ class ServiceproviderProfileScreenState
                             ? IconButton(
                                 icon: const Icon(Icons.filter_list),
                                 onPressed: () {
-                                  Navigator.push(
-                                      context,
-                                      rightToLeftRoute(
-                                          const ChooseAppointmentPreferencesScreen()));
+                                  showModalBottomSheet(
+                                    context: context,
+                                    builder: (context) => const SizedBox(
+                                        height: 380,
+                                        child:
+                                            ChooseAppointmentPreferencesScreen()),
+                                  );
                                 },
                               )
                             : const SizedBox.shrink()

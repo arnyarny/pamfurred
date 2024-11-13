@@ -101,9 +101,8 @@ class SuccessfulAppointmentState extends ConsumerState<SuccessfulAppointment> {
                       // Service provider name
                       getAppointmentTitle(context, 'Service provider'),
                       const SizedBox(height: primarySizedBox),
-                      getAppointmentDetail(context, sp!['service_provider_name']),
-
-                      const SizedBox(height: secondarySizedBox),
+                      getAppointmentDetail(
+                          context, sp!['service_provider_name']),
 
                       const SizedBox(height: secondarySizedBox),
 
@@ -139,8 +138,10 @@ class SuccessfulAppointmentState extends ConsumerState<SuccessfulAppointment> {
                       onPressed: () {
                         // Clear the cart when this button is pressed
                         ref.read(cartNotifierProvider.notifier).clearCart();
-                        Navigator.push(
-                            context, crossFadeRoute(MainScreen()));
+
+                        // Clear the true state of will book
+                        ref.read(willBookProvider.notifier).state = false;
+                        Navigator.push(context, crossFadeRoute(MainScreen()));
                       }),
                 )
               ],

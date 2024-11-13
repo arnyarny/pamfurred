@@ -22,6 +22,7 @@ const lighterGreyColor = Color.fromRGBO(244, 244, 244, 1);
 const lightRedColor = Color.fromRGBO(255, 214, 191, 1);
 const tangerine = Color.fromRGBO(209, 76, 1, 1);
 const darkGreyColor = Color.fromARGB(255, 51, 51, 51);
+const disabledButtonTextColor = Color.fromARGB(255, 161, 159, 159);
 
 // Screen width
 double getScreenWidth(BuildContext context) {

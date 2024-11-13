@@ -25,3 +25,23 @@ String formatDate(String date) {
   final DateFormat outputFormat = DateFormat('MMMM d, yyyy');
   return outputFormat.format(parsedDate); // Format to "Month Day, Year"
 }
+
+String secondaryFormatDate(String date) {
+  // Parse the input date string (yyyy-mm-dd) to a DateTime object
+  DateTime parsedDate = DateTime.parse(date);
+
+  // Format it to "Month day, year" (e.g., November 2, 2003)
+  String formattedDate = DateFormat('MMMM d, yyyy').format(parsedDate);
+
+  return formattedDate;
+}
+
+String formatDateToShort(String date) {
+  // Parse the input date string (yyyy-mm-dd) to a DateTime object
+  DateTime parsedDate = DateTime.parse(date);
+
+  // Format it to "MM/dd/yyyy"
+  String formattedDate = DateFormat('MM/dd/yyyy').format(parsedDate);
+
+  return formattedDate;
+}

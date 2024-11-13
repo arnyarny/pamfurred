@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pamfurred/components/capitalize_first_letter.dart';
-import 'package:pamfurred/components/custom_appbar.dart';
 import 'package:pamfurred/components/error_builder.dart';
 import 'package:pamfurred/components/globals.dart';
 import 'package:pamfurred/providers/pet_profile_provider.dart';
@@ -64,8 +63,6 @@ class ChooseAppointmentPreferencesScreenState
 
   @override
   Widget build(BuildContext context) {
-    double screenPaddingValue = screenPadding(context);
-
     final petProfileData =
         ref.watch(petProfileProvider(ref.watch(userIdProvider).toString()));
     final spIndexData = ref.watch(spIndexProvider);
@@ -82,276 +79,325 @@ class ChooseAppointmentPreferencesScreenState
     // Retrieve the current selected pet ID
     String? selectedPetProfileId = ref.watch(selectedPetProfileIdProvider);
 
-    return Scaffold(
-      backgroundColor: Colors.white,
-      appBar: customAppBarWithTitle(context, 'Appointment Filters'),
-      body: SingleChildScrollView(
-        child: SizedBox(
-          width: screenPaddingValue,
-          child: Column(
-            children: [
-              const SizedBox(height: secondarySizedBox),
-              Column(
-                mainAxisAlignment: MainAxisAlignment.start,
-                children: [
-                  const Text(
-                    'Choose a pet',
-                    style: TextStyle(
-                      fontSize: titleFont,
-                      fontWeight: regularWeight,
-                    ),
+    return SingleChildScrollView(
+      child: Container(
+        padding: const EdgeInsets.only(top: tertiarySizedBox),
+        decoration: const BoxDecoration(
+          borderRadius: BorderRadius.only(
+              topLeft: Radius.circular(tertiaryBorderRadius),
+              topRight: Radius.circular(tertiaryBorderRadius)),
+          color: lighterGreyColor,
+        ),
+        child: Column(
+          children: [
+            Center(
+              child: Container(
+                decoration: const BoxDecoration(
+                  borderRadius: BorderRadius.all(
+                    Radius.circular(tertiaryBorderRadius),
                   ),
-                  petProfileData.when(
-                    data: (pets) {
-                      final pet = pets
-                          .where((pet) => petTypeOptions
-                              .contains(pet['pet_type'].toString()))
-                          .toList();
+                  color: greyColor,
+                ),
+                width: 50,
+                height: 5,
+              ),
+            ),
+            const SizedBox(height: secondarySizedBox),
+            Column(
+              mainAxisAlignment: MainAxisAlignment.start,
+              children: [
+                const Padding(
+                  padding: EdgeInsets.only(left: tertiarySizedBox),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Choose a pet',
+                        style: TextStyle(
+                          fontSize: titleFont,
+                          fontWeight: boldWeight,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                petProfileData.when(
+                  data: (pets) {
+                    final pet = pets
+                        .where((pet) =>
+                            petTypeOptions.contains(pet['pet_type'].toString()))
+                        .toList();
 
-                      // Set the first pet as selected by default if none is already selected
-                      if (selectedPetProfileId == null && pet.isNotEmpty) {
-                        Future.microtask(() {
-                          final firstPet = pet.first;
-                          ref
-                              .read(selectedPetProfileIdProvider.notifier)
-                              .state = firstPet['pet_profile_id'];
-                          ref
-                              .read(selectedAppointmentPetTypeIndexProvider
-                                  .notifier)
-                              .state = firstPet['pet_profile_id'];
-                          ref
-                              .read(selectedAppointmentPetTypeProvider.notifier)
-                              .state = firstPet['pet_type'];
-                        });
-                      }
+                    // Set the first pet as selected by default if none is already selected
+                    if (selectedPetProfileId == null && pet.isNotEmpty) {
+                      Future.microtask(() {
+                        final firstPet = pet.first;
+                        ref.read(selectedPetProfileIdProvider.notifier).state =
+                            firstPet['pet_profile_id'];
+                        ref
+                            .read(selectedAppointmentPetTypeIndexProvider
+                                .notifier)
+                            .state = firstPet['pet_profile_id'];
+                        ref
+                            .read(selectedAppointmentPetTypeProvider.notifier)
+                            .state = firstPet['pet_type'];
+                      });
+                    }
 
-                      return SizedBox(
-                        height: pet.isNotEmpty ? 60 : 180,
-                        child: pet.isEmpty
-                            ? const Center(
-                                child: Column(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    SizedBox(height: secondarySizedBox),
-                                    Text(
-                                        "No pets with matching pet types for this service provider found.",
-                                        style: TextStyle(
-                                            fontSize: smallText,
-                                            color: darkGreyColor)),
-                                    SizedBox(height: tertiarySizedBox),
-                                  ],
-                                ),
-                              )
-                            : ListView.builder(
-                                physics: const BouncingScrollPhysics(),
-                                scrollDirection: Axis.horizontal,
-                                itemCount: pet.length,
-                                itemBuilder: (context, index) {
-                                  final petName =
-                                      pet[index]['pet_name'] ?? 'Unknown';
-                                  final petProfileId =
-                                      pet[index]['pet_profile_id'];
+                    return SizedBox(
+                      height: pet.isNotEmpty ? 60 : 180,
+                      child: pet.isEmpty
+                          ? const Center(
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  SizedBox(height: secondarySizedBox),
+                                  Text(
+                                      "No pets with matching pet types for this service provider found.",
+                                      style: TextStyle(
+                                          fontSize: smallText,
+                                          color: darkGreyColor)),
+                                  SizedBox(height: tertiarySizedBox),
+                                ],
+                              ),
+                            )
+                          : ListView.builder(
+                              physics: const BouncingScrollPhysics(),
+                              scrollDirection: Axis.horizontal,
+                              itemCount: pet.length,
+                              itemBuilder: (context, index) {
+                                final petName =
+                                    pet[index]['pet_name'] ?? 'Unknown';
+                                final petProfileId =
+                                    pet[index]['pet_profile_id'];
 
-                                  return GestureDetector(
-                                    onTap: () {
-                                      setState(() {
-                                        // Update the selected pet ID in the provider
-                                        ref
-                                            .read(selectedPetProfileIdProvider
-                                                .notifier)
-                                            .state = petProfileId;
-                                        ref
-                                            .read(
-                                                selectedAppointmentPetTypeIndexProvider
-                                                    .notifier)
-                                            .state = petProfileId;
-                                        ref
-                                            .read(
-                                                selectedAppointmentPetTypeProvider
-                                                    .notifier)
-                                            .state = pet[index]['pet_type'];
-                                      });
-                                    },
-                                    child: Padding(
-                                      padding: const EdgeInsets.symmetric(
-                                          horizontal: 8.0),
-                                      child: Column(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.center,
-                                        children: [
-                                          Container(
-                                            padding: const EdgeInsets.symmetric(
-                                                vertical: secondarySizedBox,
-                                                horizontal: tertiarySizedBox),
-                                            decoration: BoxDecoration(
+                                return GestureDetector(
+                                  onTap: () {
+                                    setState(() {
+                                      // Update the selected pet ID in the provider
+                                      ref
+                                          .read(selectedPetProfileIdProvider
+                                              .notifier)
+                                          .state = petProfileId;
+                                      ref
+                                          .read(
+                                              selectedAppointmentPetTypeIndexProvider
+                                                  .notifier)
+                                          .state = petProfileId;
+                                      ref
+                                          .read(
+                                              selectedAppointmentPetTypeProvider
+                                                  .notifier)
+                                          .state = pet[index]['pet_type'];
+                                    });
+                                  },
+                                  child: Padding(
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 8.0),
+                                    child: Column(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      children: [
+                                        Container(
+                                          padding: const EdgeInsets.symmetric(
+                                              vertical: secondarySizedBox,
+                                              horizontal: tertiarySizedBox),
+                                          decoration: BoxDecoration(
+                                            color: selectedPetProfileId ==
+                                                    petProfileId
+                                                ? darkGreyColor
+                                                : lightGreyColor,
+                                            borderRadius:
+                                                BorderRadius.circular(20),
+                                          ),
+                                          child: Text(
+                                            petName,
+                                            style: TextStyle(
+                                              fontSize: regularText,
+                                              fontWeight: regularWeight,
                                               color: selectedPetProfileId ==
                                                       petProfileId
-                                                  ? primaryColor
-                                                  : lightGreyColor,
-                                              borderRadius:
-                                                  BorderRadius.circular(20),
-                                            ),
-                                            child: Text(
-                                              petName,
-                                              style: TextStyle(
-                                                fontSize: regularText,
-                                                fontWeight: regularWeight,
-                                                color: selectedPetProfileId ==
-                                                        petProfileId
-                                                    ? Colors.white
-                                                    : Colors.black,
-                                              ),
+                                                  ? Colors.white
+                                                  : Colors.black,
                                             ),
                                           ),
-                                        ],
-                                      ),
+                                        ),
+                                      ],
                                     ),
-                                  );
-                                },
+                                  ),
+                                );
+                              },
+                            ),
+                    );
+                  },
+                  loading: () =>
+                      const Center(child: CircularProgressIndicator()),
+                  error: (error, _) {
+                    print(error);
+                    return const ErrorMessage();
+                  },
+                )
+              ],
+            ),
+            const SizedBox(height: secondarySizedBox),
+            Column(
+              mainAxisAlignment: MainAxisAlignment.start,
+              children: [
+                const Padding(
+                  padding: EdgeInsets.only(left: tertiarySizedBox),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Service or package type',
+                        style: TextStyle(
+                          fontSize: titleFont,
+                          fontWeight: boldWeight,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                SizedBox(
+                  height: 60,
+                  child: ListView.builder(
+                    physics: const BouncingScrollPhysics(),
+                    scrollDirection: Axis.horizontal,
+                    itemCount: packageServiceTypeOptions.length,
+                    itemBuilder: (context, index) {
+                      return GestureDetector(
+                        onTap: () {
+                          setState(() {
+                            selectedTypeIndex = index;
+                            ref
+                                .read(
+                                    selectedAppointmentPackageServiceTypeProvider
+                                        .notifier)
+                                .state = packageServiceTypeOptions[index];
+                          });
+                        },
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                    vertical: secondarySizedBox,
+                                    horizontal: tertiarySizedBox),
+                                decoration: BoxDecoration(
+                                  color: selectedTypeIndex == index
+                                      ? darkGreyColor
+                                      : lightGreyColor,
+                                  borderRadius: BorderRadius.circular(20),
+                                ),
+                                child: Text(
+                                  packageServiceTypeOptions[index],
+                                  style: TextStyle(
+                                    fontSize: regularText,
+                                    fontWeight: regularWeight,
+                                    color: selectedTypeIndex == index
+                                        ? Colors.white
+                                        : Colors.black,
+                                  ),
+                                ),
                               ),
+                            ],
+                          ),
+                        ),
                       );
                     },
-                    loading: () =>
-                        const Center(child: CircularProgressIndicator()),
-                    error: (error, _) {
-                      print(error);
-                      return const ErrorMessage();
-                    },
-                  )
-                ],
-              ),
-              const SizedBox(height: secondarySizedBox),
-              Column(
-                mainAxisAlignment: MainAxisAlignment.start,
-                children: [
-                  const Text(
-                    'Service or package type',
-                    style: TextStyle(
-                      fontSize: titleFont,
-                      fontWeight: regularWeight,
-                    ),
                   ),
-                  SizedBox(
-                    height: 60,
-                    child: ListView.builder(
-                      physics: const BouncingScrollPhysics(),
-                      scrollDirection: Axis.horizontal,
-                      itemCount: packageServiceTypeOptions.length,
-                      itemBuilder: (context, index) {
-                        return GestureDetector(
-                          onTap: () {
-                            setState(() {
-                              selectedTypeIndex = index;
-                              ref
-                                  .read(
-                                      selectedAppointmentPackageServiceTypeProvider
-                                          .notifier)
-                                  .state = packageServiceTypeOptions[index];
-                            });
-                          },
-                          child: Padding(
-                            padding:
-                                const EdgeInsets.symmetric(horizontal: 8.0),
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Container(
-                                  padding: const EdgeInsets.symmetric(
-                                      vertical: secondarySizedBox,
-                                      horizontal: tertiarySizedBox),
-                                  decoration: BoxDecoration(
-                                    color: selectedTypeIndex == index
-                                        ? primaryColor
-                                        : lightGreyColor,
-                                    borderRadius: BorderRadius.circular(20),
-                                  ),
-                                  child: Text(
-                                    packageServiceTypeOptions[index],
-                                    style: TextStyle(
-                                      fontSize: regularText,
-                                      fontWeight: regularWeight,
-                                      color: selectedTypeIndex == index
-                                          ? Colors.white
-                                          : Colors.black,
-                                    ),
-                                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: secondarySizedBox),
+            Column(
+              mainAxisAlignment: MainAxisAlignment.start,
+              children: [
+                const Padding(
+                  padding: EdgeInsets.only(left: tertiarySizedBox),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Category',
+                        style: TextStyle(
+                          fontSize: titleFont,
+                          fontWeight: boldWeight,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                SizedBox(
+                  height: 60,
+                  child: ListView.builder(
+                    physics: const BouncingScrollPhysics(),
+                    scrollDirection: Axis.horizontal,
+                    itemCount: categoryOptions.length,
+                    itemBuilder: (context, index) {
+                      return GestureDetector(
+                        onTap: () {
+                          setState(() {
+                            selectedCategoryIndex = index;
+                            ref
+                                .read(selectedAppointmentCategoryProvider
+                                    .notifier)
+                                .state = categoryOptions[index];
+                          });
+                        },
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                    vertical: secondarySizedBox,
+                                    horizontal: tertiarySizedBox),
+                                decoration: BoxDecoration(
+                                  color: selectedCategoryIndex == index
+                                      ? darkGreyColor
+                                      : lightGreyColor,
+                                  borderRadius: BorderRadius.circular(20),
                                 ),
-                              ],
-                            ),
-                          ),
-                        );
-                      },
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: secondarySizedBox),
-              Column(
-                mainAxisAlignment: MainAxisAlignment.start,
-                children: [
-                  const Text(
-                    'Category',
-                    style: TextStyle(
-                      fontSize: titleFont,
-                      fontWeight: regularWeight,
-                    ),
-                  ),
-                  SizedBox(
-                    height: 60,
-                    child: ListView.builder(
-                      physics: const BouncingScrollPhysics(),
-                      scrollDirection: Axis.horizontal,
-                      itemCount: categoryOptions.length,
-                      itemBuilder: (context, index) {
-                        return GestureDetector(
-                          onTap: () {
-                            setState(() {
-                              selectedCategoryIndex = index;
-                              ref
-                                  .read(selectedAppointmentCategoryProvider
-                                      .notifier)
-                                  .state = categoryOptions[index];
-                            });
-                          },
-                          child: Padding(
-                            padding:
-                                const EdgeInsets.symmetric(horizontal: 8.0),
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Container(
-                                  padding: const EdgeInsets.symmetric(
-                                      vertical: secondarySizedBox,
-                                      horizontal: tertiarySizedBox),
-                                  decoration: BoxDecoration(
+                                child: Text(
+                                  capitalizeFirstLetter(categoryOptions[index]),
+                                  style: TextStyle(
+                                    fontSize: regularText,
+                                    fontWeight: regularWeight,
                                     color: selectedCategoryIndex == index
-                                        ? primaryColor
-                                        : lightGreyColor,
-                                    borderRadius: BorderRadius.circular(20),
-                                  ),
-                                  child: Text(
-                                    capitalizeFirstLetter(
-                                        categoryOptions[index]),
-                                    style: TextStyle(
-                                      fontSize: regularText,
-                                      fontWeight: regularWeight,
-                                      color: selectedCategoryIndex == index
-                                          ? Colors.white
-                                          : Colors.black,
-                                    ),
+                                        ? Colors.white
+                                        : Colors.black,
                                   ),
                                 ),
-                              ],
-                            ),
+                              ),
+                            ],
                           ),
-                        );
-                      },
-                    ),
+                        ),
+                      );
+                    },
                   ),
-                ],
+                ),
+              ],
+            ),
+            const SizedBox(height: secondarySizedBox),
+            ElevatedButton(
+              style: ButtonStyle(
+                  backgroundColor: WidgetStateProperty.all<Color>(
+                primaryColor,
+              )),
+              onPressed: () {
+                Navigator.pop(
+                    context); // Close the modal when the button is pressed
+              },
+              child: const Text(
+                'Confirm',
+                style: TextStyle(color: Colors.white, fontSize: regularText),
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );

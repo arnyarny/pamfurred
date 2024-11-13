@@ -62,3 +62,6 @@ final selectedAppointmentPetTypeIndexProvider =
 
 // To make sure the selected pet remains as the default when revisiting a screen
 final selectedPetProfileIdProvider = StateProvider<String?>((ref) => null);
+
+// Boolean to check if the user will book
+final willBookProvider = StateProvider<bool>((ref) => false);

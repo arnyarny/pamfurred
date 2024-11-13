@@ -6,7 +6,9 @@ import 'package:pamfurred/components/screen_transitions.dart';
 import 'package:pamfurred/models/packages.dart';
 import 'package:pamfurred/models/services.dart';
 import 'package:pamfurred/providers/cart_provider.dart';
+import 'package:pamfurred/providers/serviceprovider_provider.dart';
 import 'package:pamfurred/screens/appointment/appointment_summary.dart';
+import 'package:pamfurred/screens/appointment/select_address.dart';
 // import 'package:pamfurred/screens/select_address.dart';
 import 'package:shimmer/shimmer.dart';
 
@@ -88,13 +90,17 @@ class _CartScreenState extends ConsumerState<CartScreen> {
                   onPressed: cartProducts.isEmpty
                       ? null
                       : () {
-                          // Navigator.push(
-                          //   context,
-                          //   rightToLeftRoute(const SelectAppointmentAddressScreen())
-                          Navigator.push(
-                            context,
-                            rightToLeftRoute(const AppointmentSummaryScreen()),
-                          );
+                          if (ref.watch(
+                                  selectedAppointmentPackageServiceTypeProvider) ==
+                              'Home service') {
+                            Navigator.push(
+                                context,
+                                slideUpRoute(
+                                    const SelectAppointmentAddressScreen()));
+                          } else {
+                            Navigator.push(context,
+                                slideUpRoute(const AppointmentSummaryScreen()));
+                          }
                         },
                   child: const Text(
                     'Next',

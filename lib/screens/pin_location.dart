@@ -116,7 +116,7 @@ class PinAddressState extends ConsumerState<PinAddress>
           IconButton(
             icon: const Icon(Icons.check, color: primaryColor),
             onPressed: () async {
-              fetchAddress(LatLng(latitude, longitude));
+              fetchAddress(LatLng(latitude!, longitude!));
               Navigator.pop(context);
             },
           ),
@@ -127,7 +127,7 @@ class PinAddressState extends ConsumerState<PinAddress>
           : latitude != 0.0 && longitude != 0.0
               ? FlutterMap(
                   options: MapOptions(
-                    initialCenter: LatLng(latitude, longitude),
+                    initialCenter: LatLng(latitude!, longitude!),
                     initialZoom: 13.0,
                     minZoom: 5.0,
                     maxZoom: 18.0,

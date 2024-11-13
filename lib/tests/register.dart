@@ -183,7 +183,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
         }
       } else {
         // Handle registration error
-        final error = response.error?.message ?? "Unknown error";
+        final error = response.error ?? "Unknown error";
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
@@ -212,6 +212,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
       backgroundColor: Colors.white,
       appBar: customAppBar(context),
       body: SingleChildScrollView(
+        physics: const BouncingScrollPhysics(),
         child: Padding(
           padding: primaryPadding,
           child: Column(

@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:pamfurred/components/cart_icon.dart';
+import 'package:pamfurred/components/globals.dart';
 
 // 1) appBar
 // Primarily for homescreen
@@ -18,7 +20,10 @@ AppBar appBar(BuildContext context) {
     actions: const [
       Padding(
         padding: EdgeInsets.fromLTRB(10, 10, 15, 10),
-        child: Icon(Icons.settings, size: 30),
+        child: CartIcon(
+            iconColor: primaryColor,
+            borderColor: secondaryColor,
+            badgeColor: Colors.white),
       ),
     ],
   );

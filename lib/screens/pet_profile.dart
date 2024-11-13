@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:pamfurred/components/capitalize_first_letter.dart';
 import 'package:pamfurred/components/custom_appbar.dart';
 import 'package:pamfurred/components/globals.dart';
 import 'package:pamfurred/components/title_text.dart';
+import 'package:pamfurred/providers/global_providers.dart';
 import 'package:pamfurred/providers/pet_profile_provider.dart';
 
 class PetProfileScreen extends ConsumerStatefulWidget {
-  final int petId;
-
-  const PetProfileScreen({super.key, required this.petId});
+  const PetProfileScreen({super.key});
 
   @override
   PetProfileScreenState createState() => PetProfileScreenState();
@@ -19,15 +19,22 @@ class PetProfileScreenState extends ConsumerState<PetProfileScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final asyncPet = ref.watch(fetchPetByIdProvider(widget.petId));
+    
+    final petProfileId = ref.watch(selectedPetIdProvider);
+    final asyncPet = ref.watch(fetchPetByIdProvider(petProfileId));
 
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: customAppBar(context),
       body: asyncPet.when(
         data: (pet) {
+          if (pet == null) {
+            return const Center(child: Text("No pet data available."));
+          }
+
           const double descWidth = 331;
           return SingleChildScrollView(
+            physics: const BouncingScrollPhysics(),
             child: Center(
               child: SizedBox(
                 width: screenPadding(context),
@@ -42,8 +49,7 @@ class PetProfileScreenState extends ConsumerState<PetProfileScreen> {
                           fit: StackFit.loose,
                           children: [
                             Container(
-                              padding: const EdgeInsets.all(
-                                  0.1), // Space for the gradient border
+                              padding: const EdgeInsets.all(0.1),
                               decoration: const BoxDecoration(
                                 shape: BoxShape.circle,
                                 gradient: LinearGradient(
@@ -57,11 +63,11 @@ class PetProfileScreenState extends ConsumerState<PetProfileScreen> {
                                 shape: const CircleBorder(),
                                 elevation: 0,
                                 child: Padding(
-                                  padding: const EdgeInsets.all(
-                                      secondarySizedBox), // Space between image and card border
+                                  padding:
+                                      const EdgeInsets.all(secondarySizedBox),
                                   child: ClipOval(
                                     child: Image.network(
-                                      pet['image'], // Replace with your image URL
+                                      pet['pet_image'] ?? '',
                                       fit: BoxFit.cover,
                                       width: 151,
                                       height: 151,
@@ -71,19 +77,20 @@ class PetProfileScreenState extends ConsumerState<PetProfileScreen> {
                               ),
                             ),
                             const Positioned(
-                                bottom: 5,
-                                right: 0,
-                                child: SizedBox(
-                                  height: 32,
-                                  child: CircleAvatar(
-                                    backgroundColor: primaryColor,
-                                    child: Icon(
-                                      Icons.camera_alt,
-                                      size: 20,
-                                      color: Colors.white,
-                                    ),
+                              bottom: 5,
+                              right: 0,
+                              child: SizedBox(
+                                height: 32,
+                                child: CircleAvatar(
+                                  backgroundColor: primaryColor,
+                                  child: Icon(
+                                    Icons.camera_alt,
+                                    size: 20,
+                                    color: Colors.white,
                                   ),
-                                ))
+                                ),
+                              ),
+                            ),
                           ],
                         ),
                       ],
@@ -92,10 +99,8 @@ class PetProfileScreenState extends ConsumerState<PetProfileScreen> {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        customTitleText(context, pet['pet_name']),
-                        const SizedBox(
-                          width: secondarySizedBox,
-                        ),
+                        customTitleText(context, capitalizeFirstLetter(pet['pet_name'])),
+                        const SizedBox(width: secondarySizedBox),
                       ],
                     ),
                     const SizedBox(height: tertiarySizedBox),
@@ -124,13 +129,19 @@ class PetProfileScreenState extends ConsumerState<PetProfileScreen> {
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
                                   petDesc(context, 'assets/id-card.png',
-                                      pet['pet_name'], "name"),
+                                      capitalizeFirstLetter(pet['pet_name']), "name"),
                                   const SizedBox(height: secondarySizedBox),
-                                  petDesc(context, 'assets/time.png',
-                                      pet['age'].toString(), "mos. old"),
+                                  petDesc(
+                                      context,
+                                      'assets/time.png',
+                                      pet['pet_age']?.toString() ?? 'N/A',
+                                      "mos. old"),
                                   const SizedBox(height: secondarySizedBox),
-                                  petDesc(context, 'assets/weight-scale.png',
-                                      pet['weight'].toString(), "kg."),
+                                  petDesc(
+                                      context,
+                                      'assets/weight-scale.png',
+                                      pet['pet_weight']?.toString() ?? 'N/A',
+                                      "kg."),
                                   const SizedBox(height: secondarySizedBox),
                                 ],
                               ),
@@ -139,13 +150,19 @@ class PetProfileScreenState extends ConsumerState<PetProfileScreen> {
                                   mainAxisAlignment: MainAxisAlignment.center,
                                   children: [
                                     petDesc(context, 'assets/gender.png',
-                                        pet['sex'], "sex"),
+                                        pet['pet_sex'] ?? 'N/A', "sex"),
                                     const SizedBox(height: secondarySizedBox),
-                                    petDesc(context, 'assets/breed.png',
-                                        pet['breed'], "breed"),
+                                    petDesc(
+                                        context,
+                                        'assets/breed.png',
+                                        capitalizeFirstLetter(pet['pet_breed']),
+                                        "breed"),
                                     const SizedBox(height: secondarySizedBox),
-                                    petDesc(context, 'assets/categories.png',
-                                        pet['pet_category'], "category"),
+                                    petDesc(
+                                        context,
+                                        'assets/categories.png',
+                                        capitalizeFirstLetter(pet['pet_type']),
+                                        "category"),
                                   ],
                                 ),
                               ],
@@ -183,10 +200,12 @@ class PetProfileScreenState extends ConsumerState<PetProfileScreen> {
                     Center(
                       child: SizedBox(
                         width: descWidth,
-                        child: Text(pet['pet_desc'],
-                            textAlign: TextAlign.justify,
-                            style: const TextStyle(
-                                color: darkGreyColor, fontSize: regularText)),
+                        child: Text(
+                          pet['pet_desc'] ?? 'No description available.',
+                          textAlign: TextAlign.justify,
+                          style: const TextStyle(
+                              color: darkGreyColor, fontSize: regularText),
+                        ),
                       ),
                     ),
                     const SizedBox(height: quaternarySizedBox),
@@ -214,12 +233,10 @@ class PetProfileScreenState extends ConsumerState<PetProfileScreen> {
 
   verticalDivider() {
     return Container(
-      width: 1, // Width of the divider
-      height: 33, // Height of the divider
-      color: Colors.black, // Line color
-      margin: const EdgeInsets.symmetric(
-          horizontal:
-              quaternarySizedBox), // Space between divider and adjacent elements
+      width: 1,
+      height: 33,
+      color: Colors.black,
+      margin: const EdgeInsets.symmetric(horizontal: quaternarySizedBox),
     );
   }
 
@@ -243,7 +260,7 @@ class PetProfileScreenState extends ConsumerState<PetProfileScreen> {
               children: [
                 subtitleText(subtitle),
               ],
-            )
+            ),
           ],
         ),
       ],

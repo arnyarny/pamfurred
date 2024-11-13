@@ -17,11 +17,5 @@ final profileProvider = FutureProvider<Map<String, dynamic>?>((ref) async {
           userId) // Assuming 'user_id' is the column in your 'user' table
       .single(); // Fetch a single row
 
-  if (response.error != null) {
-    print('Error fetching profile data: ${response.error!.message}');
-    print('Error details: ${response.error!.hint}');
-    return null;
-  }
-
-  return response.data; // Return the profile data as a map
+  return response; // Return the profile data as a map
 });

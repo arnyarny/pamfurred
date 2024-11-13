@@ -39,7 +39,7 @@ Route crossFadeRoute(Widget page) {
   );
 }
 
-// 1) Slide up:
+// 3) Slide up:
 Route slideUpRoute(Widget page) {
   return PageRouteBuilder(
     pageBuilder: (context, animation, secondaryAnimation) => page,
@@ -56,5 +56,28 @@ Route slideUpRoute(Widget page) {
         child: child,
       );
     },
+  );
+}
+
+// 4) Slide down:
+Route slideDownRoute(Widget page) {
+  return PageRouteBuilder(
+    pageBuilder: (context, animation, secondaryAnimation) => page,
+    transitionsBuilder: (context, animation, secondaryAnimation, child) {
+      // When pushing, animate up. When popping, animate down.
+      const begin = Offset(0.0, 1.0); // Start from bottom
+      const end = Offset.zero; // End at the current position
+      const curve = Curves.ease;
+
+      var tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+      var offsetAnimation = animation.drive(tween);
+
+      return SlideTransition(
+        position: offsetAnimation,
+        child: child,
+      );
+    },
+    reverseTransitionDuration:
+        const Duration(milliseconds: 300), // Customize duration for pop
   );
 }

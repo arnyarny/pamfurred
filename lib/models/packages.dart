@@ -11,7 +11,7 @@ class Package implements CartItem {
       required this.packagePrice,
       required this.packageImage,
       required this.packageType,
-      required this.petType,
+      required this.packagePetType,
       required this.packageSize});
 
   final String packageServiceProviderId;
@@ -23,7 +23,7 @@ class Package implements CartItem {
   final int packagePrice;
   final String packageImage;
   final List<String> packageType;
-  final List<String> petType;
+  final List<String> packagePetType;
   final String packageSize;
 
   // Override the CartItem getters
@@ -41,4 +41,10 @@ class Package implements CartItem {
 
   @override
   String get name => packageName;
+
+  @override
+  List<String> get petType => packagePetType;
+
+  @override
+  String get size => packageSize;
 }

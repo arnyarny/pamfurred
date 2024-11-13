@@ -4,13 +4,14 @@ import 'package:supabase_flutter/supabase_flutter.dart' as supabase_flutter;
 final serviceProviderFutureProvider =
     FutureProvider.family<List<dynamic>, String>((ref, category) async {
   final supabase = supabase_flutter.Supabase.instance.client;
-  final response = await supabase
-      .from('service_provider')
-      .select(
-          'sp_id, image, name, rating, latitude, longitude, sentiment_label, category, user:user_id(user_type)')
-      .contains('category', '["$category"]')
-      .eq('user.user_type', 'service_provider');
 
+  // Perform the query with the 'contains' operator
+  final response = await supabase
+      .from('service_provider_with_categories_and_sentiment')
+      .select('*')
+      .contains('unique_categories', '["$category"]');
+
+  // Return the data as List<dynamic>
   return response as List<dynamic>;
 });
 
@@ -18,10 +19,8 @@ final serviceProviderFutureProviderWithoutCategory =
     FutureProvider<List<dynamic>>((ref) async {
   final supabase = supabase_flutter.Supabase.instance.client;
   final response = await supabase
-      .from('service_provider')
-      .select(
-          '*, user:user_id(user_type)')
-      .eq('user.user_type', 'service_provider');
+      .from('service_provider_with_categories_and_sentiment')
+      .select('*');
 
   return response as List<dynamic>;
 });
@@ -46,3 +45,12 @@ final spIndexProvider = Provider<Map<String, dynamic>?>((ref) {
     orElse: () => null,
   );
 });
+
+// Provider to manage the selected package or service category for booking appointment
+final selectedAppointmentCategoryProvider = StateProvider<String>((ref) => '');
+
+// Provider to manage the selected package or service type for booking appointment
+final selectedAppointmentPackageServiceTypeProvider = StateProvider<String>((ref) => '');
+
+// Provider to manage the selected pet type for booking appointment
+final selectedAppointmentPetTypeProvider = StateProvider<String>((ref) => '');

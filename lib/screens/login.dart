@@ -1,20 +1,22 @@
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:email_validator/email_validator.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pamfurred/components/screen_transitions.dart';
 import 'package:pamfurred/screens/main_screen.dart';
 import 'package:pamfurred/tests/register.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../components/globals.dart';
 
-class LoginScreen extends StatefulWidget {
+class LoginScreen extends ConsumerStatefulWidget {
   const LoginScreen({super.key});
 
   @override
   LoginScreenState createState() => LoginScreenState();
 }
 
-class LoginScreenState extends State<LoginScreen> {
+class LoginScreenState extends ConsumerState<LoginScreen> {
   final formKey = GlobalKey<FormState>();
   final emailController = TextEditingController();
   final passwordController = TextEditingController();
@@ -30,6 +32,12 @@ class LoginScreenState extends State<LoginScreen> {
     emailFocusNode = FocusNode();
     passwordFocusNode = FocusNode();
     checkIfUserIsLoggedIn(); // Check if user is already logged in
+    FirebaseMessaging.instance
+        .requestPermission(); // Request permission for notifications
+    FirebaseMessaging.onMessage.listen((RemoteMessage message) {
+      print(
+          'Received a message while in the foreground: ${message.notification?.title}');
+    });
   }
 
   @override
@@ -53,10 +61,15 @@ class LoginScreenState extends State<LoginScreen> {
 
     if (session != null) {
       // User is already logged in
-      Navigator.pushReplacement(
-        context,
-        crossFadeRoute(const MainScreen()), // No need to pass userId
-      );
+      Navigator.push(context, slideUpRoute(MainScreen()));
+    } else {
+      // If there's no session, stay on the login screen and display a message or widget
+      setState(() {
+        // Display a message or trigger a state update to notify the user
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('No session found, please log in')),
+        );
+      });
     }
   }
 
@@ -76,10 +89,16 @@ class LoginScreenState extends State<LoginScreen> {
         final isEmailVerified = response.user!.emailConfirmedAt != null;
 
         if (isEmailVerified) {
+          // Save device token after successful login
+          // await saveDeviceToken(
+          //     response.user!.id); // Pass the user id to save token
+
           // Navigate to MainScreen if authentication is successful
+          mainScreenKey.currentState
+              ?.switchToPage(0); // Make sure the user goes to the home screen
           Navigator.pushReplacement(
             context,
-            crossFadeRoute(const MainScreen()),
+            crossFadeRoute(MainScreen()),
           );
         } else {
           // Email not verified - show error message
@@ -101,6 +120,26 @@ class LoginScreenState extends State<LoginScreen> {
       setState(() {
         isLoading = false;
       });
+    }
+  }
+
+  Future<void> saveDeviceToken(String providerId) async {
+    try {
+      FirebaseMessaging messaging = FirebaseMessaging.instance;
+      String? token = await messaging.getToken();
+      print(token);
+
+      if (token != null) {
+        // Save the token to Supabase for the provider
+        await Supabase.instance.client
+            .from('service_provider')
+            .update({'device_token': token}).eq('sp_id', providerId);
+        print("Device token saved successfully");
+      } else {
+        print("Failed to retrieve device token");
+      }
+    } catch (e) {
+      print("Error saving device token: $e");
     }
   }
 
@@ -313,26 +352,6 @@ class LoginScreenState extends State<LoginScreen> {
                               ),
                             ),
                           ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
-                SizedBox(
-                  child: Container(
-                    alignment: Alignment.bottomCenter,
-                    padding: const EdgeInsets.only(bottom: 50.0),
-                    child: RichText(
-                      textAlign: TextAlign.center,
-                      text: const TextSpan(
-                        style: TextStyle(
-                            color: Colors.black, fontSize: regularText),
-                        children: [
-                          TextSpan(text: "About Pamfurred"),
-                          TextSpan(text: " • "),
-                          TextSpan(text: "Privacy Policy"),
-                          TextSpan(text: " • "),
-                          TextSpan(text: "Terms of Service"),
                         ],
                       ),
                     ),

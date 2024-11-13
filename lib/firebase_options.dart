@@ -83,4 +83,5 @@ class DefaultFirebaseOptions {
     authDomain: 'pamfurred-25368.firebaseapp.com',
     storageBucket: 'pamfurred-25368.firebasestorage.app',
   );
+
 }

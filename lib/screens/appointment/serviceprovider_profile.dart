@@ -2,16 +2,19 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:pamfurred/components/capitalize_first_letter.dart';
 import 'package:pamfurred/components/cart_icon.dart';
 import 'package:pamfurred/components/custom_appbar.dart';
+import 'package:pamfurred/components/custom_floating_action_button.dart';
 import 'package:pamfurred/components/globals.dart';
 import 'package:pamfurred/components/regular_text.dart';
 import 'package:pamfurred/components/screen_transitions.dart';
+import 'package:pamfurred/components/sentiment_label.dart';
+import 'package:pamfurred/components/time_and_date_formatter.dart';
 import 'package:pamfurred/components/title_text.dart';
+import 'package:pamfurred/math_functions/distance_calculator.dart';
 import 'package:pamfurred/models/package_filter_criteria.dart';
-import 'package:pamfurred/models/packages.dart';
 import 'package:pamfurred/models/service_filter_criteria.dart';
-import 'package:pamfurred/models/services.dart';
 import 'package:pamfurred/providers/button_pressed_provider.dart';
 import 'package:pamfurred/providers/cart_provider.dart';
 // import 'package:pamfurred/models/services.dart';
@@ -20,10 +23,11 @@ import 'package:pamfurred/providers/global_providers.dart';
 import 'package:pamfurred/providers/serviceprovider_provider.dart';
 import 'package:pamfurred/providers/sp_profile_provider_packages.dart';
 import 'package:pamfurred/providers/sp_profile_provider_services.dart';
-import 'package:pamfurred/screens/cart_screen.dart';
+import 'package:pamfurred/providers/user_id.dart';
+import 'package:pamfurred/screens/appointment/cart_screen.dart';
+import 'package:pamfurred/screens/appointment/choose_appointment_pref.dart';
 // import 'package:pamfurred/providers/sp_profile_provider_services.dart';
 import 'package:shimmer/shimmer.dart';
-import 'package:intl/intl.dart';
 
 class ServiceproviderProfileScreen extends ConsumerStatefulWidget {
   const ServiceproviderProfileScreen({super.key});
@@ -38,18 +42,28 @@ final aboutTabProvider = FutureProvider<List<Widget>>((ref) async {
   // Retrieve the service provider ID
   final sp = ref.watch(spIndexProvider);
 
+  print('SP ID: ${sp?['sp_id']}');
+
+  // Pet owner user ID
+  String userId = ref.watch(userIdProvider).toString();
+
   // Variable for service provider rating, checking null values
-  final displayRating = sp?['rating'].toString();
+  final displayRating = (sp?['average_rating'] as double).toStringAsFixed(1);
 
   // Ensure 'service_type' is a List<String>
-  List<String> serviceTypes = List<String>.from(sp?['service_type'] ?? []);
+  List<String> serviceTypes =
+      List<String>.from(sp?['unique_package_service_types'] ?? []);
 
   // Ensure 'pets_catered' is a List<String>
-  List<String> petsCatered = List<String>.from(sp?['pets_catered'] ?? []);
+  List<String> petsCatered = List<String>.from(sp?['unique_pet_types'] ?? []);
 
   final timeOpen = sp?['time_open'];
-
   final timeClose = sp?['time_close'];
+
+  double latitude = sp?['latitude'];
+  double longitude = sp?['longitude'];
+
+  String fullAddress = sp?['full_address'];
 
   return [
     // About tab content
@@ -60,31 +74,57 @@ final aboutTabProvider = FutureProvider<List<Widget>>((ref) async {
             )
           : Column(
               children: [
+                spSentimentLabelHeader(CupertinoIcons.text_bubble,
+                    sentimentLabelTextWidget(sp['sentiment_label'])),
+                const SizedBox(height: secondarySizedBox),
+
+                spDistanceDetailsHeader(
+                  CupertinoIcons.location,
+                  FutureBuilder<String?>(
+                    future: getDistanceToTarget(userId, latitude, longitude),
+                    builder: (context, snapshot) {
+                      if (snapshot.hasError) {
+                        return regularTextWidget(
+                            'Error: ${snapshot.error}'); // Display error message if there's an error
+                      } else if (snapshot.hasData) {
+                        // Check if the data is not null
+                        return regularTextWidget(snapshot.data ??
+                            'Distance not available'); // Display the calculated distance
+                      } else {
+                        return regularTextWidget(
+                            ''); // Handle the case where there is no data
+                      }
+                    },
+                  ),
+                ),
+                const SizedBox(height: secondarySizedBox),
+
                 // This is temporary. Remove this when it's ensured that we don't take null addresses from service providers
                 sp.isNotEmpty
-                    ? spDetailsHeader(
-                        CupertinoIcons.location_solid, sp['address'] ?? 'N/A')
+                    ? spDetailsHeader(Icons.location_on_outlined, fullAddress)
                     : spDetailsHeader(CupertinoIcons.location_solid, 'N/A'),
                 const SizedBox(height: secondarySizedBox),
 
                 // Rating display logic (assuming 'displayRating' handles null internally)
-                spDetailsHeader(Icons.star, displayRating!),
+                spDetailsHeader(Icons.star_border, displayRating),
                 const SizedBox(height: secondarySizedBox),
 
                 spDetailsHeader(
-                  Icons.home_repair_service,
+                  Icons.home_repair_service_outlined,
                   serviceTypes.join(', '),
                 ),
                 const SizedBox(height: secondarySizedBox),
 
-                spDetailsHeader(Icons.access_time_filled,
+                spDetailsHeader(Icons.access_time,
                     'Opens from ${formatTime(timeOpen)} to ${formatTime(timeClose)}'),
                 const SizedBox(height: secondarySizedBox),
 
-                spDetailsHeader(Icons.call, sp['phone_number'] ?? 'N/A'),
+                spDetailsHeader(
+                    Icons.call_outlined, sp['phone_number'] ?? 'N/A'),
                 const SizedBox(height: secondarySizedBox),
 
-                spDetailsHeader(Icons.pets, 'Caters ${petsCatered.join(', ')}'),
+                spDetailsHeader(
+                    CupertinoIcons.heart, 'Caters ${petsCatered.join(', ')}'),
                 const SizedBox(height: secondarySizedBox),
               ],
             ),
@@ -92,32 +132,18 @@ final aboutTabProvider = FutureProvider<List<Widget>>((ref) async {
   ];
 });
 
-String formatTime(String timeString) {
-  // Parse the time string into a DateTime object
-  final timeParts = timeString.split(':');
-  final hour = int.parse(timeParts[0]);
-  final minute = int.parse(timeParts[1]);
-
-  // Create a DateTime object (using a default date since we only care about time)
-  final dateTime = DateTime(0, 1, 1, hour, minute);
-
-  // Format it to a readable string (e.g., "8 AM" or "5 PM")
-  return DateFormat.jm().format(dateTime); // "j" for hour (1-12), "a" for AM/PM
-}
-
 final servicesTabProvider = FutureProvider<List<Widget>>((ref) async {
   // Retrieve the service provider ID
   final sp = ref.watch(spIndexProvider);
 
   // Define filter criteria
   final filterCriteria = ServiceFilterCriteria(
-    spId: sp!['sp_id'].toString(),
-    petType: null,
-    serviceType: null,
+    spId: sp?['sp_id'].toString() ?? '',
+    petType: ref.watch(selectedAppointmentPetTypeProvider),
+    serviceType: ref.watch(selectedAppointmentPackageServiceTypeProvider),
     size: null,
   );
 
-  // Use `allServicesProvider` with `.when` in your UI instead of in the provider body
   return [
     Consumer(
       builder: (context, ref, child) {
@@ -129,47 +155,15 @@ final servicesTabProvider = FutureProvider<List<Widget>>((ref) async {
             child: allServices.when(
               data: (servicesList) => Column(
                 children: [
-                  const SizedBox(height: tertiarySizedBox),
+                  // const SizedBox(height: tertiarySizedBox),
                   servicesList.isEmpty
-                      ? const Center(
-                          child: Text("No services available"),
-                        )
+                      ? const Center(child: Text("No services available"))
                       : Expanded(
                           child: ListView.builder(
                             padding: const EdgeInsets.only(bottom: 80),
                             itemCount: servicesList.length,
                             itemBuilder: (context, index) {
-                              Service fromMap(Map<String, dynamic> map) {
-                                return Service(
-                                  serviceServiceProviderId:
-                                      map['sp_id'] as String? ?? '',
-                                  serviceId: map['service_id'] as String? ?? '',
-                                  serviceName:
-                                      map['service_name'] as String? ?? '',
-                                  category:
-                                      map['service_category'] is List<dynamic>
-                                          ? List<String>.from(
-                                              map['service_category']
-                                                  as List<dynamic>)
-                                          : [],
-                                  servicePrice: map['price'] as int? ?? 0,
-                                  serviceImage:
-                                      map['service_image'] as String? ?? '',
-                                  serviceType: map['service_type']
-                                          is List<dynamic>
-                                      ? List<String>.from(
-                                          map['service_type'] as List<dynamic>)
-                                      : [],
-                                  petType: map['pet_type'] is List<dynamic>
-                                      ? List<String>.from(
-                                          map['pet_type'] as List<dynamic>)
-                                      : [],
-                                  serviceSize: map['size'] as String? ?? '',
-                                );
-                              }
-
-                              final serviceMap = servicesList[index];
-                              final service = fromMap(serviceMap);
+                              final service = servicesList[index];
 
                               return Consumer(
                                 builder: (context, ref, child) {
@@ -231,7 +225,9 @@ final servicesTabProvider = FutureProvider<List<Widget>>((ref) async {
                                                 CrossAxisAlignment.start,
                                             children: [
                                               customTitleText(
-                                                  context, service.serviceName),
+                                                  context,
+                                                  capitalizeFirstLetter(
+                                                      service.serviceName)),
                                               Row(
                                                 children: [
                                                   regularTextWidget(
@@ -239,7 +235,7 @@ final servicesTabProvider = FutureProvider<List<Widget>>((ref) async {
                                                   regularPrimaryColoredTextWidget(
                                                       ' • '),
                                                   Text(
-                                                      '₱${service.servicePrice}'),
+                                                      '₱${service.servicePrice}')
                                                 ],
                                               ),
                                             ],
@@ -298,8 +294,8 @@ final servicesTabProvider = FutureProvider<List<Widget>>((ref) async {
               ),
               loading: () => Center(
                 child: Container(
-                  color: Colors.white, // White background
-                  padding: const EdgeInsets.all(16.0), // Optional padding
+                  color: Colors.white,
+                  padding: const EdgeInsets.all(16.0),
                   child: const CircularProgressIndicator(),
                 ),
               ),
@@ -323,12 +319,11 @@ final packagesTabProvider = FutureProvider<List<Widget>>((ref) async {
   // Define filter criteria
   final filterCriteria = PackageFilterCriteria(
     spId: sp['sp_id'].toString(),
-    petType: null,
-    packageType: null,
+    petType: ref.watch(selectedAppointmentPetTypeProvider),
+    packageType: ref.watch(selectedAppointmentPackageServiceTypeProvider),
     size: null,
   );
 
-  // Use `allOacakgesProvider` with `.when` in your UI instead of in the provider body
   return [
     Consumer(
       builder: (context, ref, child) {
@@ -340,45 +335,15 @@ final packagesTabProvider = FutureProvider<List<Widget>>((ref) async {
             child: allPackages.when(
               data: (packagesList) => Column(
                 children: [
-                  const SizedBox(height: tertiarySizedBox),
+                  // const SizedBox(height: tertiarySizedBox),
                   packagesList.isEmpty
-                      ? const Center(
-                          child: Text("No services available"),
-                        )
+                      ? const Center(child: Text("No packages available"))
                       : Expanded(
                           child: ListView.builder(
                             padding: const EdgeInsets.only(bottom: 80),
                             itemCount: packagesList.length,
                             itemBuilder: (context, index) {
-                              Package fromMap(Map<String, dynamic> map) {
-                                return Package(
-                                    packageServiceProviderId:
-                                        map['sp_id'] as String? ?? '',
-                                    packageId:
-                                        map['package_id'] as String? ?? '',
-                                    packageName:
-                                        map['package_name'] as String? ?? '',
-                                    category: map['package_category'] is List<dynamic>
-                                        ? List<String>.from(
-                                            map['package_category']
-                                                as List<dynamic>)
-                                        : [],
-                                    packagePrice: map['price'] as int? ?? 0,
-                                    packageImage:
-                                        map['package_image'] as String? ?? '',
-                                    packageType: map['package_type'] is List<dynamic>
-                                        ? List<String>.from(map['package_type']
-                                            as List<dynamic>)
-                                        : [],
-                                    petType: map['pet_type'] is List<dynamic>
-                                        ? List<String>.from(
-                                            map['pet_type'] as List<dynamic>)
-                                        : [],
-                                    packageSize: map['size'] as String? ?? '');
-                              }
-
-                              final packageMap = packagesList[index];
-                              final package = fromMap(packageMap);
+                              final package = packagesList[index];
 
                               return Consumer(
                                 builder: (context, ref, child) {
@@ -440,15 +405,17 @@ final packagesTabProvider = FutureProvider<List<Widget>>((ref) async {
                                                 CrossAxisAlignment.start,
                                             children: [
                                               customTitleText(
-                                                  context, package.packageName),
+                                                  context,
+                                                  capitalizeFirstLetter(
+                                                      package.packageName)),
                                               Row(
                                                 children: [
                                                   regularTextWidget(
-                                                      (package.packageSize)),
+                                                      package.packageSize),
                                                   regularPrimaryColoredTextWidget(
                                                       ' • '),
                                                   Text(
-                                                      '₱${package.packagePrice}'),
+                                                      '₱${package.packagePrice}')
                                                 ],
                                               ),
                                             ],
@@ -467,8 +434,7 @@ final packagesTabProvider = FutureProvider<List<Widget>>((ref) async {
                                                       .read(
                                                           buttonPressedProvider
                                                               .notifier)
-                                                      .setPressed(
-                                                          true); // Set pressed state
+                                                      .setPressed(true);
                                                 },
                                                 child: IconButton(
                                                   icon: Icon(
@@ -524,6 +490,8 @@ final packagesTabProvider = FutureProvider<List<Widget>>((ref) async {
 
 class ServiceproviderProfileScreenState
     extends ConsumerState<ServiceproviderProfileScreen> {
+  bool willBook = false;
+
   @override
   Widget build(BuildContext context) {
     final selectedIndex = ref.watch(selectedTabProvider).toInt();
@@ -561,67 +529,101 @@ class ServiceproviderProfileScreenState
 
     return Scaffold(
       backgroundColor: Colors.white,
-      appBar: customAppBarWithTitle(context, sp['name']),
+      appBar: customAppBarWithTitle(context, sp['service_provider_name']),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
-      floatingActionButton: GestureDetector(
-        onTap: () {
-          // Navigator.push(context, slideUpRoute(const SuccessfulAppointment()));
-          Navigator.push(context, slideUpRoute(const CartScreen()));
+      floatingActionButton: AnimatedSwitcher(
+        duration:
+            const Duration(milliseconds: 300), // Adjust duration as needed
+        transitionBuilder: (Widget child, Animation<double> animation) {
+          // You can use different animations here
+          return FadeTransition(
+            opacity: animation,
+            child: child,
+          );
         },
-        child: Container(
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(secondaryBorderRadius),
-            border: Border.all(width: 0.5, color: primaryColor),
-            color: primaryColor,
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.2),
-                spreadRadius: 2,
-                blurRadius: 8,
-                offset: const Offset(2, 4),
-              ),
-            ],
-          ),
-          height: 50,
-          margin: const EdgeInsets.symmetric(horizontal: 30, vertical: 10),
-          child: Padding(
-            padding: const EdgeInsets.only(
-                left: tertiarySizedBox, right: primarySizedBox),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                const CartIcon(),
-                TextButton.icon(
-                    onPressed: () {
-                      Navigator.push(context, slideUpRoute(const CartScreen()));
-                    },
-                    icon: const Icon(
-                      Icons.arrow_forward_ios_outlined,
-                      color: Colors.white,
+        child: willBook
+            ? GestureDetector(
+                onTap: () {
+                  Navigator.push(context, slideUpRoute(const CartScreen()));
+                },
+                key: ValueKey<bool>(
+                    willBook), // Key to differentiate the widgets
+                child: Container(
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(secondaryBorderRadius),
+                    border: Border.all(width: 0.5, color: primaryColor),
+                    color: primaryColor,
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.2),
+                        spreadRadius: 2,
+                        blurRadius: 8,
+                        offset: const Offset(2, 4),
+                      ),
+                    ],
+                  ),
+                  height: 50,
+                  margin:
+                      const EdgeInsets.symmetric(horizontal: 30, vertical: 10),
+                  child: Padding(
+                    padding: const EdgeInsets.only(
+                        left: tertiarySizedBox, right: primarySizedBox),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        const CartIcon(
+                          iconColor: lighterSecondaryColor,
+                          borderColor: Colors.white,
+                          badgeColor: Colors.black,
+                        ),
+                        TextButton.icon(
+                          onPressed: () {
+                            Navigator.push(
+                                context, slideUpRoute(const CartScreen()));
+                          },
+                          icon: const Icon(
+                            Icons.arrow_forward_ios_outlined,
+                            color: Colors.white,
+                          ),
+                          iconAlignment: IconAlignment.end,
+                          label: const Text(
+                            'Book appointment',
+                            style: TextStyle(
+                                color: Colors.white,
+                                fontSize: regularText,
+                                fontWeight: regularWeight),
+                          ),
+                        ),
+                      ],
                     ),
-                    iconAlignment: IconAlignment.end,
-                    label: const Text(
-                      'Book appointment',
-                      style: TextStyle(
-                          color: Colors.white,
-                          fontSize: regularText,
-                          fontWeight: regularWeight),
-                    )),
-              ],
-            ),
-          ),
-        ),
+                  ),
+                ),
+              )
+            : customFloatingActionButton(
+                context,
+                buttonText: 'Book now',
+                key: ValueKey<bool>(
+                    willBook), // Key to differentiate the widgets
+                onPressed: () {
+                  Navigator.push(context,
+                      slideUpRoute(const ChooseAppointmentPreferencesScreen()));
+                  setState(() {
+                    willBook = true;
+                  });
+                },
+              ),
       ),
       body: SingleChildScrollView(
         child: Center(
           child: Column(
             children: [
               Image.network(
-                sp['image'] ?? defaultImage,
+                sp['service_provider_image'] ?? defaultImage,
                 width: double.infinity,
                 height: 200,
-                fit:
-                    sp['image'] == defaultImage ? BoxFit.contain : BoxFit.cover,
+                fit: sp['service_provider_image'] == defaultImage
+                    ? BoxFit.contain
+                    : BoxFit.cover,
                 loadingBuilder: (BuildContext context, Widget child,
                     ImageChunkEvent? loadingProgress) {
                   return loadingProgress == null
@@ -653,37 +655,56 @@ class ServiceproviderProfileScreenState
                 child: Column(
                   children: [
                     const SizedBox(height: tertiarySizedBox),
-                    customTitleText(context, sp['name']),
+                    customTitleText(context, sp['service_provider_name']),
                     const SizedBox(height: secondarySizedBox),
                     Row(
-                      mainAxisAlignment: MainAxisAlignment.start,
-                      children: List.generate(tabTitles.length, (index) {
-                        return GestureDetector(
-                          onTap: () => ref
-                              .read(selectedTabProvider.notifier)
-                              .state = index.toInt(),
-                          child: Container(
-                            margin: const EdgeInsets.symmetric(
-                                horizontal: primarySizedBox),
-                            decoration: BoxDecoration(
-                              borderRadius:
-                                  BorderRadius.circular(quaternaryBorderRadius),
-                              color: selectedIndex == index
-                                  ? lighterSecondaryColor
-                                  : Colors.transparent,
-                            ),
-                            child: Padding(
-                              padding: const EdgeInsets.all(10),
-                              child: tabTitles[index],
-                            ),
-                          ),
-                        );
-                      }),
+                      mainAxisAlignment: MainAxisAlignment
+                          .spaceBetween, // Space between tabs and icon
+                      children: [
+                        // Group the tab titles together in a Row
+                        Row(
+                          children: List.generate(tabTitles.length, (index) {
+                            return GestureDetector(
+                              onTap: () => ref
+                                  .read(selectedTabProvider.notifier)
+                                  .state = index.toInt(),
+                              child: Container(
+                                margin: const EdgeInsets.symmetric(
+                                    horizontal: primarySizedBox),
+                                decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(
+                                      quaternaryBorderRadius),
+                                  color: selectedIndex == index
+                                      ? lighterSecondaryColor
+                                      : Colors.transparent,
+                                ),
+                                child: Padding(
+                                  padding: const EdgeInsets.all(10),
+                                  child: tabTitles[index],
+                                ),
+                              ),
+                            );
+                          }),
+                        ),
+
+                        // IconButton at the far right, separate from tabs
+                        willBook
+                            ? IconButton(
+                                icon: const Icon(Icons.filter_list),
+                                onPressed: () {
+                                  Navigator.push(
+                                      context,
+                                      rightToLeftRoute(
+                                          const ChooseAppointmentPreferencesScreen()));
+                                },
+                              )
+                            : const SizedBox.shrink()
+                      ],
                     ),
                     const SizedBox(height: tertiarySizedBox),
                     asyncTabContent.when(
                       data: (widgetList) => SizedBox(
-                        height: getScreenHeight(context) - 395,
+                        height: getScreenHeight(context),
                         child: ListView(
                           children: widgetList,
                         ),
@@ -724,6 +745,40 @@ Widget spDetailsHeader(IconData icon, String detail) {
           Icon(icon, size: 20, color: const Color.fromARGB(255, 26, 10, 10)),
           const SizedBox(width: secondarySizedBox),
           regularTextWidget(detail),
+        ],
+      ),
+      const SizedBox(height: secondarySizedBox),
+    ],
+  );
+}
+
+Widget spDistanceDetailsHeader(IconData icon, Widget distanceFutureBuilder) {
+  return Column(
+    mainAxisAlignment: MainAxisAlignment.center,
+    children: [
+      Row(
+        mainAxisAlignment: MainAxisAlignment.start,
+        children: [
+          Icon(icon, size: 20, color: const Color.fromARGB(255, 26, 10, 10)),
+          const SizedBox(width: secondarySizedBox),
+          distanceFutureBuilder,
+        ],
+      ),
+      const SizedBox(height: secondarySizedBox),
+    ],
+  );
+}
+
+spSentimentLabelHeader(IconData icon, Widget sentimentLabelTextWidget) {
+  return Column(
+    mainAxisAlignment: MainAxisAlignment.center,
+    children: [
+      Row(
+        mainAxisAlignment: MainAxisAlignment.start,
+        children: [
+          Icon(icon, size: 20, color: const Color.fromARGB(255, 26, 10, 10)),
+          const SizedBox(width: secondarySizedBox),
+          sentimentLabelTextWidget
         ],
       ),
       const SizedBox(height: secondarySizedBox),

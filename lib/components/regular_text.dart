@@ -57,3 +57,17 @@ Widget regularPrimaryColoredTextWidget(String text) {
     ),
   );
 }
+
+Widget regularPrimaryColoredBoldTextWidget(String text) {
+  return Flexible(
+    child: Text(
+      maxLines: 2,
+      text,
+      style: const TextStyle(
+        color: primaryColor,
+        fontSize: regularText,
+        fontWeight: boldWeight,
+      ),
+    ),
+  );
+}

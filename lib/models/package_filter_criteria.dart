@@ -1,8 +1,8 @@
 class PackageFilterCriteria {
   final String spId;
-  final List<String>? petType;
-  final List<String>? packageType;
-  final List<String>? packageCategory;
+  final String? petType;
+  final String? packageType;
+  final String? packageCategory;
   final String? size;
 
   PackageFilterCriteria({

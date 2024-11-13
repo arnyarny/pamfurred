@@ -4,72 +4,96 @@ import 'package:pamfurred/components/globals.dart';
 import 'package:pamfurred/models/cart_item.dart';
 import 'package:pamfurred/models/services.dart';
 import 'package:pamfurred/models/packages.dart';
+import 'package:pamfurred/providers/user_id.dart';
 
-// Notifier provider to manage the cart
+// CartNotifier now requires the userId as a parameter
 class CartNotifier extends StateNotifier<Set<CartItem>> {
-  CartNotifier(this.context) : super({});
+  CartNotifier(this.context, this.userId) : super({});
 
   final BuildContext context;
+  final String? userId; // Store the userId for further use
 
   // Helper to get a unique set of provider IDs in the cart
   Set<String> get uniqueProviderIds {
     return state.map((item) => item.serviceProviderId).toSet();
   }
 
-  // Add a Service to the cart
+  // Check for conflicts based on service attributes
+  bool _isConflict(Service service) {
+    for (final item in state) {
+      if (item.serviceProviderId != service.serviceProviderId) {
+        return true; // Conflict found: Different service providers
+      }
+      if (item.size != service.size) {
+        return true; // Conflict found: Different sizes
+      }
+      bool petTypeConflict =
+          item.petType.toSet().intersection(service.petType.toSet()).isEmpty;
+      if (petTypeConflict) {
+        return true; // Conflict found: No matching pet types
+      }
+    }
+    return false; // No conflict found
+  }
+
+  bool _isPackageConflict(Package package) {
+    for (final item in state) {
+      if (item.serviceProviderId != package.serviceProviderId) {
+        return true; // Conflict found: Different service providers
+      }
+      if (item.size != package.size) {
+        return true; // Conflict found: Different sizes
+      }
+      bool petTypeConflict =
+          item.petType.toSet().intersection(package.petType.toSet()).isEmpty;
+      if (petTypeConflict) {
+        return true; // Conflict found: No matching pet types
+      }
+    }
+    return false; // No conflict found
+  }
+
   void addService(Service service) {
-    // Check for provider conflict
-    if (uniqueProviderIds.isNotEmpty &&
-        !uniqueProviderIds.contains(service.serviceProviderId)) {
+    if (_isConflict(service)) {
       _showProviderConflictDialog();
       return;
     }
-
-    // Add the service if no conflict
     if (!state.any((item) => item.id == service.id)) {
       state = {...state, service};
     }
   }
 
-  // Add a Package to the cart
   void addPackage(Package package) {
-    // Check for provider conflict
-    if (uniqueProviderIds.isNotEmpty &&
-        !uniqueProviderIds.contains(package.serviceProviderId)) {
+    if (_isPackageConflict(package)) {
       _showProviderConflictDialog();
       return;
     }
-
-    // Add the package if no conflict
     if (!state.any((item) => item.id == package.id)) {
       state = {...state, package};
     }
   }
 
-// Show conflict dialog when trying to add items from a different provider
   void _showProviderConflictDialog() {
     showDialog(
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          backgroundColor: Colors.white, // Set your desired background color
+          backgroundColor: Colors.white,
           shape: RoundedRectangleBorder(
-            borderRadius:
-                BorderRadius.circular(primaryBorderRadius), // Adjust the border radius
+            borderRadius: BorderRadius.circular(primaryBorderRadius),
           ),
           title: const Row(
             children: [
-              Icon(Icons.warning_amber_rounded, color: Colors.red, size: 30),
-              SizedBox(width: 10),
-              Text('Error',
+              Text('Oops!',
                   style: TextStyle(
                       fontWeight: boldWeight,
                       overflow: TextOverflow.ellipsis,
-                      fontSize: titleFont)),
+                      fontSize: titleFont,
+                      color: primaryColor)),
             ],
           ),
           content: const Text(
-            'You can only book services or packages from one service provider at a time.',
+            'You can only book services or packages with matching attributes from the same provider.\n\nThis happens when you book services or packages from two or more service providers or when a service or package you chose are of different sizes or pet types.',
             style: TextStyle(
               fontSize: regularText,
             ),
@@ -91,27 +115,25 @@ class CartNotifier extends StateNotifier<Set<CartItem>> {
     );
   }
 
-  // Remove a Service from the cart
   void removeService(Service service) {
     state = state.where((item) => item.id != service.id).toSet();
   }
 
-  // Remove a Package from the cart
   void removePackage(Package package) {
     state = state.where((item) => item.id != package.id).toSet();
   }
 
-  // Clear the entire cart
   void clearCart() {
     state = {};
   }
 }
 
-// Create a provider for CartNotifier
+// Create a provider for CartNotifier that also listens for the userIdProvider
 final cartNotifierProvider =
     StateNotifierProvider<CartNotifier, Set<CartItem>>((ref) {
   final context = ref.read(appContextProvider);
-  return CartNotifier(context);
+  final userId = ref.watch(userIdProvider); // Watch the current user ID
+  return CartNotifier(context, userId);
 });
 
 // Provider to calculate the total price of all items in the cart
@@ -120,7 +142,7 @@ final cartTotalProvider = Provider<num>((ref) {
   num total = 0;
 
   for (var item in cartItems) {
-    total += item.price; // Make sure CartItem has a price property
+    total += item.price;
   }
 
   return total;

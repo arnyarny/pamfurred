@@ -122,6 +122,7 @@ dependencies:
 
   carousel_slider: ^5.0.0
   shared_preferences: ^2.3.3
+  animated_custom_dropdown: ^3.1.1
 
 dev_dependencies:
   flutter_test:

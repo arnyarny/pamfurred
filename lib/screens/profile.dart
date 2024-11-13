@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pamfurred/components/custom_padded_button.dart';
 import 'package:pamfurred/components/globals.dart';
 import 'package:pamfurred/components/header.dart';
+import 'package:pamfurred/components/pull_to_refresh.dart';
 import 'package:pamfurred/components/screen_transitions.dart';
 // import 'package:pamfurred/components/pull_to_refresh.dart';
 import 'package:pamfurred/components/title_text.dart';
@@ -12,6 +13,7 @@ import 'package:pamfurred/providers/pet_profile_provider.dart';
 import 'package:pamfurred/providers/user_id.dart';
 import 'package:pamfurred/screens/login.dart';
 import 'package:pamfurred/screens/pet_profile.dart';
+import 'package:pamfurred/screens/pet_profile/add_pet_profile.dart';
 import 'package:shimmer/shimmer.dart';
 import 'package:supabase_flutter/supabase_flutter.dart'; // Import Supabase
 
@@ -129,129 +131,138 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     return SafeArea(
       child: Scaffold(
         backgroundColor: Colors.white,
-        body: petProfileData.when(
-          loading: () => const Center(
-              child: CircularProgressIndicator()), // Show loading spinner
-          error: (error, stackTrace) =>
-              Center(child: Text('Error: $error')), // Show error message
-          data: (data) => SingleChildScrollView(
-            physics: const BouncingScrollPhysics(),
-            child: Center(
-              child: SizedBox(
-                width: screenPadding(context),
-                child: Column(
-                  children: [
-                    const SizedBox(height: tertiarySizedBox),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        buildSectionHeader(profileData?['username'] ?? ''),
-                        IconButton(
-                          onPressed: () {
-                            // Set visibility to false when loading
-                            _logout();
-                          },
-                          icon: const Icon(Icons.logout),
-                          iconSize: 25,
-                          color: greyColor,
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: primarySizedBox),
-                    Card(
-                      color: Colors.white.withOpacity(0.9),
-                      shadowColor: Colors.grey.withOpacity(0.2),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10),
-                        side:
-                            const BorderSide(width: 0.15, color: Colors.black),
-                      ),
-                      child: Column(
+        body: PullToRefresh(
+          providersToRefresh: [
+            petProfileProvider(userId),
+          ],
+          child: petProfileData.when(
+            loading: () => const Center(
+                child: CircularProgressIndicator()), // Show loading spinner
+            error: (error, stackTrace) =>
+                Center(child: Text('Error: $error')), // Show error message
+            data: (data) => SingleChildScrollView(
+              physics: const BouncingScrollPhysics(),
+              child: Center(
+                child: SizedBox(
+                  width: screenPadding(context),
+                  child: Column(
+                    children: [
+                      const SizedBox(height: tertiarySizedBox),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Padding(
-                            padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                customTitleText(context, "Pets"),
-                                data.isNotEmpty
-                                    ? const Icon(Icons.edit,
-                                        size: 20, color: primaryColor)
-                                    : const SizedBox.shrink(),
-                              ],
-                            ),
-                          ),
-                          Center(
-                            child: Padding(
-                              padding: const EdgeInsets.only(
-                                left: tertiarySizedBox,
-                                right: tertiarySizedBox,
-                              ),
-                              child: SizedBox(
-                                height: data.isNotEmpty
-                                    ? 60
-                                    : 180, // Increased height for more space in empty state
-                                child: data.isEmpty
-                                    ? Center(
-                                        child: Column(
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.center,
-                                          children: [
-                                            const Icon(Icons.pets,
-                                                size: 40, color: primaryColor),
-                                            const SizedBox(
-                                                height: secondarySizedBox),
-                                            const Text("No pets yet! 🐾",
-                                                style: TextStyle(
-                                                    fontSize: regularText,
-                                                    color: darkGreyColor)),
-                                            const SizedBox(
-                                                height: primarySizedBox),
-                                            const Text(
-                                                "Add your first pet to get started!",
-                                                style: TextStyle(
-                                                    fontSize: smallText,
-                                                    color: darkGreyColor)),
-                                            const SizedBox(
-                                                height: tertiarySizedBox),
-                                            customPaddedTextButton(
-                                              text: 'Add Pet',
-                                              onPressed: () {},
-                                            ),
-                                            const SizedBox(
-                                                height: tertiarySizedBox),
-                                          ],
-                                        ),
-                                      )
-                                    : ListView.builder(
-                                        physics: const BouncingScrollPhysics(),
-                                        scrollDirection: Axis.horizontal,
-                                        itemCount: data.length +
-                                            1, // Add 1 for the Add button
-                                        itemBuilder: (context, index) {
-                                          final petProfileImage =
-                                              index < data.length
-                                                  ? data[index]['pet_image']
-                                                  : '';
-                                          return index == data.length
-                                              ? _buildAddPetButton(context)
-                                              : _buildPetProfile(
-                                                  petProfileImage,
-                                                  data[index]
-                                                      ['pet_profile_id']);
-                                        },
-                                      ),
-                              ),
-                            ),
+                          buildSectionHeader(profileData?['username'] ?? ''),
+                          IconButton(
+                            onPressed: () {
+                              // Set visibility to false when loading
+                              _logout();
+                            },
+                            icon: const Icon(Icons.logout),
+                            iconSize: 25,
+                            color: greyColor,
                           ),
                         ],
                       ),
-                    ),
-                    const SizedBox(height: primarySizedBox),
-                    _buildDetailsCard(context, "Personal details"),
-                    const SizedBox(height: primarySizedBox),
-                    _buildAccountCard(context),
-                  ],
+                      const SizedBox(height: primarySizedBox),
+                      Card(
+                        color: Colors.white.withOpacity(0.9),
+                        shadowColor: Colors.grey.withOpacity(0.2),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10),
+                          side: const BorderSide(
+                              width: 0.15, color: Colors.black),
+                        ),
+                        child: Column(
+                          children: [
+                            Padding(
+                              padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+                              child: Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                children: [
+                                  customTitleText(context, "Pets"),
+                                  data.isNotEmpty
+                                      ? const Icon(Icons.edit,
+                                          size: 20, color: primaryColor)
+                                      : const SizedBox.shrink(),
+                                ],
+                              ),
+                            ),
+                            Center(
+                              child: Padding(
+                                padding: const EdgeInsets.only(
+                                  left: tertiarySizedBox,
+                                  right: tertiarySizedBox,
+                                ),
+                                child: SizedBox(
+                                  height: data.isNotEmpty
+                                      ? 60
+                                      : 180, // Increased height for more space in empty state
+                                  child: data.isEmpty
+                                      ? Center(
+                                          child: Column(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.center,
+                                            children: [
+                                              const Icon(Icons.pets,
+                                                  size: 40,
+                                                  color: primaryColor),
+                                              const SizedBox(
+                                                  height: secondarySizedBox),
+                                              const Text("No pets yet! 🐾",
+                                                  style: TextStyle(
+                                                      fontSize: regularText,
+                                                      color: darkGreyColor)),
+                                              const SizedBox(
+                                                  height: primarySizedBox),
+                                              const Text(
+                                                  "Add your first pet to get started!",
+                                                  style: TextStyle(
+                                                      fontSize: smallText,
+                                                      color: darkGreyColor)),
+                                              const SizedBox(
+                                                  height: tertiarySizedBox),
+                                              customPaddedTextButton(
+                                                text: 'Add Pet',
+                                                onPressed: () {},
+                                              ),
+                                              const SizedBox(
+                                                  height: tertiarySizedBox),
+                                            ],
+                                          ),
+                                        )
+                                      : ListView.builder(
+                                          physics:
+                                              const BouncingScrollPhysics(),
+                                          scrollDirection: Axis.horizontal,
+                                          itemCount: data.length +
+                                              1, // Add 1 for the Add button
+                                          itemBuilder: (context, index) {
+                                            final petProfileImage =
+                                                index < data.length
+                                                    ? data[index]['pet_image']
+                                                    // Temporary placeholder
+                                                    : '';
+                                            return index == data.length
+                                                ? _buildAddPetButton(context)
+                                                : _buildPetProfile(
+                                                    petProfileImage,
+                                                    data[index]
+                                                        ['pet_profile_id']);
+                                          },
+                                        ),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: primarySizedBox),
+                      _buildDetailsCard(context, "Personal details"),
+                      const SizedBox(height: primarySizedBox),
+                      _buildAccountCard(context),
+                    ],
+                  ),
                 ),
               ),
             ),
@@ -264,17 +275,22 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   Widget _buildAddPetButton(BuildContext context) {
     return Container(
       padding: const EdgeInsets.only(bottom: tertiarySizedBox),
-      child: const ClipOval(
-        child: Material(
-          color: lighterSecondaryColor, // Button color
-          child:
-              SizedBox(width: 45, child: Icon(Icons.add, color: primaryColor)),
+      child: GestureDetector(
+        onTap: () {
+          Navigator.push(context, slideUpRoute(const AddPetProfileScreen()));
+        },
+        child: const ClipOval(
+          child: Material(
+            color: lighterSecondaryColor, // Button color
+            child: SizedBox(
+                width: 45, child: Icon(Icons.add, color: primaryColor)),
+          ),
         ),
       ),
     );
   }
 
-  Widget _buildPetProfile(String imageUrl, String index) {
+  Widget _buildPetProfile(String? imageUrl, String index) {
     return Container(
       padding: const EdgeInsets.only(
           left: secondarySizedBox,
@@ -290,7 +306,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
         },
         child: ClipOval(
           child: Image.network(
-            imageUrl,
+            imageUrl ??
+                'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR7nreJH6sPRQH2qk3IL_R4j0o1-amatTZn7Q&s',
             height: 40,
             width: 45,
             fit: BoxFit.cover,

@@ -215,7 +215,9 @@ class AddPetProfileScreenState extends ConsumerState<AddPetProfileScreen> {
                         if (response == null) {
                           // Successfully inserted, you can show a success message or navigate
                           log('Pet profile added successfully');
+
                           if (context.mounted) {
+                            Navigator.pop(context);
                             ScaffoldMessenger.of(context).showSnackBar(
                               const SnackBar(
                                   content:

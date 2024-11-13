@@ -106,8 +106,6 @@ class SuccessfulAppointmentState extends ConsumerState<SuccessfulAppointment> {
 
                       const SizedBox(height: secondarySizedBox),
 
-                      const SizedBox(height: secondarySizedBox),
-
                       // Service type
                       if (services.isNotEmpty)
                         getAppointmentTitle(context, 'Services'),

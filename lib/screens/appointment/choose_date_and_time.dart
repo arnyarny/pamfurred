@@ -3,13 +3,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:pamfurred/components/custom_appbar.dart';
 import 'package:pamfurred/components/custom_padded_button.dart';
-import 'package:pamfurred/providers/available_timeslots_provider.dart';
+import 'package:pamfurred/components/globals.dart';
+import 'package:pamfurred/components/screen_transitions.dart';
 import 'package:pamfurred/providers/serviceprovider_provider.dart';
-
-// Provider to manage selected date
-final selectedDateProvider = StateProvider<String?>((ref) => null);
-// Provider to manage selected timeslot
-final selectedTimeslotProvider = StateProvider<String?>((ref) => null);
+import 'package:pamfurred/screens/appointment/appointment_summary.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 class ChooseDateAndTimeScreen extends ConsumerWidget {
   const ChooseDateAndTimeScreen({super.key});
@@ -20,20 +18,52 @@ class ChooseDateAndTimeScreen extends ConsumerWidget {
     final selectedTimeslot = ref.watch(selectedTimeslotProvider);
     final serviceProviderId = ref.watch(selectedSpIndexProvider);
 
-    // Define parameters for timeslots provider
-    TimeslotParams? timeslotParams;
-    if (selectedDate != null && serviceProviderId.isNotEmpty) {
-      timeslotParams =
-          TimeslotParams(spId: serviceProviderId, selectedDate: selectedDate);
+    // Function to fetch available timeslots from the service_provider_availability table
+    Future<List<Map<String, dynamic>>> fetchAvailableTimeslots(
+        String selectedDate, String spId) async {
+      final supabase = Supabase.instance.client;
+
+      // Query the service_provider_availability table directly
+      final response = await supabase
+          .from('service_provider_availability')
+          .select('availability_date, timeslots')
+          .eq('sp_id', spId) // Filter by service provider id
+          .eq('availability_date', selectedDate);
+
+      // Cast the response data to the correct type (List<Map<String, dynamic>>)
+      List<Map<String, dynamic>> timeslotData =
+          List<Map<String, dynamic>>.from(response);
+      return timeslotData;
     }
 
-    // Watch the provider to get available timeslots
-    final timeslotsAsync = timeslotParams != null
-        ? ref.watch(serviceProviderAvailableTimeslotsProvider(timeslotParams))
-        : const AsyncValue.loading();
-
     return Scaffold(
-      appBar: customAppBarWithTitle(context, 'Choose Date & Time'),
+      appBar: customAppBarWithTitleAndIcon(context, 'Choose Date & Time', [
+        TextButton(
+          style: ButtonStyle(
+              shape: WidgetStateProperty.all<RoundedRectangleBorder>(
+                RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(secondaryBorderRadius),
+                ),
+              ),
+              backgroundColor: WidgetStateProperty.all<Color>(
+                selectedDate != null && selectedTimeslot != null
+                    ? primaryColor
+                    : lighterGreyColor,
+              )),
+          onPressed:
+              selectedDate != null && selectedTimeslot != null ? () {
+                Navigator.push(context, rightToLeftRoute(const AppointmentSummaryScreen()));
+              } : null,
+          child: Text(
+            "Next",
+            style: TextStyle(
+              color: selectedDate != null && selectedTimeslot != null
+                  ? Colors.white
+                  : disabledButtonTextColor,
+            ),
+          ),
+        ),
+      ]),
       backgroundColor: Colors.white,
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -41,17 +71,17 @@ class ChooseDateAndTimeScreen extends ConsumerWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // Date Picker Section
-            const Text('Select a Date:', style: TextStyle(fontSize: 18)),
+            const Text('Select a Date:', style: TextStyle(fontSize: titleFont)),
             const SizedBox(height: 8),
             Text(
               selectedDate != null
                   ? DateFormat('MMMM dd, yyyy')
                       .format(DateTime.parse(selectedDate))
                   : 'No date selected',
-              style: const TextStyle(fontSize: 16),
+              style: const TextStyle(fontSize: regularText),
             ),
             const SizedBox(height: 16),
-            customPaddedTextButton(
+            customPaddedTextButtonWIthSecondaryColor(
               onPressed: () async {
                 final pickedDate = await showDatePicker(
                   context: context,
@@ -73,87 +103,69 @@ class ChooseDateAndTimeScreen extends ConsumerWidget {
             const SizedBox(height: 24),
 
             // Timeslot Selector Section
-            const Text('Available Timeslots:', style: TextStyle(fontSize: 18)),
+            const Text('Available Timeslots:',
+                style: TextStyle(fontSize: titleFont)),
             const SizedBox(height: 8),
             if (selectedDate == null)
               const Text('Please select a date to see available timeslots.')
-            else if (timeslotsAsync.isLoading)
-              const Center(child: CircularProgressIndicator())
-            else if (timeslotsAsync.hasError)
-              Center(child: Text('Error: ${timeslotsAsync.error}'))
             else
-              Expanded(
-                child: timeslotsAsync.when(
-                  data: (timeslotData) {
-                    // Convert the timeslot data to a map (date -> timeslots)
-                    final timeslotMap = <String, List<String>>{};
-                    for (var slot in timeslotData) {
-                      final date =
-                          slot['date']; // assuming date is a field in response
-                      final timeslots = List<String>.from(slot['timeslots']);
-                      timeslotMap[date] = timeslots;
-                    }
+              FutureBuilder<List<Map<String, dynamic>>>(
+                future: serviceProviderId.isNotEmpty
+                    ? fetchAvailableTimeslots(selectedDate, serviceProviderId)
+                    : Future.value([]),
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return const Center(
+                      child: CircularProgressIndicator(),
+                    ); // No loading indicator
+                  }
+                  if (snapshot.hasError) {
+                    return Center(child: Text('Error: ${snapshot.error}'));
+                  }
+                  if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                    return const Center(
+                        child: Text('No available timeslots for this date.'));
+                  }
 
-                    if (timeslotMap.isEmpty) {
-                      return const Center(
-                          child: Text('No available timeslots for this date.'));
-                    }
+                  final timeslotMap = <String, List<String>>{};
+                  final timeslotData = snapshot.data!;
+                  for (var slot in timeslotData) {
+                    final date = slot['availability_date'];
+                    final timeslots = List<String>.from(slot['timeslots']);
+                    timeslotMap[date] = timeslots;
+                  }
 
-                    // Display the timeslots for the selected date
-                    if (timeslotMap.containsKey(selectedDate)) {
-                      final timeslots = timeslotMap[selectedDate]!;
+                  if (timeslotMap.containsKey(selectedDate)) {
+                    final timeslots = timeslotMap[selectedDate]!;
 
-                      print('Timeslot: $timeslots');
-                      return ListView.builder(
-                        itemCount: timeslots.length,
-                        itemBuilder: (context, index) {
-                          final timeslot = timeslots[index];
-                          return ListTile(
-                            title: Text(timeslot),
-                            onTap: () {
-                              // Update selected timeslot
-                              ref
-                                  .read(selectedTimeslotProvider.notifier)
-                                  .state = timeslot;
-                              // Show confirmation or perform an action
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(
-                                    content: Text('Selected Time: $timeslot')),
-                              );
-                            },
-                          );
-                        },
-                      );
-                    } else {
-                      return const Center(
-                          child: Text('No available timeslots for this date.'));
-                    }
-                  },
-                  loading: () =>
-                      const Center(child: CircularProgressIndicator()),
-                  error: (error, stack) => Center(child: Text('Error: $error')),
-                ),
-              ),
-
-            // Confirm Button
-            Center(
-              child: ElevatedButton(
-                onPressed: selectedDate != null && selectedTimeslot != null
-                    ? () {
-                        // Perform action with selected date and timeslot.
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text(
-                              'Selected Date: $selectedDate\n'
-                              'Selected Time: $selectedTimeslot',
-                            ),
-                          ),
+                    return Wrap(
+                      spacing: 8.0, // Space between chips
+                      runSpacing: 8.0, // Space between rows of chips
+                      children: timeslots.map((timeslot) {
+                        return ChoiceChip(
+                          label: Text(timeslot),
+                          selected: selectedTimeslot == timeslot,
+                          onSelected: (selected) {
+                            ref.read(selectedTimeslotProvider.notifier).state =
+                                selected ? timeslot : null;
+                          },
+                          selectedColor: secondaryColor,
+                          checkmarkColor: lighterGreyColor,
+                          backgroundColor: Colors.transparent,
+                          labelStyle: TextStyle(
+                              color: selectedTimeslot == timeslot
+                                  ? lighterGreyColor
+                                  : Colors.black,
+                              fontSize: regularText),
                         );
-                      }
-                    : null,
-                child: const Text("Confirm Selection"),
+                      }).toList(),
+                    );
+                  } else {
+                    return const Center(
+                        child: Text('No available timeslots for this date.'));
+                  }
+                },
               ),
-            ),
           ],
         ),
       ),

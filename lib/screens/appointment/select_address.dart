@@ -8,6 +8,7 @@ import 'package:pamfurred/components/custom_appbar.dart';
 import 'package:pamfurred/components/custom_padded_button.dart';
 import 'package:pamfurred/components/globals.dart';
 import 'package:pamfurred/components/screen_transitions.dart';
+import 'package:pamfurred/providers/serviceprovider_provider.dart';
 import 'package:pamfurred/screens/appointment/choose_date_and_time.dart';
 import 'package:pamfurred/screens/pin_location.dart';
 
@@ -45,6 +46,8 @@ class SelectAppointmentAddressScreenState
     addressAsyncValue.whenData((address) {
       formattedAddress =
           '${address['street'] ?? ''}, ${address['city'] ?? ''}, ${address['province'] ?? ''}';
+
+      ref.read(appointmentAddressProvider.notifier).state = formattedAddress;
     });
 
     // Ensure the text in the controller is updated if it changes

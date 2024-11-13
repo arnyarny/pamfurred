@@ -7,7 +7,7 @@ import 'package:pamfurred/models/packages.dart';
 import 'package:pamfurred/models/services.dart';
 import 'package:pamfurred/providers/cart_provider.dart';
 import 'package:pamfurred/providers/serviceprovider_provider.dart';
-import 'package:pamfurred/screens/appointment/appointment_summary.dart';
+import 'package:pamfurred/screens/appointment/choose_date_and_time.dart';
 import 'package:pamfurred/screens/appointment/select_address.dart';
 // import 'package:pamfurred/screens/select_address.dart';
 import 'package:shimmer/shimmer.dart';
@@ -99,7 +99,7 @@ class _CartScreenState extends ConsumerState<CartScreen> {
                                     const SelectAppointmentAddressScreen()));
                           } else {
                             Navigator.push(context,
-                                slideUpRoute(const AppointmentSummaryScreen()));
+                                slideUpRoute(const ChooseDateAndTimeScreen()));
                           }
                         },
                   child: const Text(

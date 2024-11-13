@@ -168,6 +168,7 @@ class ChooseAppointmentPreferencesScreenState
                               itemBuilder: (context, index) {
                                 final petName =
                                     pet[index]['pet_name'] ?? 'Unknown';
+
                                 final petProfileId =
                                     pet[index]['pet_profile_id'];
 
@@ -189,6 +190,11 @@ class ChooseAppointmentPreferencesScreenState
                                               selectedAppointmentPetTypeProvider
                                                   .notifier)
                                           .state = pet[index]['pet_type'];
+
+                                      ref
+                                          .read(
+                                              selectedPetNameProvider.notifier)
+                                          .state = petName;
                                     });
                                   },
                                   child: Padding(

@@ -65,3 +65,19 @@ final selectedPetProfileIdProvider = StateProvider<String?>((ref) => null);
 
 // Boolean to check if the user will book
 final willBookProvider = StateProvider<bool>((ref) => false);
+
+// Provider to manage selected date
+final selectedDateProvider = StateProvider<String?>((ref) => null);
+
+// Provider to manage selected timeslot
+final selectedTimeslotProvider = StateProvider<String?>((ref) => null);
+
+// Holds selected pet's name during appointment
+final selectedPetNameProvider = StateProvider<String>((ref) => '');
+
+
+// Holds selected address during appointment
+final appointmentAddressProvider = StateProvider<String>((ref) => '');
+
+
+

@@ -178,7 +178,6 @@ class AddPetProfileScreenState extends ConsumerState<AddPetProfileScreen> {
                     }),
                   const SizedBox(height: tertiarySizedBox),
 
-                  const SizedBox(height: tertiarySizedBox),
                   // Submit Button
                   customPaddedTextButton(
                     text: 'Submit',
@@ -227,7 +226,8 @@ class AddPetProfileScreenState extends ConsumerState<AddPetProfileScreen> {
                         }
                       }
                     },
-                  )
+                  ),
+                  const SizedBox(height: tertiarySizedBox),
                 ],
               ),
             ),

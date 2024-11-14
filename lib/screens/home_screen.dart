@@ -650,6 +650,7 @@ class ServiceProvidersWidget extends ConsumerWidget {
           return SizedBox(
             height: 225,
             child: ListView.builder(
+              physics: const BouncingScrollPhysics(),
               scrollDirection: Axis.horizontal,
               itemCount:
                   serviceProviders.length > 10 ? 10 : serviceProviders.length,

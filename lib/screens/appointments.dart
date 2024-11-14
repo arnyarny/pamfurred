@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
+import 'package:pamfurred/components/screen_transitions.dart';
 import 'package:pamfurred/components/time_and_date_formatter.dart';
 import 'package:pamfurred/components/title_text.dart';
 import 'package:pamfurred/providers/appointments_provider.dart';
+import 'package:pamfurred/screens/give_feedback.dart';
 import '../components/globals.dart';
 
 class AppointmentsScreen extends ConsumerStatefulWidget {
@@ -137,29 +139,37 @@ class AppointmentsScreenState extends ConsumerState<AppointmentsScreen>
           color: Colors.white,
           elevation: 1.5,
           child: Column(mainAxisSize: MainAxisSize.min, children: <Widget>[
-            ListTile(
-              title: customBoldWeightRegularText(context,
-                  '${appointment['establishment_name'] ?? 'N/A'}'), // Fallback if null
-              subtitle: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: <Widget>[
-                  const SizedBox(height: primarySizedBox),
-                  Text(
-                    appointment['appointment_date'] == null
-                        ? 'N/A'
-                        : formatDate(appointment[
-                            'appointment_date']), // Fallback if null
-                    style: const TextStyle(color: darkGreyColor),
-                  ),
-                  const SizedBox(height: primarySizedBox),
-                  Text(
-                    appointment['appointment_time'] == null
-                        ? 'N/A'
-                        : formatTime(appointment[
-                            'appointment_time']), // Fallback if null
-                    style: const TextStyle(color: greyColor),
-                  ),
-                ],
+            GestureDetector(
+              onTap: appointment['appointment_status'] == 'Done'
+                  ? () {
+                      Navigator.push(
+                          context, slideUpRoute(const GiveFeedbackScreen()));
+                    }
+                  : null,
+              child: ListTile(
+                title: customBoldWeightRegularText(context,
+                    '${appointment['establishment_name'] ?? 'N/A'}'), // Fallback if null
+                subtitle: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: <Widget>[
+                    const SizedBox(height: primarySizedBox),
+                    Text(
+                      appointment['appointment_date'] == null
+                          ? 'N/A'
+                          : formatDate(appointment[
+                              'appointment_date']), // Fallback if null
+                      style: const TextStyle(color: darkGreyColor),
+                    ),
+                    const SizedBox(height: primarySizedBox),
+                    Text(
+                      appointment['appointment_time'] == null
+                          ? 'N/A'
+                          : formatTime(appointment[
+                              'appointment_time']), // Fallback if null
+                      style: const TextStyle(color: greyColor),
+                    ),
+                  ],
+                ),
               ),
             ),
             Padding(

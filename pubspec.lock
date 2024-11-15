@@ -382,6 +382,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.1.3"
+  fialogs:
+    dependency: "direct main"
+    description:
+      name: fialogs
+      sha256: "8d05ecd28c6aca77f89fa4bf887a09d32ab801d42984a5977c71033ba0a81de3"
+      url: "https://pub.dev"
+    source: hosted
+    version: "2.1.0"
   file:
     dependency: transitive
     description:
@@ -516,10 +524,10 @@ packages:
     dependency: "direct main"
     description:
       name: flutter_riverpod
-      sha256: "0f1974eff5bbe774bf1d870e406fc6f29e3d6f1c46bd9c58e7172ff68a785d7d"
+      sha256: "9532ee6db4a943a1ed8383072a2e3eeda041db5657cdf6d2acecf3c21ecbe7e1"
       url: "https://pub.dev"
     source: hosted
-    version: "2.5.1"
+    version: "2.6.1"
   flutter_test:
     dependency: "direct dev"
     description: flutter
@@ -754,22 +762,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "4.2.0"
-  in_app_review:
-    dependency: "direct main"
-    description:
-      name: in_app_review
-      sha256: "99869244d09adc76af16bf8fd731dd13cef58ecafd5917847589c49f378cbb30"
-      url: "https://pub.dev"
-    source: hosted
-    version: "2.0.9"
-  in_app_review_platform_interface:
-    dependency: transitive
-    description:
-      name: in_app_review_platform_interface
-      sha256: fed2c755f2125caa9ae10495a3c163aa7fab5af3585a9c62ef4a6920c5b45f10
-      url: "https://pub.dev"
-    source: hosted
-    version: "2.0.5"
   intl:
     dependency: "direct main"
     description:
@@ -946,6 +938,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.0.6"
+  nested:
+    dependency: transitive
+    description:
+      name: nested
+      sha256: "03bac4c528c64c95c722ec99280375a6f2fc708eec17c7b3f07253b626cd2a20"
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.0.0"
   nm:
     dependency: transitive
     description:
@@ -1170,6 +1170,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.1.0"
+  provider:
+    dependency: transitive
+    description:
+      name: provider
+      sha256: c8a055ee5ce3fd98d6fc872478b03823ffdb448699c6ebdbbc71d59b596fd48c
+      url: "https://pub.dev"
+    source: hosted
+    version: "6.1.2"
   pub_semver:
     dependency: transitive
     description:
@@ -1214,10 +1222,10 @@ packages:
     dependency: transitive
     description:
       name: riverpod
-      sha256: f21b32ffd26a36555e501b04f4a5dca43ed59e16343f1a30c13632b2351dfa4d
+      sha256: "59062512288d3056b2321804332a13ffdd1bf16df70dcc8e506e411280a72959"
       url: "https://pub.dev"
     source: hosted
-    version: "2.5.1"
+    version: "2.6.1"
   riverpod_analyzer_utils:
     dependency: transitive
     description:
@@ -1230,10 +1238,10 @@ packages:
     dependency: transitive
     description:
       name: riverpod_annotation
-      sha256: e5e796c0eba4030c704e9dae1b834a6541814963292839dcf9638d53eba84f5c
+      sha256: e14b0bf45b71326654e2705d462f21b958f987087be850afd60578fcd502d1b8
       url: "https://pub.dev"
     source: hosted
-    version: "2.3.5"
+    version: "2.6.1"
   riverpod_generator:
     dependency: "direct dev"
     description:
@@ -1267,7 +1275,7 @@ packages:
     source: hosted
     version: "3.0.0"
   shared_preferences:
-    dependency: "direct main"
+    dependency: transitive
     description:
       name: shared_preferences
       sha256: "95f9997ca1fb9799d494d0cb2a780fd7be075818d59f00c43832ed112b158a82"

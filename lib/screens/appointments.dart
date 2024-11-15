@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
-import 'package:pamfurred/components/screen_transitions.dart';
 import 'package:pamfurred/components/time_and_date_formatter.dart';
 import 'package:pamfurred/components/title_text.dart';
 import 'package:pamfurred/providers/appointments_provider.dart';
@@ -39,7 +38,6 @@ class AppointmentsScreenState extends ConsumerState<AppointmentsScreen>
 
   @override
   Widget build(BuildContext context) {
-    // Watch the appointment details provider for appointment data
     final appointmentAsyncValue = ref.watch(appointmentDetailsProvider);
 
     return Scaffold(
@@ -92,16 +90,14 @@ class AppointmentsScreenState extends ConsumerState<AppointmentsScreen>
 
   Widget _buildAppointmentList(
       int tabIndex, List<Map<String, dynamic>> appointmentList) {
-    // Filter appointments based on the selected tab index
     final filteredAppointments = appointmentList.where((appointment) {
-      final dateFormat = DateFormat('MM/dd/yyyy'); // Define the date format
+      final dateFormat = DateFormat('MM/dd/yyyy');
       DateTime appointmentDate;
 
       try {
         appointmentDate = dateFormat.parse(appointment['appointment_date']);
       } catch (e) {
-        appointmentDate =
-            DateTime.now(); // Fallback to the current date if parsing fails
+        appointmentDate = DateTime.now();
       }
 
       switch (tabIndex) {
@@ -123,12 +119,10 @@ class AppointmentsScreenState extends ConsumerState<AppointmentsScreen>
       }
     }).toList();
 
-    // If no filtered appointments match, show a message
     if (filteredAppointments.isEmpty) {
       return const Center(child: Text('No Appointments Available'));
     }
 
-    // Return a list of filtered appointments
     return ListView.builder(
       physics: const BouncingScrollPhysics(),
       itemCount: filteredAppointments.length,
@@ -142,13 +136,20 @@ class AppointmentsScreenState extends ConsumerState<AppointmentsScreen>
             GestureDetector(
               onTap: appointment['appointment_status'] == 'Done'
                   ? () {
-                      Navigator.push(
-                          context, slideUpRoute(const GiveFeedbackScreen()));
+                      ref.read(tappedSpAppointmentIdProvider.notifier).state =
+                          appointment['sp_id'];
+                      showModalBottomSheet(
+                        context: context,
+                        isScrollControlled: true,
+                        builder: (BuildContext context) {
+                          return const GiveFeedbackBottomSheet();
+                        },
+                      );
                     }
                   : null,
               child: ListTile(
-                title: customBoldWeightRegularText(context,
-                    '${appointment['establishment_name'] ?? 'N/A'}'), // Fallback if null
+                title: customBoldWeightRegularText(
+                    context, '${appointment['establishment_name'] ?? 'N/A'}'),
                 subtitle: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: <Widget>[
@@ -156,16 +157,14 @@ class AppointmentsScreenState extends ConsumerState<AppointmentsScreen>
                     Text(
                       appointment['appointment_date'] == null
                           ? 'N/A'
-                          : formatDate(appointment[
-                              'appointment_date']), // Fallback if null
+                          : formatDate(appointment['appointment_date']),
                       style: const TextStyle(color: darkGreyColor),
                     ),
                     const SizedBox(height: primarySizedBox),
                     Text(
                       appointment['appointment_time'] == null
                           ? 'N/A'
-                          : formatTime(appointment[
-                              'appointment_time']), // Fallback if null
+                          : formatTime(appointment['appointment_time']),
                       style: const TextStyle(color: greyColor),
                     ),
                   ],
@@ -178,8 +177,7 @@ class AppointmentsScreenState extends ConsumerState<AppointmentsScreen>
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: <Widget>[
                   Text(
-                    appointment['appointment_status'] ??
-                        'Unknown', // Fallback if null
+                    appointment['appointment_status'] ?? 'Unknown',
                     style: TextStyle(
                       color: statusColors[appointment['appointment_status']] ??
                           Colors.black87,

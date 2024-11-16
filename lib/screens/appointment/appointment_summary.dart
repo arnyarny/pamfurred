@@ -81,7 +81,7 @@ class AppointmentSummaryScreenState
       channelDescription: 'Notifications for confirmed Pamfurred appointments',
       importance: Importance.max,
       priority: Priority.high,
-      icon: 'drawable/pamfurred',
+      icon: 'pamfurred',
       showWhen: true,
     );
 
@@ -96,6 +96,27 @@ class AppointmentSummaryScreenState
       notificationDetails,
       payload: 'appointment_with_$serviceProviderName', // Optional payload
     );
+  }
+
+// Function to fetch service provider name using the spId from the provider
+  Future<String?> fetchServiceProviderName(WidgetRef ref) async {
+    // Get the service provider ID (spId) from the provider
+    final sp = ref.read(spIndexProvider); // Using ref to read the provider
+    final spId = sp!['sp_id']; // Ensure spId is non-null
+
+    final supabaseClient = Supabase.instance.client;
+
+    // Query the service_provider table using the spId
+    final response = await supabaseClient
+        .from(
+            'service_provider') // Assuming 'service_provider' is the table name
+        .select(
+            'name') // Assuming 'name' is the column with the provider's name
+        .eq('sp_id', spId) // Use spId as the service provider ID
+        .single(); // Fetch a single record
+
+    // Return the service provider's name, or null if not found
+    return response['name'];
   }
 
   Future<void> insertAppointmentItems(String appointmentId) async {
@@ -234,6 +255,15 @@ class AppointmentSummaryScreenState
                                 );
 
                                 if (appointmentId != null) {
+                                  // Fetch the service provider name using Riverpod's ref
+                                  final serviceProviderName =
+                                      await fetchServiceProviderName(ref);
+
+                                  if (serviceProviderName != null) {
+                                    // Show the notification with the service provider name
+                                    await showAppointmentNotification(
+                                        serviceProviderName);
+                                  }
                                   await insertAppointmentItems(
                                       appointmentId.toString());
                                   if (context.mounted) {

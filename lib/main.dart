@@ -13,7 +13,7 @@ final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
 
 Future<void> initializeNotifications() async {
   const AndroidInitializationSettings androidInitializationSettings =
-      AndroidInitializationSettings('drawable/pamfurred');
+      AndroidInitializationSettings('pamfurred');
 
   const InitializationSettings initializationSettings = InitializationSettings(
     android: androidInitializationSettings,

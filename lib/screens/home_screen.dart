@@ -29,6 +29,7 @@ import 'package:pamfurred/screens/main_screen.dart';
 // import 'package:pamfurred/screens/profile.dart';
 import 'package:pamfurred/screens/search_results.dart';
 import 'package:pamfurred/screens/appointment/serviceprovider_profile.dart';
+import 'package:shimmer/shimmer.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
@@ -280,11 +281,57 @@ class HomeScreenState extends ConsumerState<HomeScreen> {
                   ),
                 );
         },
-        loading: () => const Center(child: CircularProgressIndicator()),
+        loading: () => Shimmer.fromColors(
+              baseColor: Colors.grey[300]!,
+              highlightColor: Colors.grey[100]!,
+              child: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Column(
+                  children: List.generate(1, (index) => shimmerPlaceholder())
+                      .toList(),
+                ),
+              ),
+            ),
         error: (error, _) {
           print(error);
           return const ErrorMessage();
         });
+  }
+
+  Widget shimmerPlaceholder() {
+    return Card(
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(secondaryBorderRadius),
+      ),
+      child: Container(
+        width: double.infinity,
+        height: 115,
+        padding: const EdgeInsets.fromLTRB(
+            tertiarySizedBox, tertiarySizedBox, tertiarySizedBox, 0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Container(
+              width: 150,
+              height: 15,
+              color: Colors.white,
+            ),
+            const SizedBox(height: secondarySizedBox),
+            Container(
+              width: 100,
+              height: 15,
+              color: Colors.white,
+            ),
+            const SizedBox(height: secondarySizedBox),
+            Container(
+              width: 70,
+              height: 15,
+              color: Colors.white,
+            ),
+          ],
+        ),
+      ),
+    );
   }
 
   Widget _viewAppointmentsButton() {
@@ -473,9 +520,120 @@ class ServiceProvidersWidget extends ConsumerWidget {
         ref.watch(serviceProviderFutureProvider(serviceCategory));
 
     return providerData.when(
-        loading: () => const SizedBox(
-              height: 150,
-              child: Center(child: CircularProgressIndicator()),
+        loading: () => SizedBox(
+              height: 225,
+              child: ListView.builder(
+                physics: const BouncingScrollPhysics(),
+                scrollDirection: Axis.horizontal,
+                itemCount: 5, // Display a few shimmer placeholders
+                itemBuilder: (context, index) {
+                  return Padding(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: primarySizedBox),
+                    child: SizedBox(
+                      width: 250,
+                      child: Card(
+                        shape: RoundedRectangleBorder(
+                          borderRadius:
+                              BorderRadius.circular(secondaryBorderRadius),
+                        ),
+                        elevation: 0,
+                        color: Colors.white,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            // Image placeholder
+                            Shimmer.fromColors(
+                              baseColor: Colors.grey[300]!,
+                              highlightColor: Colors.grey[100]!,
+                              child: Container(
+                                width: double.infinity,
+                                height: 150,
+                                decoration: BoxDecoration(
+                                  color: Colors.white,
+                                  borderRadius: BorderRadius.circular(
+                                      primaryBorderRadius),
+                                ),
+                              ),
+                            ),
+                            const SizedBox(
+                                height:
+                                    8.0), // Adjusted spacing for better alignment
+
+                            // Service provider name shimmer
+                            Shimmer.fromColors(
+                              baseColor: Colors.grey[300]!,
+                              highlightColor: Colors.grey[100]!,
+                              child: Container(
+                                margin: const EdgeInsets.symmetric(
+                                    horizontal: 12.0),
+                                width: 120,
+                                height: 15.0,
+                                color: Colors.white,
+                              ),
+                            ),
+                            const SizedBox(height: 8.0),
+
+                            // Row for rating, sentiment label, and distance
+                            Padding(
+                              padding:
+                                  const EdgeInsets.symmetric(horizontal: 12.0),
+                              child: Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                children: [
+                                  // Rating shimmer
+                                  Shimmer.fromColors(
+                                    baseColor: Colors.grey[300]!,
+                                    highlightColor: Colors.grey[100]!,
+                                    child: Container(
+                                      width: 50,
+                                      height: 15.0,
+                                      color: Colors.white,
+                                    ),
+                                  ),
+
+                                  // Sentiment label shimmer
+                                  Shimmer.fromColors(
+                                    baseColor: Colors.grey[300]!,
+                                    highlightColor: Colors.grey[100]!,
+                                    child: Container(
+                                      width: 60,
+                                      height: 15.0,
+                                      color: Colors.white,
+                                    ),
+                                  ),
+
+                                  // Distance shimmer
+                                  Shimmer.fromColors(
+                                    baseColor: Colors.grey[300]!,
+                                    highlightColor: Colors.grey[100]!,
+                                    child: Row(
+                                      children: [
+                                        Icon(
+                                          CupertinoIcons.location,
+                                          color: Colors.grey[400]!,
+                                          size: 19,
+                                        ),
+                                        const SizedBox(width: 5),
+                                        Container(
+                                          width: 40,
+                                          height: 15.0,
+                                          color: Colors.white,
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  );
+                },
+              ),
             ),
         error: (error, _) {
           print(error);
@@ -577,13 +735,22 @@ class ServiceProvidersWidget extends ConsumerWidget {
                                           Widget child,
                                           ImageChunkEvent? loadingProgress) {
                                         if (loadingProgress == null) {
-                                          return child;
+                                          return child; // Image loaded, show the actual image
                                         } else {
-                                          return const SizedBox(
+                                          // Show shimmer while the image is loading
+                                          return SizedBox(
                                             height: 150,
-                                            child: Center(
-                                                child:
-                                                    CircularProgressIndicator()),
+                                            width: double.infinity,
+                                            child: Shimmer.fromColors(
+                                              baseColor: Colors.grey[
+                                                  300]!, // Shimmer base color
+                                              highlightColor: Colors.grey[
+                                                  100]!, // Shimmer highlight color
+                                              child: Container(
+                                                color: Colors
+                                                    .white, // Placeholder color for shimmer effect
+                                              ),
+                                            ),
                                           );
                                         }
                                       },

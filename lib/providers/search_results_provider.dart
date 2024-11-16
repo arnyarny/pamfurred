@@ -1,4 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:pamfurred/models/sp_search_results.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 // To know which preference was selected
@@ -16,17 +17,51 @@ final longProvider = StateProvider<double?>((ref) => null);
 final minPriceProvider = StateProvider<double>((ref) => 0);
 final maxPriceProvider = StateProvider<double>((ref) => 200);
 
-// Default results
-final searchResultsServiceProviders =
+// For services
+final searchResultsServiceProviderServices =
     FutureProvider.family<List<dynamic>, String>((ref, category) async {
   final supabase = Supabase.instance.client;
 
   final response =
-      await supabase.rpc('get_service_providers_by_category', params: {
+      await supabase.rpc('get_service_provider_services_by_category', params: {
     'service_category_param': category,
   });
 
   return response as List<dynamic>;
+});
+
+// For packages
+final searchResultsServiceProviderPackages =
+    FutureProvider.family<List<dynamic>, String>((ref, category) async {
+  final supabase = Supabase.instance.client;
+
+  final response =
+      await supabase.rpc('get_service_provider_packages_by_category', params: {
+    'package_category_param': category,
+  });
+
+  return response as List<dynamic>;
+});
+
+// Combined service and package
+final combinedSearchResultsProvider =
+    FutureProvider.family<List<ServiceProviderItem>, String>(
+        (ref, category) async {
+  final services =
+      await ref.watch(searchResultsServiceProviderServices(category).future);
+  final packages =
+      await ref.watch(searchResultsServiceProviderPackages(category).future);
+
+  // Convert services and packages into ServiceProviderItem list
+  final serviceItems = services
+      .map((service) => ServiceProviderItem.fromService(service))
+      .toList();
+  final packageItems = packages
+      .map((package) => ServiceProviderItem.fromPackage(package))
+      .toList();
+
+  // Combine both lists
+  return [...serviceItems, ...packageItems];
 });
 
 // Sorted by price (cheapest to most expensive)

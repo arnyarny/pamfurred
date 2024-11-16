@@ -1,4 +1,3 @@
-// import 'package:custom_radio_grouped_button/custom_radio_grouped_button.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -16,8 +15,6 @@ import 'package:pamfurred/models/package_filter_criteria.dart';
 import 'package:pamfurred/models/service_filter_criteria.dart';
 import 'package:pamfurred/providers/button_pressed_provider.dart';
 import 'package:pamfurred/providers/cart_provider.dart';
-// import 'package:pamfurred/models/services.dart';
-// import 'package:pamfurred/providers/cart_provider.dart';
 import 'package:pamfurred/providers/global_providers.dart';
 import 'package:pamfurred/providers/serviceprovider_provider.dart';
 import 'package:pamfurred/providers/sp_profile_provider_packages.dart';
@@ -25,7 +22,6 @@ import 'package:pamfurred/providers/sp_profile_provider_services.dart';
 import 'package:pamfurred/providers/user_id.dart';
 import 'package:pamfurred/screens/appointment/cart_screen.dart';
 import 'package:pamfurred/screens/appointment/choose_appointment_pref.dart';
-// import 'package:pamfurred/providers/sp_profile_provider_services.dart';
 import 'package:shimmer/shimmer.dart';
 
 // Function to reset providers to null/blank when willBookProvider is false

@@ -13,8 +13,14 @@ final allServicesProvider =
 
   List<dynamic> services = response as List<dynamic>;
 
-  // Convert each service map to a Service object
-  List<Service> serviceList = services.map((service) {
+// Filter out services without required details and map them to Service objects
+  List<Service> serviceList = services
+      .where((service) =>
+          service['sp_id'] != null &&
+          service['service_id'] != null &&
+          service['service_name'] != null &&
+          service['service_name'].toString().isNotEmpty)
+      .map((service) {
     return Service(
       serviceServiceProviderId: service['sp_id'] as String? ?? '',
       serviceId: service['service_id'] as String? ?? '',

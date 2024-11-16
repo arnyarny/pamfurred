@@ -145,22 +145,18 @@ class ChooseAppointmentPreferencesScreenState
                     }
 
                     return SizedBox(
-                      height: pet.isNotEmpty ? 60 : 180,
+                      height: 60,
                       child: pet.isEmpty
-                          ? const Center(
-                              child: Column(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  SizedBox(height: secondarySizedBox),
-                                  Text(
-                                      "No pets with matching pet types for this service provider found.",
-                                      style: TextStyle(
-                                          fontSize: smallText,
-                                          color: darkGreyColor)),
-                                  SizedBox(height: tertiarySizedBox),
-                                ],
-                              ),
-                            )
+                          ? const Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Text(
+                                  textAlign: TextAlign.center,
+                                  "No pets with matching pet types for this service provider found.",
+                                  style: TextStyle(
+                                      fontSize: regularText, color: greyColor)),
+                            ],
+                          )
                           : ListView.builder(
                               physics: const BouncingScrollPhysics(),
                               scrollDirection: Axis.horizontal,

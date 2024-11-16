@@ -12,9 +12,14 @@ final allPackagesProvider =
       params: {'spid': filterCriteria.spId});
 
   List<dynamic> packages = response as List<dynamic>;
-
-  // Convert each package map to a Package object
-  List<Package> packageList = packages.map((package) {
+// Filter out packages without required details and map them to Package objects
+  List<Package> packageList = packages
+      .where((package) =>
+          package['sp_id'] != null &&
+          package['package_id'] != null &&
+          package['package_name'] != null &&
+          package['package_name'].toString().isNotEmpty)
+      .map((package) {
     return Package(
       packageServiceProviderId: package['sp_id'] as String? ?? '',
       packageId: package['package_id'] as String? ?? '',

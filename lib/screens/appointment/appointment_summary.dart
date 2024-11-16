@@ -193,7 +193,7 @@ class AppointmentSummaryScreenState
                     getAppointmentTitle(context, 'Services'),
                   const SizedBox(height: primarySizedBox),
                   ...services.map((service) => _buildCartItem(service)),
-                  const SizedBox(height: secondarySizedBox),
+                  const SizedBox(height: primarySizedBox),
                   if (packages.isNotEmpty)
                     getAppointmentTitle(context, 'Packages'),
                   const SizedBox(height: primarySizedBox),
@@ -210,10 +210,10 @@ class AppointmentSummaryScreenState
 
                   // Conditional rendering for Home service or In-clinic
                   if (servicePackageType == 'Home service') ...[
-                    getAppointmentTitle(context, 'Address'),
+                    getAppointmentTitle(context, 'Home address'),
                     getAppointmentDetail(context, appointmentAddress),
                   ] else if (servicePackageType == 'In-clinic') ...[
-                    getAppointmentTitle(context, 'Address'),
+                    getAppointmentTitle(context, 'Service provider address'),
                     const SizedBox(height: primarySizedBox),
                     getAppointmentDetail(context, sp['full_address']),
                   ],
@@ -330,7 +330,7 @@ class AppointmentSummaryScreenState
     return Row(
       mainAxisAlignment: MainAxisAlignment.start,
       children: [
-        customRegularWeightTitleText(context, title),
+        Wrap(children: [customRegularWeightTitleText(context, title)]),
         const SizedBox(width: primarySizedBox),
       ],
     );

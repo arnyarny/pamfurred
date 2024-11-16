@@ -5,6 +5,7 @@ import 'package:pamfurred/components/custom_appbar.dart';
 import 'package:pamfurred/components/custom_padded_button.dart';
 import 'package:pamfurred/components/globals.dart';
 import 'package:pamfurred/components/screen_transitions.dart';
+import 'package:pamfurred/components/time_and_date_formatter.dart';
 import 'package:pamfurred/providers/serviceprovider_provider.dart';
 import 'package:pamfurred/screens/appointment/appointment_summary.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -143,7 +144,7 @@ class ChooseDateAndTimeScreen extends ConsumerWidget {
                       runSpacing: 8.0, // Space between rows of chips
                       children: timeslots.map((timeslot) {
                         return ChoiceChip(
-                          label: Text(timeslot),
+                          label: Text(formatTime(timeslot)),
                           selected: selectedTimeslot == timeslot,
                           onSelected: (selected) {
                             ref.read(selectedTimeslotProvider.notifier).state =

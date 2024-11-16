@@ -26,7 +26,6 @@ import 'package:pamfurred/backend_logic_files/store_location.dart';
 import 'package:pamfurred/providers/user_id.dart';
 import 'package:pamfurred/screens/location_permission.dart';
 import 'package:pamfurred/screens/main_screen.dart';
-// import 'package:pamfurred/screens/profile.dart';
 import 'package:pamfurred/screens/search_results.dart';
 import 'package:pamfurred/screens/appointment/serviceprovider_profile.dart';
 import 'package:shimmer/shimmer.dart';

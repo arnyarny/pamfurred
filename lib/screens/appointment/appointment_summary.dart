@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:pamfurred/components/capitalize_first_letter.dart';
 import 'package:pamfurred/components/custom_appbar.dart';
 import 'package:pamfurred/components/regular_text.dart';
 import 'package:pamfurred/components/screen_transitions.dart';
@@ -207,9 +206,6 @@ class AppointmentSummaryScreenState
                   const SizedBox(height: primarySizedBox),
                   getAppointmentDetail(
                       context, formatTime(appointmentTime.toString())),
-
-                  const SizedBox(height: secondarySizedBox),
-                  getAppointmentTitle(context, 'Service or package category'),
                   const SizedBox(height: secondarySizedBox),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -240,31 +236,13 @@ class AppointmentSummaryScreenState
                                 if (appointmentId != null) {
                                   await insertAppointmentItems(
                                       appointmentId.toString());
-
-                                  final userId = ref.watch(userIdProvider);
-
-                                  // Fetch the service provider's username
-                                  final supabase = Supabase.instance.client;
-                                  final serviceProvider = await supabase
-                                      .from(
-                                          'pet_owner') // Assuming you have this table
-                                      .select('username')
-                                      .eq('pet_owner_id',
-                                          userId) // Replace with your actual service provider field
-                                      .single();
-
-                                  final serviceProviderName =
-                                      serviceProvider['username'];
-
-                                  // Show notification with dynamic service provider name
-                                  showAppointmentNotification(
-                                      serviceProviderName);
-
-                                  Navigator.push(
-                                    context,
-                                    crossFadeRoute(
-                                        const SuccessfulAppointment()),
-                                  );
+                                  if (context.mounted) {
+                                    Navigator.push(
+                                      context,
+                                      crossFadeRoute(
+                                          const SuccessfulAppointment()),
+                                    );
+                                  }
                                 }
                               },
                         style: ButtonStyle(

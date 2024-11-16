@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:pamfurred/components/capitalize_first_letter.dart';
 import 'package:pamfurred/components/custom_appbar.dart';
 import 'package:pamfurred/components/regular_text.dart';
 import 'package:pamfurred/components/screen_transitions.dart';
@@ -37,8 +36,7 @@ class AppointmentSummaryScreenState
       required String time,
       required num totalAmount,
       required String appointmentStatus,
-      required String appointmentType,
-      required String appointmentCategory}) async {
+      required String appointmentType}) async {
     final supabase = Supabase.instance.client;
 
     // Retrieve the service provider ID
@@ -61,8 +59,7 @@ class AppointmentSummaryScreenState
           'appointment_time': time,
           'total_amount': totalAmount,
           'appointment_status': appointmentStatus,
-          'appointment_type': appointmentType,
-          'appointment_category': appointmentCategory
+          'appointment_type': appointmentType
         })
         .select('appointment_id')
         .single();
@@ -119,9 +116,6 @@ class AppointmentSummaryScreenState
 
     final servicePackageType =
         ref.watch(selectedAppointmentPackageServiceTypeProvider);
-
-    final servicePackageCategory =
-        ref.watch(selectedAppointmentCategoryProvider);
 
     final appointmentAddress = ref.watch(appointmentAddressProvider);
 
@@ -185,12 +179,6 @@ class AppointmentSummaryScreenState
                   const SizedBox(height: primarySizedBox),
                   getAppointmentDetail(
                       context, formatTime(appointmentTime.toString())),
-
-                  const SizedBox(height: secondarySizedBox),
-                  getAppointmentTitle(context, 'Service or package category'),
-                  const SizedBox(height: primarySizedBox),
-                  getAppointmentDetail(
-                      context, capitalizeFirstLetter(servicePackageCategory)),
                   const SizedBox(height: secondarySizedBox),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -214,7 +202,6 @@ class AppointmentSummaryScreenState
                                   date: formatDateToShort('$appointmentDate'),
                                   time: '$appointmentTime',
                                   appointmentType: servicePackageType,
-                                  appointmentCategory: servicePackageCategory,
                                   address: appointmentAddress,
                                   petProfileId: appointmentPetId,
                                 );
@@ -222,11 +209,13 @@ class AppointmentSummaryScreenState
                                 if (appointmentId != null) {
                                   await insertAppointmentItems(
                                       appointmentId.toString());
-                                  Navigator.push(
-                                    context,
-                                    crossFadeRoute(
-                                        const SuccessfulAppointment()),
-                                  );
+                                  if (context.mounted) {
+                                    Navigator.push(
+                                      context,
+                                      crossFadeRoute(
+                                          const SuccessfulAppointment()),
+                                    );
+                                  }
                                 }
                               },
                         style: ButtonStyle(

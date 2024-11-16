@@ -1,34 +1,19 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:pamfurred/providers/serviceprovider_provider.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
-final serviceProviderAvailableTimeslotsProvider =
-    FutureProvider.family<List<String>, TimeslotParams>((ref, params) async {
+// Provider to fetch available timeslots
+final availableTimeslotsProvider =
+    FutureProvider.family<List<Map<String, dynamic>>, String>(
+        (ref, selectedDate) async {
+  final serviceProviderId = ref.watch(selectedSpIndexProvider);
+
   final supabase = Supabase.instance.client;
+  final response = await supabase
+      .from('service_provider_availability')
+      .select('availability_date, timeslots')
+      .eq('sp_id', serviceProviderId)
+      .eq('availability_date', selectedDate);
 
-  try {
-    final response = await supabase
-        .from('service_provider_availability')
-        .select('timeslots')
-        .eq('sp_id', params.spId)
-        .eq('availability_date', params.selectedDate)
-        .single();
-
-
-    final timeslots = response['timeslots'] as List<dynamic>?;
-    if (timeslots == null || timeslots.isEmpty) {
-      return [];
-    }
-
-    // Map timeslots to a List<String>
-    return timeslots.map((e) => e.toString()).toList();
-  } catch (e) {
-    throw Exception('Error fetching available timeslots: $e');
-  }
+  return List<Map<String, dynamic>>.from(response);
 });
-
-class TimeslotParams {
-  final String spId;
-  final String selectedDate;
-
-  TimeslotParams({required this.spId, required this.selectedDate});
-}

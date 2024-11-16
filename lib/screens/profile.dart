@@ -224,7 +224,12 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                                                   height: tertiarySizedBox),
                                               customPaddedTextButton(
                                                 text: 'Add Pet',
-                                                onPressed: () {},
+                                                onPressed: () {
+                                                  Navigator.push(
+                                                      context,
+                                                      slideUpRoute(
+                                                          const AddPetProfileScreen()));
+                                                },
                                               ),
                                               const SizedBox(
                                                   height: tertiarySizedBox),

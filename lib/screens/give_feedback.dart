@@ -84,6 +84,7 @@ class GiveFeedbackBottomSheetState
             TextField(
               controller: _reviewController,
               maxLines: 4,
+              textCapitalization: TextCapitalization.sentences, // Add this line
               decoration: const InputDecoration(
                 hintText: 'Tell us about your experience',
                 hintStyle: TextStyle(fontSize: regularText, color: greyColor),

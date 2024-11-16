@@ -575,6 +575,8 @@ class ServiceproviderProfileScreenState
                     child: TextButton(
                         onPressed: () {
                           setState(() {
+                            // Clear the cart when this button is pressed
+                            ref.read(cartNotifierProvider.notifier).clearCart();
                             ref.read(willBookProvider.notifier).state = false;
                             // If willBook is false, reset the providers
                             resetProviders(ref);

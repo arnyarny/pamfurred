@@ -1,4 +1,3 @@
-import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:email_validator/email_validator.dart';
@@ -32,12 +31,6 @@ class LoginScreenState extends ConsumerState<LoginScreen> {
     emailFocusNode = FocusNode();
     passwordFocusNode = FocusNode();
     checkIfUserIsLoggedIn(); // Check if user is already logged in
-    FirebaseMessaging.instance
-        .requestPermission(); // Request permission for notifications
-    FirebaseMessaging.onMessage.listen((RemoteMessage message) {
-      print(
-          'Received a message while in the foreground: ${message.notification?.title}');
-    });
   }
 
   @override
@@ -89,10 +82,6 @@ class LoginScreenState extends ConsumerState<LoginScreen> {
         final isEmailVerified = response.user!.emailConfirmedAt != null;
 
         if (isEmailVerified) {
-          // Save device token after successful login
-          // await saveDeviceToken(
-          //     response.user!.id); // Pass the user id to save token
-
           // Navigate to MainScreen if authentication is successful
           mainScreenKey.currentState
               ?.switchToPage(0); // Make sure the user goes to the home screen
@@ -120,26 +109,6 @@ class LoginScreenState extends ConsumerState<LoginScreen> {
       setState(() {
         isLoading = false;
       });
-    }
-  }
-
-  Future<void> saveDeviceToken(String providerId) async {
-    try {
-      FirebaseMessaging messaging = FirebaseMessaging.instance;
-      String? token = await messaging.getToken();
-      print(token);
-
-      if (token != null) {
-        // Save the token to Supabase for the provider
-        await Supabase.instance.client
-            .from('service_provider')
-            .update({'device_token': token}).eq('sp_id', providerId);
-        print("Device token saved successfully");
-      } else {
-        print("Failed to retrieve device token");
-      }
-    } catch (e) {
-      print("Error saving device token: $e");
     }
   }
 

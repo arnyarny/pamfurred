@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pamfurred/components/capitalize_first_letter.dart';
 import 'package:pamfurred/components/custom_appbar.dart';
@@ -6,6 +7,7 @@ import 'package:pamfurred/components/regular_text.dart';
 import 'package:pamfurred/components/screen_transitions.dart';
 import 'package:pamfurred/components/time_and_date_formatter.dart';
 import 'package:pamfurred/components/title_text.dart';
+import 'package:pamfurred/main.dart';
 import 'package:pamfurred/models/packages.dart';
 import 'package:pamfurred/models/services.dart';
 import 'package:pamfurred/providers/cart_provider.dart';
@@ -37,8 +39,7 @@ class AppointmentSummaryScreenState
       required String time,
       required num totalAmount,
       required String appointmentStatus,
-      required String appointmentType,
-      required String appointmentCategory}) async {
+      required String appointmentType}) async {
     final supabase = Supabase.instance.client;
 
     // Retrieve the service provider ID
@@ -61,8 +62,7 @@ class AppointmentSummaryScreenState
           'appointment_time': time,
           'total_amount': totalAmount,
           'appointment_status': appointmentStatus,
-          'appointment_type': appointmentType,
-          'appointment_category': appointmentCategory
+          'appointment_type': appointmentType
         })
         .select('appointment_id')
         .single();
@@ -72,6 +72,31 @@ class AppointmentSummaryScreenState
     ref.read(appointmentIdProvider.notifier).state = appointmentId.toString();
 
     return appointmentId;
+  }
+
+  Future<void> showAppointmentNotification(String serviceProviderName) async {
+    const AndroidNotificationDetails androidDetails =
+        AndroidNotificationDetails(
+      'pamfurred_appointment_channel', // Channel ID
+      'Pamfurred Appointment Notifications', // Channel Name
+      channelDescription: 'Notifications for confirmed Pamfurred appointments',
+      importance: Importance.max,
+      priority: Priority.high,
+      icon: 'drawable/pamfurred',
+      showWhen: true,
+    );
+
+    const NotificationDetails notificationDetails = NotificationDetails(
+      android: androidDetails,
+    );
+
+    await flutterLocalNotificationsPlugin.show(
+      0, // Notification ID
+      'Appointment Confirmed!', // Notification Title
+      'You have an appointment with $serviceProviderName.', // Notification Body
+      notificationDetails,
+      payload: 'appointment_with_$serviceProviderName', // Optional payload
+    );
   }
 
   Future<void> insertAppointmentItems(String appointmentId) async {
@@ -119,9 +144,6 @@ class AppointmentSummaryScreenState
 
     final servicePackageType =
         ref.watch(selectedAppointmentPackageServiceTypeProvider);
-
-    final servicePackageCategory =
-        ref.watch(selectedAppointmentCategoryProvider);
 
     final appointmentAddress = ref.watch(appointmentAddressProvider);
 
@@ -188,9 +210,6 @@ class AppointmentSummaryScreenState
 
                   const SizedBox(height: secondarySizedBox),
                   getAppointmentTitle(context, 'Service or package category'),
-                  const SizedBox(height: primarySizedBox),
-                  getAppointmentDetail(
-                      context, capitalizeFirstLetter(servicePackageCategory)),
                   const SizedBox(height: secondarySizedBox),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -214,7 +233,6 @@ class AppointmentSummaryScreenState
                                   date: formatDateToShort('$appointmentDate'),
                                   time: '$appointmentTime',
                                   appointmentType: servicePackageType,
-                                  appointmentCategory: servicePackageCategory,
                                   address: appointmentAddress,
                                   petProfileId: appointmentPetId,
                                 );
@@ -222,6 +240,26 @@ class AppointmentSummaryScreenState
                                 if (appointmentId != null) {
                                   await insertAppointmentItems(
                                       appointmentId.toString());
+
+                                  final userId = ref.watch(userIdProvider);
+
+                                  // Fetch the service provider's username
+                                  final supabase = Supabase.instance.client;
+                                  final serviceProvider = await supabase
+                                      .from(
+                                          'pet_owner') // Assuming you have this table
+                                      .select('username')
+                                      .eq('pet_owner_id',
+                                          userId) // Replace with your actual service provider field
+                                      .single();
+
+                                  final serviceProviderName =
+                                      serviceProvider['username'];
+
+                                  // Show notification with dynamic service provider name
+                                  showAppointmentNotification(
+                                      serviceProviderName);
+
                                   Navigator.push(
                                     context,
                                     crossFadeRoute(

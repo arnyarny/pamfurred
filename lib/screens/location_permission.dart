@@ -13,7 +13,7 @@ class LocationService {
     serviceEnabled = await Geolocator.isLocationServiceEnabled();
     if (!serviceEnabled) {
       // Show a dialog or UI to prompt the user to enable location services
-      _showLocationServicesDialog(context);
+      if (context.mounted) _showLocationServicesDialog(context);
       return Future.error('Location services are disabled.');
     }
 
@@ -22,14 +22,14 @@ class LocationService {
       permission = await Geolocator.requestPermission();
       if (permission == LocationPermission.denied) {
         // Show a dialog to inform the user about the necessity of location access
-        _showPermissionDialog(context);
+        if (context.mounted) _showPermissionDialog(context);
         return Future.error('Location permissions are denied');
       }
     }
 
     if (permission == LocationPermission.deniedForever) {
       // Show a dialog to guide the user to app settings
-      _showSettingsDialog(context);
+      if (context.mounted) _showSettingsDialog(context);
       return Future.error(
           'Location permissions are permanently denied, we cannot request permissions.');
     }

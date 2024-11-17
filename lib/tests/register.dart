@@ -396,6 +396,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 ),
               ),
               const SizedBox(height: tertiarySizedBox),
+              const SizedBox(height: tertiarySizedBox),
             ],
           ),
         ),

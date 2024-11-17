@@ -16,6 +16,7 @@ class DogBreed with CustomDropdownListFilter {
 }
 
 const List<DogBreed> dogBreedList = [
+  DogBreed('Unknown'),
   DogBreed('Akita'),
   DogBreed('Alaskan Malamute'),
   DogBreed('Aspin'),

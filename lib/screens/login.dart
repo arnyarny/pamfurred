@@ -85,26 +85,35 @@ class LoginScreenState extends ConsumerState<LoginScreen> {
           // Navigate to MainScreen if authentication is successful
           mainScreenKey.currentState
               ?.switchToPage(0); // Make sure the user goes to the home screen
-          Navigator.pushReplacement(
-            context,
-            crossFadeRoute(MainScreen()),
-          );
+          if (mounted) {
+            Navigator.pushReplacement(
+              context,
+              crossFadeRoute(MainScreen()),
+            );
+          }
         } else {
           // Email not verified - show error message
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Account is not verified by admin.')),
-          );
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                  content: Text('Account is not verified by admin.')),
+            );
+          }
         }
       } else {
         // Handle login failure
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Invalid email or password')),
-        );
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Invalid email or password')),
+          );
+        }
       }
     } on AuthException catch (error) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(error.message)),
-      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(error.message)),
+        );
+      }
     } finally {
       setState(() {
         isLoading = false;

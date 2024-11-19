@@ -4,14 +4,15 @@ class ServiceFilterCriteria {
   final String? petType;
   final String? serviceType;
   final String? serviceCategory;
-  final String? size;
+  // final String? size;
+  final double? weight;
 
-  ServiceFilterCriteria({
-    required this.spId,
-    this.serviceId,
-    this.petType,
-    this.serviceType,
-    this.serviceCategory,
-    this.size,
-  });
+  ServiceFilterCriteria(
+      {required this.spId,
+      this.serviceId,
+      this.petType,
+      this.serviceType,
+      this.serviceCategory,
+      // this.size,
+      this.weight});
 }

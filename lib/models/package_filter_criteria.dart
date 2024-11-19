@@ -4,6 +4,7 @@ class PackageFilterCriteria {
   final String? packageType;
   final String? packageCategory;
   final String? size;
+  final double? weight;
 
   PackageFilterCriteria({
     required this.spId,
@@ -11,5 +12,6 @@ class PackageFilterCriteria {
     this.packageType,
     this.packageCategory,
     this.size,
+    this.weight
   });
 }

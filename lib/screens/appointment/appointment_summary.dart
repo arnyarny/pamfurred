@@ -211,11 +211,11 @@ class AppointmentSummaryScreenState
                   // Conditional rendering for Home service or In-clinic
                   if (servicePackageType == 'Home service') ...[
                     getAppointmentTitle(context, 'Home address'),
-                    getAppointmentDetail(context, appointmentAddress),
+                    getAppointmentAddressDetail(context, appointmentAddress),
                   ] else if (servicePackageType == 'In-clinic') ...[
                     getAppointmentTitle(context, 'Service provider address'),
                     const SizedBox(height: primarySizedBox),
-                    getAppointmentDetail(context, sp['full_address']),
+                    getAppointmentAddressDetail(context, sp['full_address']),
                   ],
                   const SizedBox(height: secondarySizedBox),
                   getAppointmentTitle(context, 'Date'),
@@ -330,7 +330,17 @@ class AppointmentSummaryScreenState
     return Row(
       mainAxisAlignment: MainAxisAlignment.start,
       children: [
-        Wrap(children: [customRegularWeightTitleText(context, title)]),
+        customRegularWeightTitleText(context, title),
+        const SizedBox(width: primarySizedBox),
+      ],
+    );
+  }
+
+  getAppointmentAddressDetail(BuildContext context, String title) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.start,
+      children: [
+        customRegularWeightTitleTextForAddress(context, title),
         const SizedBox(width: primarySizedBox),
       ],
     );

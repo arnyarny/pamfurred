@@ -95,61 +95,68 @@ class HomeScreenState extends ConsumerState<HomeScreen> {
     final isVisible = ref.watch(visibilityProvider);
     const appBarHeight = 60.0;
 
-    return SafeArea(
-      child: Scaffold(
-        backgroundColor: Colors.white,
+    return PopScope(
+      canPop: false,
+      child: SafeArea(
+        child: Scaffold(
+          backgroundColor: Colors.white,
 
-        // Smooth height animation for AppBar visibility
-        appBar: PreferredSize(
-          preferredSize: const Size.fromHeight(appBarHeight),
-          child: AnimatedContainer(
-            duration: const Duration(milliseconds: 300),
-            height: isVisible ? appBarHeight : 0,
-            curve: Curves.easeInOut,
-            child: isVisible ? appBar(context) : null,
+          // Smooth height animation for AppBar visibility
+          appBar: PreferredSize(
+            preferredSize: const Size.fromHeight(appBarHeight),
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 300),
+              height: isVisible ? appBarHeight : 0,
+              curve: Curves.easeInOut,
+              child: isVisible ? appBar(context) : null,
+            ),
           ),
-        ),
 
-        // Body with scroll controller for detecting scroll direction
-        body: NotificationListener<ScrollNotification>(
-          onNotification: (scrollNotification) {
-            if (scrollNotification is UserScrollNotification) {
-              // Show or hide based on scroll direction
-              if (scrollNotification.direction == ScrollDirection.reverse) {
-                ref.read(visibilityProvider.notifier).setVisible(false);
-              } else if (scrollNotification.direction ==
-                  ScrollDirection.forward) {
-                ref.read(visibilityProvider.notifier).setVisible(true);
+          // Body with scroll controller for detecting scroll direction
+          body: NotificationListener<ScrollNotification>(
+            onNotification: (scrollNotification) {
+              if (scrollNotification is UserScrollNotification) {
+                // Show or hide based on scroll direction
+                if (scrollNotification.direction == ScrollDirection.reverse) {
+                  ref.read(visibilityProvider.notifier).setVisible(false);
+                } else if (scrollNotification.direction ==
+                    ScrollDirection.forward) {
+                  ref.read(visibilityProvider.notifier).setVisible(true);
+                }
               }
-            }
-            return true;
-          },
-          child: PullToRefresh(
-            providersToRefresh: [
-              appointmentDetailsProvider,
-              selectedCategoryIndexProvider,
-              serviceProviderFutureProvider('pet grooming'),
-              serviceProviderFutureProvider('pet boarding'),
-              serviceProviderFutureProvider('veterinary service'),
-            ],
-            child: ListView(
-              controller: _scrollController,
-              physics: const BouncingScrollPhysics(),
-              children: [
-                Align(
-                  alignment: Alignment.center,
-                  child: SizedBox(
-                    width: screenPadding(context),
+              return true;
+            },
+            child: PullToRefresh(
+              providersToRefresh: [
+                appointmentDetailsProvider,
+                selectedCategoryIndexProvider,
+                serviceProviderFutureProvider('pet grooming'),
+                serviceProviderFutureProvider('pet boarding'),
+                serviceProviderFutureProvider('veterinary service'),
+              ],
+              child: ListView(
+                controller: _scrollController,
+                physics: const BouncingScrollPhysics(),
+                children: [
+                  Align(
+                    alignment: Alignment.center,
                     child: Column(
                       children: [
                         const SizedBox(height: secondarySizedBox),
-                        _sectionHeader(context, "Upcoming appointments"),
+                        SizedBox(
+                            width: screenPadding(context),
+                            child: _sectionHeader(
+                                context, "Upcoming appointments")),
                         const SizedBox(height: primarySizedBox),
-                        _upcomingAppointmentCard(),
+                        SizedBox(
+                            width: screenPadding(context),
+                            child: _upcomingAppointmentCard()),
                         const SizedBox(height: primarySizedBox),
                         _viewAppointmentsButton(),
                         const SizedBox(height: primarySizedBox),
-                        _sectionHeader(context, "I'm looking for"),
+                        SizedBox(
+                            width: screenPadding(context),
+                            child: _sectionHeader(context, "I'm looking for")),
                         const SizedBox(height: primarySizedBox),
                         _serviceSelection(context),
                         const SizedBox(height: primarySizedBox),
@@ -159,8 +166,8 @@ class HomeScreenState extends ConsumerState<HomeScreen> {
                       ],
                     ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
         ),
@@ -252,7 +259,7 @@ class HomeScreenState extends ConsumerState<HomeScreen> {
                                   ),
                                   const SizedBox(height: secondarySizedBox),
                                   Text(
-                                      formatDate(
+                                      secondaryFormatDate(
                                           appointment['appointment_date'] ??
                                               'N/A'),
                                       style: const TextStyle(
@@ -499,7 +506,20 @@ class HomeScreenState extends ConsumerState<HomeScreen> {
   Widget _recoSection(String header, String category) {
     return Column(
       children: [
-        _sectionHeader(context, header),
+        SizedBox(
+          width: screenPadding(context),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              _sectionHeader(context, header),
+              GestureDetector(
+                onTap: () {},
+                child: const Text('View more',
+                    style: TextStyle(fontSize: smallText, color: primaryColor)),
+              )
+            ],
+          ),
+        ),
         const SizedBox(height: secondarySizedBox),
         ServiceProvidersWidget(serviceCategory: category),
         const SizedBox(height: tertiarySizedBox),
@@ -527,8 +547,8 @@ class ServiceProvidersWidget extends ConsumerWidget {
                 itemCount: 5, // Display a few shimmer placeholders
                 itemBuilder: (context, index) {
                   return Padding(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: primarySizedBox),
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: secondarySizedBox),
                     child: SizedBox(
                       width: 250,
                       child: Card(
@@ -650,6 +670,8 @@ class ServiceProvidersWidget extends ConsumerWidget {
             height: 225,
             child: ListView.builder(
               physics: const BouncingScrollPhysics(),
+              padding:
+                  const EdgeInsets.symmetric(horizontal: tertiarySizedBox),
               scrollDirection: Axis.horizontal,
               itemCount:
                   serviceProviders.length > 10 ? 10 : serviceProviders.length,

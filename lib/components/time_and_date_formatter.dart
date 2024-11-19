@@ -41,7 +41,7 @@ String formatDateToShort(String date) {
   DateTime parsedDate = DateTime.parse(date);
 
   // Format it to "MM/dd/yyyy"
-  String formattedDate = DateFormat('MM/dd/yyyy').format(parsedDate);
+  String formattedDate = DateFormat('yyyy-MM-dd').format(parsedDate);
 
   return formattedDate;
 }

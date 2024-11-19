@@ -1,18 +1,21 @@
 import 'package:pamfurred/models/cart_item.dart';
 
 class Package implements CartItem {
-  const Package(
-      {required this.packageServiceProviderId,
-      required this.packageId,
-      required this.packageName,
-      required this.category,
-      // required this.minSize,
-      // required this.maxSize,
-      required this.packagePrice,
-      required this.packageImage,
-      required this.packageType,
-      required this.packagePetType,
-      required this.packageSize});
+  const Package({
+    required this.packageServiceProviderId,
+    required this.packageId,
+    required this.packageName,
+    required this.category,
+    // required this.minSize,
+    // required this.maxSize,
+    required this.packagePrice,
+    required this.packageImage,
+    required this.packageType,
+    required this.packagePetType,
+    required this.packageSize,
+    required this.minWeight,
+    required this.maxWeight,
+  });
 
   final String packageServiceProviderId;
   final String packageId;
@@ -25,6 +28,8 @@ class Package implements CartItem {
   final List<String> packageType;
   final List<String> packagePetType;
   final String packageSize;
+  final double minWeight;
+  final double maxWeight;
 
   // Override the CartItem getters
   @override

@@ -157,7 +157,7 @@ class AppointmentsScreenState extends ConsumerState<AppointmentsScreen>
                     Text(
                       appointment['appointment_date'] == null
                           ? 'N/A'
-                          : formatDate(appointment['appointment_date']),
+                          : secondaryFormatDate(appointment['appointment_date']),
                       style: const TextStyle(color: darkGreyColor),
                     ),
                     const SizedBox(height: primarySizedBox),

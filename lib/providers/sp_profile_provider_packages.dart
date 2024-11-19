@@ -36,6 +36,12 @@ final allPackagesProvider =
           ? List<String>.from(package['pet_type'] as List<dynamic>)
           : [],
       packageSize: package['size'] as String? ?? '',
+      minWeight: package['min_weight'] != null
+          ? double.tryParse(package['min_weight'].toString()) ?? 0.0
+          : 0.0,
+      maxWeight: package['max_weight'] != null
+          ? double.tryParse(package['max_weight'].toString()) ?? 0.0
+          : 0.0,
     );
   }).toList();
 
@@ -64,10 +70,11 @@ final allPackagesProvider =
     }).toList();
   }
 
-  // Filter by size if it is provided
-  if (filterCriteria.size != null && filterCriteria.size!.isNotEmpty) {
-    packageList = packageList.where((package) {
-      return package.packageSize == filterCriteria.size;
+  // Filter by weight if it is provided
+  if (filterCriteria.weight != null) {
+    packageList = packageList.where((service) {
+      return filterCriteria.weight! >= service.minWeight &&
+          filterCriteria.weight! <= service.maxWeight;
     }).toList();
   }
 

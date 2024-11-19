@@ -200,8 +200,8 @@ class AddPetProfileScreenState extends ConsumerState<AddPetProfileScreen> {
                           'description': description,
                           'date_of_birth': dateOfBirth,
                           'sex': sex,
-                          'pet_type': petType,
-                          'breed': breed,
+                          'pet_type': petType.toLowerCase(),
+                          'breed': breed.toLowerCase(),
                         });
 
                         if (response == null) {

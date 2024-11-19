@@ -146,7 +146,8 @@ final servicesTabProvider = FutureProvider<List<Widget>>((ref) async {
     petType: ref.watch(selectedAppointmentPetTypeProvider),
     serviceType: ref.watch(selectedAppointmentPackageServiceTypeProvider),
     serviceCategory: ref.watch(selectedAppointmentCategoryProvider),
-    size: null,
+    weight: ref.watch(selectedAppointmentPetWeightProvider),
+    // size: null,
   );
 
   return [

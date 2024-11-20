@@ -28,6 +28,7 @@ import 'package:pamfurred/screens/location_permission.dart';
 import 'package:pamfurred/screens/main_screen.dart';
 import 'package:pamfurred/screens/search_results.dart';
 import 'package:pamfurred/screens/appointment/serviceprovider_profile.dart';
+import 'package:pamfurred/screens/service_providers.dart';
 import 'package:shimmer/shimmer.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
@@ -513,7 +514,13 @@ class HomeScreenState extends ConsumerState<HomeScreen> {
             children: [
               _sectionHeader(context, header),
               GestureDetector(
-                onTap: () {},
+                onTap: () {
+                  ref
+                      .read(selectedHomeScreenSpCategoryProvider.notifier)
+                      .state = category;
+                  Navigator.push(
+                      context, slideUpRoute(const ServiceProvidersScreen()));
+                },
                 child: const Text('View more',
                     style: TextStyle(fontSize: smallText, color: primaryColor)),
               )
@@ -670,8 +677,7 @@ class ServiceProvidersWidget extends ConsumerWidget {
             height: 225,
             child: ListView.builder(
               physics: const BouncingScrollPhysics(),
-              padding:
-                  const EdgeInsets.symmetric(horizontal: tertiarySizedBox),
+              padding: const EdgeInsets.symmetric(horizontal: tertiarySizedBox),
               scrollDirection: Axis.horizontal,
               itemCount:
                   serviceProviders.length > 10 ? 10 : serviceProviders.length,

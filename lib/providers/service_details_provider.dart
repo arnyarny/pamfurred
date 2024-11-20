@@ -26,4 +26,4 @@ final serviceProviderServiceDetailsProvider =
 final selectedServiceProviderIdProvider = StateProvider<String>((ref) => '');
 
 // Provider to manage the selected service ID for fetching details
-final selectedServiceIdProvider = StateProvider<String>((ref) => '');
+final selectedServicePackageIdProvider = StateProvider<String>((ref) => '');

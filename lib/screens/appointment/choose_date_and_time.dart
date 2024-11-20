@@ -19,7 +19,7 @@ class ChooseDateAndTimeScreen extends ConsumerWidget {
     final selectedTimeslot = ref.watch(selectedTimeslotProvider);
 
     return Scaffold(
-      appBar: customAppBarWithTitleAndIcon(context, 'Choose Date & Time', [
+      appBar: customAppBarWithTitleAndWidget(context, 'Choose Date & Time', [
         TextButton(
           style: ButtonStyle(
               shape: WidgetStateProperty.all<RoundedRectangleBorder>(

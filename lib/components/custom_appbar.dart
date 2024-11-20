@@ -73,7 +73,7 @@ AppBar customAppBarWithTitle(BuildContext context, String title) {
 }
 
 // 4) customAppBar with action
-AppBar customAppBarWithTitleAndIcon(
+AppBar customAppBarWithTitleAndWidget(
     BuildContext context, String title, List<Widget> actions) {
   return AppBar(
     backgroundColor: Colors.white,

@@ -11,6 +11,7 @@ import 'package:pamfurred/models/packages.dart';
 import 'package:pamfurred/models/services.dart';
 import 'package:pamfurred/providers/cart_provider.dart';
 import 'package:pamfurred/providers/global_providers.dart';
+import 'package:pamfurred/providers/pet_profile_provider.dart';
 import 'package:pamfurred/providers/serviceprovider_provider.dart';
 import 'package:pamfurred/providers/user_id.dart';
 import 'package:pamfurred/screens/appointment/successful_appointment.dart';
@@ -173,6 +174,10 @@ class AppointmentSummaryScreenState
 
     final appointmentPetId = ref.read(selectedAppointmentPetTypeIndexProvider);
 
+    final asyncPet = ref.watch(fetchPetByIdProvider(appointmentPetId));
+
+     final pet = asyncPet.value;
+
     return Scaffold(
       appBar: customAppBarWithTitle(context, 'Appointment Summary'),
       backgroundColor: Colors.white,
@@ -199,9 +204,9 @@ class AppointmentSummaryScreenState
                   const SizedBox(height: primarySizedBox),
                   ...packages.map((package) => _buildCartItem(package)),
                   const SizedBox(height: secondarySizedBox),
-                  getAppointmentTitle(context, 'Pet ID'),
+                  getAppointmentTitle(context, 'Pet name'),
                   const SizedBox(height: primarySizedBox),
-                  getAppointmentDetail(context, appointmentPetId),
+                  getAppointmentDetail(context, pet?['pet_name']),
                   const SizedBox(height: secondarySizedBox),
                   getAppointmentTitle(context, 'Appointment type'),
                   const SizedBox(height: primarySizedBox),

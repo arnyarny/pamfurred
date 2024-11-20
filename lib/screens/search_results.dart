@@ -12,8 +12,11 @@ import 'package:pamfurred/providers/global_providers.dart';
 import 'package:pamfurred/providers/search_results_provider.dart';
 import 'package:pamfurred/components/custom_appbar.dart';
 import 'package:pamfurred/components/globals.dart';
+import 'package:pamfurred/providers/service_details_provider.dart';
+import 'package:pamfurred/providers/serviceprovider_provider.dart';
 import 'package:pamfurred/providers/user_id.dart';
 import 'package:pamfurred/screens/pin_location.dart';
+import 'package:pamfurred/screens/service_package_details.dart';
 import 'package:shimmer/shimmer.dart';
 
 class SearchResultsScreen extends ConsumerStatefulWidget {
@@ -44,42 +47,38 @@ class SearchResultsScreenState extends ConsumerState<SearchResultsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return SafeArea(
-      child: Scaffold(
-        key: scaffoldKey, // Pass the key here
-        backgroundColor: Colors.white,
-        appBar: customAppBar(context),
-        endDrawer: buildDrawer(
-            context), // Ensure this method is used to build the drawer
-        body: Column(
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.end,
-              children: [
-                OutlinedButton.icon(
-                  onPressed: () {
-                    scaffoldKey.currentState
-                        ?.openEndDrawer(); // Open the drawer
-                  },
-                  icon: const Icon(Icons.settings, color: Colors.black),
-                  label: const Text(
-                    'Preferences',
-                    style: TextStyle(color: Colors.black),
-                  ),
-                  style: OutlinedButton.styleFrom(
-                    shape: RoundedRectangleBorder(
-                      borderRadius:
-                          BorderRadius.circular(secondaryBorderRadius),
-                    ),
+    return Scaffold(
+      key: scaffoldKey, // Pass the key here
+      backgroundColor: Colors.white,
+      appBar: customAppBar(context),
+      endDrawer: buildDrawer(
+          context), // Ensure this method is used to build the drawer
+      body: Column(
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.end,
+            children: [
+              OutlinedButton.icon(
+                onPressed: () {
+                  scaffoldKey.currentState?.openEndDrawer(); // Open the drawer
+                },
+                icon: const Icon(Icons.settings, color: Colors.black),
+                label: const Text(
+                  'Preferences',
+                  style: TextStyle(color: Colors.black),
+                ),
+                style: OutlinedButton.styleFrom(
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(secondaryBorderRadius),
                   ),
                 ),
-                const SizedBox(width: tertiarySizedBox),
-              ],
-            ),
-            const SizedBox(height: primarySizedBox),
-            const ResultsListWidget(),
-          ],
-        ),
+              ),
+              const SizedBox(width: tertiarySizedBox),
+            ],
+          ),
+          const SizedBox(height: primarySizedBox),
+          const ResultsListWidget(),
+        ],
       ),
     );
   }
@@ -330,7 +329,6 @@ class ResultsListWidget extends ConsumerWidget {
                 ? ref.watch(sortSearchResultsByPrice(selectedCategory))
                 : ref.watch(combinedSearchResultsProvider(selectedCategory));
 
-    print('Provider Data: $providerDataAsync');
     return Expanded(
       child: providerDataAsync.when(
         data: (providers) => PullToRefresh(
@@ -342,141 +340,155 @@ class ResultsListWidget extends ConsumerWidget {
             itemCount: providers.length,
             itemBuilder: (context, index) {
               var provider = providers[index];
-              print('Provider: $provider}');
 
               String userId = ref.watch(userIdProvider).toString();
               return SizedBox(
                 height: 150,
                 child: Column(
                   children: [
-                    Card(
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(0),
-                      ),
-                      elevation: 3,
-                      shadowColor: lighterGreyColor,
-                      color: Colors.white,
-                      child: Row(
-                        children: [
-                          FutureBuilder(
-                            future: precacheImage(
-                                NetworkImage(provider.imageUrl ?? ''), context),
-                            builder: (context, snapshot) {
-                              if (snapshot.connectionState ==
-                                  ConnectionState.done) {
-                                return Image.network(
-                                  provider.imageUrl ?? '',
-                                  width: 120,
-                                  height: 138,
-                                  fit: BoxFit.cover,
-                                  errorBuilder: (context, error, stackTrace) {
-                                    return const SizedBox(
-                                        height: 138,
-                                        width: 120,
-                                        child: Icon(Icons.error));
-                                  },
-                                );
-                              } else {
-                                return Shimmer.fromColors(
-                                  baseColor: Colors.grey[300]!,
-                                  highlightColor: Colors.grey[100]!,
-                                  child: Container(
+                    GestureDetector(
+                      onTap: () {
+                        final spId = ref
+                            .read(selectedServicePackageIdProvider.notifier)
+                            .state = provider.servicePackageId;
+                        print('Service Provider ID: $spId');
+                        ref.read(selectedSpIndexProvider.notifier).state =
+                            provider.spId;
+                        Navigator.push(context,
+                            slideUpRoute(const ServicePackageDetails()));
+                      },
+                      child: Card(
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(0),
+                        ),
+                        elevation: 3,
+                        shadowColor: lighterGreyColor,
+                        color: Colors.white,
+                        child: Row(
+                          children: [
+                            FutureBuilder(
+                              future: precacheImage(
+                                  NetworkImage(provider.imageUrl), context),
+                              builder: (context, snapshot) {
+                                if (snapshot.connectionState ==
+                                    ConnectionState.done) {
+                                  return Image.network(
+                                    provider.imageUrl,
                                     width: 120,
                                     height: 138,
-                                    color: Colors.grey[300],
-                                  ),
-                                );
-                              }
-                            },
-                          ),
-                          Expanded(
-                            child: Padding(
-                              padding: const EdgeInsets.all(secondarySizedBox),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Row(
-                                    mainAxisAlignment:
-                                        MainAxisAlignment.spaceBetween,
-                                    children: [
-                                      Expanded(
-                                        child: customTitleText(
-                                          context,
-                                          capitalizeFirstLetter(provider.spName),
-                                        ),
-                                      ),
-                                      ratingWidget((provider.averageRating ?? 0)
-                                          .toStringAsFixed(1)),
-                                    ],
-                                  ),
-                                  const SizedBox(height: primarySizedBox),
-                                  Text(
-                                    capitalizeFirstLetter(provider.name),
-                                    style: const TextStyle(
-                                      fontSize: regularText,
-                                      color: Colors.black,
+                                    fit: BoxFit.cover,
+                                    errorBuilder: (context, error, stackTrace) {
+                                      return const SizedBox(
+                                          height: 138,
+                                          width: 120,
+                                          child: Icon(Icons.error));
+                                    },
+                                  );
+                                } else {
+                                  return Shimmer.fromColors(
+                                    baseColor: Colors.grey[300]!,
+                                    highlightColor: Colors.grey[100]!,
+                                    child: Container(
+                                      width: 120,
+                                      height: 138,
+                                      color: Colors.grey[300],
                                     ),
-                                  ),
-                                  const SizedBox(height: primarySizedBox),
-                                  Row(
-                                    children: [
-                                      const Text(
-                                        "₱",
-                                        style: TextStyle(
-                                          fontSize: smallText,
-                                          color: primaryColor,
-                                        ),
-                                      ),
-                                      const SizedBox(width: primarySizedBox),
-                                      customTitleTextWithPrimaryColor(
-                                        context,
-                                        "${provider.price ?? 'N/A'}",
-                                      ),
-                                    ],
-                                  ),
-                                  const SizedBox(height: primarySizedBox),
-                                  Row(
-                                    mainAxisAlignment:
-                                        MainAxisAlignment.spaceBetween,
-                                    children: [
-                                      sentimentLabelTextWidget(
-                                        provider.sentimentLabel,
-                                      ),
-                                      Row(
-                                        children: [
-                                          FutureBuilder<String?>(
-                                            future: getDistanceToTarget(
-                                                userId,
-                                                provider.latitude,
-                                                provider.longitude),
-                                            builder: (context, snapshot) {
-                                              if (snapshot.hasError) {
-                                                return Text(
-                                                    'Error: ${snapshot.error}');
-                                              } else if (snapshot.hasData) {
-                                                return Row(
-                                                  children: [
-                                                    const Icon(
-                                                        CupertinoIcons.location,
-                                                        size: 19),
-                                                    Text(snapshot.data ??
-                                                        'Distance not available'),
-                                                  ],
-                                                );
-                                              } else {
-                                                return const Text('');
-                                              }
-                                            },
-                                          ),
-                                        ],
-                                      ),
-                                    ],
-                                  ),
-                                ],
-                              ),
+                                  );
+                                }
+                              },
                             ),
-                          )
-                        ],
+                            Expanded(
+                              child: Padding(
+                                padding:
+                                    const EdgeInsets.all(secondarySizedBox),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceBetween,
+                                      children: [
+                                        Expanded(
+                                          child: customTitleText(
+                                            context,
+                                            capitalizeFirstLetter(
+                                                provider.spName),
+                                          ),
+                                        ),
+                                        ratingWidget((provider.averageRating)
+                                            .toStringAsFixed(1)),
+                                      ],
+                                    ),
+                                    const SizedBox(height: primarySizedBox),
+                                    Text(
+                                      capitalizeFirstLetter(provider.name),
+                                      style: const TextStyle(
+                                        fontSize: regularText,
+                                        color: Colors.black,
+                                      ),
+                                    ),
+                                    const SizedBox(height: primarySizedBox),
+                                    Row(
+                                      children: [
+                                        const Text(
+                                          "₱",
+                                          style: TextStyle(
+                                            fontSize: smallText,
+                                            color: primaryColor,
+                                          ),
+                                        ),
+                                        const SizedBox(width: primarySizedBox),
+                                        customTitleTextWithPrimaryColor(
+                                          context,
+                                          "${provider.price}",
+                                        ),
+                                      ],
+                                    ),
+                                    const SizedBox(height: primarySizedBox),
+                                    Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceBetween,
+                                      children: [
+                                        sentimentLabelTextWidget(
+                                          provider.sentimentLabel,
+                                        ),
+                                        Row(
+                                          children: [
+                                            FutureBuilder<String?>(
+                                              future: getDistanceToTarget(
+                                                  userId,
+                                                  provider.latitude,
+                                                  provider.longitude),
+                                              builder: (context, snapshot) {
+                                                if (snapshot.hasError) {
+                                                  return Text(
+                                                      'Error: ${snapshot.error}');
+                                                } else if (snapshot.hasData) {
+                                                  return Row(
+                                                    children: [
+                                                      const Icon(
+                                                          CupertinoIcons
+                                                              .location,
+                                                          size: 19),
+                                                      Text(snapshot.data ??
+                                                          'Distance not available'),
+                                                    ],
+                                                  );
+                                                } else {
+                                                  return const Text('');
+                                                }
+                                              },
+                                            ),
+                                          ],
+                                        ),
+                                      ],
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            )
+                          ],
+                        ),
                       ),
                     ),
                     const SizedBox(height: primarySizedBox),

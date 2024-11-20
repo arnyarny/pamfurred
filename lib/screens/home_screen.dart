@@ -756,7 +756,7 @@ class ServiceProvidersWidget extends ConsumerWidget {
                                       width: double.infinity,
                                       height: 150,
                                       fit: sp['image'] == null
-                                          ? BoxFit.cover
+                                          ? BoxFit.fitWidth
                                           : BoxFit.contain,
                                       loadingBuilder: (BuildContext context,
                                           Widget child,

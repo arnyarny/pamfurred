@@ -22,6 +22,7 @@ import 'package:pamfurred/providers/sp_profile_provider_services.dart';
 import 'package:pamfurred/providers/user_id.dart';
 import 'package:pamfurred/screens/appointment/cart_screen.dart';
 import 'package:pamfurred/screens/appointment/choose_appointment_pref.dart';
+import 'package:pamfurred/screens/appointment/ratings_and_reviews_widget.dart';
 import 'package:shimmer/shimmer.dart';
 
 // Function to reset providers to null/blank when willBookProvider is false
@@ -40,470 +41,6 @@ class ServiceproviderProfileScreen extends ConsumerStatefulWidget {
   ConsumerState<ServiceproviderProfileScreen> createState() =>
       ServiceproviderProfileScreenState();
 }
-
-// Define providers for each tab’s content
-final aboutTabProvider = FutureProvider<List<Widget>>((ref) async {
-  // Retrieve the service provider ID
-  final sp = ref.watch(spIndexProvider);
-
-  print('SP ID: ${sp?['sp_id']}');
-
-  // Pet owner user ID
-  String userId = ref.watch(userIdProvider).toString();
-
-  // Variable for service provider rating, checking null values
-  final displayRating = (sp?['average_rating'] as double).toStringAsFixed(1);
-
-  // Ensure 'service_type' is a List<String>
-  List<String> serviceTypes =
-      List<String>.from(sp?['unique_package_service_types'] ?? []);
-
-  // Ensure 'pets_catered' is a List<String>
-  List<String> petsCatered = List<String>.from(sp?['unique_pet_types'] ?? []);
-
-  final timeOpen = sp?['time_open'];
-  final timeClose = sp?['time_close'];
-
-  double latitude = sp?['latitude'];
-  double longitude = sp?['longitude'];
-
-  String fullAddress = sp?['full_address'];
-
-  return [
-    // About tab content
-    Center(
-      child: sp!.isEmpty
-          ? const Center(
-              child: CircularProgressIndicator(),
-            )
-          : Column(
-              children: [
-                spSentimentLabelHeader(CupertinoIcons.text_bubble,
-                    sentimentLabelTextWidget(sp['sentiment_label'])),
-                const SizedBox(height: secondarySizedBox),
-
-                spDistanceDetailsHeader(
-                  CupertinoIcons.location,
-                  FutureBuilder<String?>(
-                    future: getDistanceToTarget(userId, latitude, longitude),
-                    builder: (context, snapshot) {
-                      if (snapshot.hasError) {
-                        return regularTextWidget(
-                            'Error: ${snapshot.error}'); // Display error message if there's an error
-                      } else if (snapshot.hasData) {
-                        // Check if the data is not null
-                        return regularTextWidget(snapshot.data ??
-                            'Distance not available'); // Display the calculated distance
-                      } else {
-                        return regularTextWidget(
-                            ''); // Handle the case where there is no data
-                      }
-                    },
-                  ),
-                ),
-                const SizedBox(height: secondarySizedBox),
-
-                // This is temporary. Remove this when it's ensured that we don't take null addresses from service providers
-                sp.isNotEmpty
-                    ? spDetailsHeader(Icons.location_on_outlined, fullAddress)
-                    : spDetailsHeader(CupertinoIcons.location_solid, 'N/A'),
-                const SizedBox(height: secondarySizedBox),
-
-                // Rating display logic (assuming 'displayRating' handles null internally)
-                spDetailsHeader(Icons.star_border, displayRating),
-                const SizedBox(height: secondarySizedBox),
-
-                spDetailsHeader(
-                  Icons.home_repair_service_outlined,
-                  serviceTypes.join(', '),
-                ),
-                const SizedBox(height: secondarySizedBox),
-
-                spDetailsHeader(Icons.access_time,
-                    'Opens from ${formatTime(timeOpen)} to ${formatTime(timeClose)}'),
-                const SizedBox(height: secondarySizedBox),
-
-                spDetailsHeader(
-                    Icons.call_outlined, sp['phone_number'] ?? 'N/A'),
-                const SizedBox(height: secondarySizedBox),
-
-                spDetailsHeader(
-                    CupertinoIcons.heart, 'Caters ${petsCatered.join(', ')}'),
-                const SizedBox(height: secondarySizedBox),
-              ],
-            ),
-    ),
-  ];
-});
-
-final servicesTabProvider = FutureProvider<List<Widget>>((ref) async {
-  // Retrieve the service provider ID
-  final sp = ref.watch(spIndexProvider);
-
-  // Define filter criteria
-  final filterCriteria = ServiceFilterCriteria(
-    spId: sp?['sp_id'].toString() ?? '',
-    petType: ref.watch(selectedAppointmentPetTypeProvider),
-    serviceType: ref.watch(selectedAppointmentPackageServiceTypeProvider),
-    serviceCategory: ref.watch(selectedAppointmentCategoryProvider),
-    weight: ref.watch(selectedAppointmentPetWeightProvider),
-    // size: null,
-  );
-
-  return [
-    Consumer(
-      builder: (context, ref, child) {
-        final allServices = ref.watch(allServicesProvider(filterCriteria));
-
-        return Center(
-          child: SizedBox(
-            height: getScreenHeight(context),
-            child: allServices.when(
-              data: (servicesList) => Column(
-                children: [
-                  // const SizedBox(height: tertiarySizedBox),
-                  servicesList.isEmpty
-                      ? const Center(child: Text("No services available"))
-                      : Expanded(
-                          child: ListView.builder(
-                            padding: const EdgeInsets.only(bottom: 80),
-                            itemCount: servicesList.length,
-                            itemBuilder: (context, index) {
-                              final service = servicesList[index];
-
-                              return Consumer(
-                                builder: (context, ref, child) {
-                                  final cartServices =
-                                      ref.watch(cartNotifierProvider);
-                                  final isInCart = cartServices.any(
-                                      (cartService) =>
-                                          cartService.id == service.serviceId);
-
-                                  bool willBook = ref.watch(willBookProvider);
-                                  return Card(
-                                    color: Colors.transparent,
-                                    elevation: 0,
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(
-                                          primaryBorderRadius),
-                                    ),
-                                    child: Row(
-                                      children: [
-                                        ClipRRect(
-                                          borderRadius: BorderRadius.circular(
-                                              primaryBorderRadius),
-                                          child: Image.network(
-                                            service.serviceImage,
-                                            width: 90,
-                                            height: 85,
-                                            fit: BoxFit.cover,
-                                            loadingBuilder: (context, child,
-                                                loadingProgress) {
-                                              if (loadingProgress == null) {
-                                                return child;
-                                              } else {
-                                                return Shimmer.fromColors(
-                                                  baseColor: Colors.grey[300]!,
-                                                  highlightColor:
-                                                      Colors.grey[100]!,
-                                                  child: Container(
-                                                    width: 90,
-                                                    height: 85,
-                                                    color: Colors.grey[300],
-                                                  ),
-                                                );
-                                              }
-                                            },
-                                            errorBuilder:
-                                                (context, error, stackTrace) {
-                                              return Container(
-                                                width: 90,
-                                                height: 85,
-                                                color: Colors.grey[300],
-                                                child: const Icon(Icons.error),
-                                              );
-                                            },
-                                          ),
-                                        ),
-                                        const SizedBox(width: tertiarySizedBox),
-                                        Expanded(
-                                          child: Column(
-                                            crossAxisAlignment:
-                                                CrossAxisAlignment.start,
-                                            children: [
-                                              customTitleText(
-                                                  context,
-                                                  capitalizeFirstLetter(
-                                                      service.serviceName)),
-                                              Row(
-                                                children: [
-                                                  regularTextWidget(
-                                                      service.serviceSize),
-                                                  regularPrimaryColoredTextWidget(
-                                                      ' • '),
-                                                  Text(
-                                                      '₱${service.servicePrice}')
-                                                ],
-                                              ),
-                                            ],
-                                          ),
-                                        ),
-                                        willBook
-                                            ? SizedBox(
-                                                width: 37,
-                                                child: Center(
-                                                  child: CircleAvatar(
-                                                    backgroundColor: isInCart
-                                                        ? Colors.red
-                                                        : secondaryColor,
-                                                    child: GestureDetector(
-                                                      onTap: () {
-                                                        ref
-                                                            .read(
-                                                                buttonPressedProvider
-                                                                    .notifier)
-                                                            .setPressed(true);
-                                                      },
-                                                      child: IconButton(
-                                                        icon: Icon(
-                                                          isInCart
-                                                              ? Icons.remove
-                                                              : Icons.add,
-                                                          color: Colors.white,
-                                                          size: 23,
-                                                        ),
-                                                        onPressed: () {
-                                                          final cartNotifier =
-                                                              ref.read(
-                                                                  cartNotifierProvider
-                                                                      .notifier);
-                                                          // Add or remove service based on `isInCart`
-                                                          isInCart
-                                                              ? cartNotifier
-                                                                  .removeService(
-                                                                      service)
-                                                              : cartNotifier
-                                                                  .addService(
-                                                                      service);
-                                                        },
-                                                      ),
-                                                    ),
-                                                  ),
-                                                ),
-                                              )
-                                            : const SizedBox
-                                                .shrink(), // Makes sure the widget is hidden when `willBook` is false
-                                      ],
-                                    ),
-                                  );
-                                },
-                              );
-                            },
-                          ),
-                        ),
-                ],
-              ),
-              loading: () => Center(
-                child: Container(
-                  color: Colors.white,
-                  padding: const EdgeInsets.all(16.0),
-                  child: const CircularProgressIndicator(),
-                ),
-              ),
-              error: (error, stack) => Center(child: Text('Error: $error')),
-            ),
-          ),
-        );
-      },
-    ),
-  ];
-});
-
-final packagesTabProvider = FutureProvider<List<Widget>>((ref) async {
-  // Retrieve the service provider ID
-  final sp = ref.watch(spIndexProvider);
-
-  if (sp == null) {
-    return [const Center(child: Text("No provider ID available"))];
-  }
-
-  // Define filter criteria
-  final filterCriteria = PackageFilterCriteria(
-    spId: sp['sp_id'].toString(),
-    petType: ref.watch(selectedAppointmentPetTypeProvider),
-    packageType: ref.watch(selectedAppointmentPackageServiceTypeProvider),
-    packageCategory: ref.watch(selectedAppointmentCategoryProvider),
-    size: null,
-  );
-
-  return [
-    Consumer(
-      builder: (context, ref, child) {
-        final allPackages = ref.watch(allPackagesProvider(filterCriteria));
-
-        return Center(
-          child: SizedBox(
-            height: getScreenHeight(context),
-            child: allPackages.when(
-              data: (packagesList) => Column(
-                children: [
-                  // const SizedBox(height: tertiarySizedBox),
-                  packagesList.isEmpty
-                      ? const Center(child: Text("No packages available"))
-                      : Expanded(
-                          child: ListView.builder(
-                            padding: const EdgeInsets.only(bottom: 80),
-                            itemCount: packagesList.length,
-                            itemBuilder: (context, index) {
-                              final package = packagesList[index];
-
-                              return Consumer(
-                                builder: (context, ref, child) {
-                                  final cartServices =
-                                      ref.watch(cartNotifierProvider);
-                                  final isInCart = cartServices.any(
-                                      (cartService) =>
-                                          cartService.id == package.packageId);
-
-                                  bool willBook = ref.watch(willBookProvider);
-                                  return Card(
-                                    color: Colors.transparent,
-                                    elevation: 0,
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(
-                                          primaryBorderRadius),
-                                    ),
-                                    child: Row(
-                                      children: [
-                                        ClipRRect(
-                                          borderRadius: BorderRadius.circular(
-                                              primaryBorderRadius),
-                                          child: Image.network(
-                                            package.packageImage,
-                                            width: 90,
-                                            height: 85,
-                                            fit: BoxFit.cover,
-                                            loadingBuilder: (context, child,
-                                                loadingProgress) {
-                                              if (loadingProgress == null) {
-                                                return child;
-                                              } else {
-                                                return Shimmer.fromColors(
-                                                  baseColor: Colors.grey[300]!,
-                                                  highlightColor:
-                                                      Colors.grey[100]!,
-                                                  child: Container(
-                                                    width: 90,
-                                                    height: 85,
-                                                    color: Colors.grey[300],
-                                                  ),
-                                                );
-                                              }
-                                            },
-                                            errorBuilder:
-                                                (context, error, stackTrace) {
-                                              return Container(
-                                                width: 90,
-                                                height: 85,
-                                                color: Colors.grey[300],
-                                                child: const Icon(Icons.error),
-                                              );
-                                            },
-                                          ),
-                                        ),
-                                        const SizedBox(width: tertiarySizedBox),
-                                        Expanded(
-                                          child: Column(
-                                            crossAxisAlignment:
-                                                CrossAxisAlignment.start,
-                                            children: [
-                                              customTitleText(
-                                                  context,
-                                                  capitalizeFirstLetter(
-                                                      package.packageName)),
-                                              Row(
-                                                children: [
-                                                  regularTextWidget(
-                                                      package.packageSize),
-                                                  regularPrimaryColoredTextWidget(
-                                                      ' • '),
-                                                  Text(
-                                                      '₱${package.packagePrice}')
-                                                ],
-                                              ),
-                                            ],
-                                          ),
-                                        ),
-                                        willBook
-                                            ? SizedBox(
-                                                width: 37,
-                                                child: Center(
-                                                  child: CircleAvatar(
-                                                    backgroundColor: isInCart
-                                                        ? Colors.red
-                                                        : secondaryColor,
-                                                    child: GestureDetector(
-                                                      onTap: () {
-                                                        ref
-                                                            .read(
-                                                                buttonPressedProvider
-                                                                    .notifier)
-                                                            .setPressed(true);
-                                                      },
-                                                      child: IconButton(
-                                                        icon: Icon(
-                                                          isInCart
-                                                              ? Icons.remove
-                                                              : Icons.add,
-                                                          color: Colors.white,
-                                                          size: 23,
-                                                        ),
-                                                        onPressed: () {
-                                                          final cartNotifier =
-                                                              ref.read(
-                                                                  cartNotifierProvider
-                                                                      .notifier);
-                                                          // Add or remove service based on `isInCart`
-                                                          isInCart
-                                                              ? cartNotifier
-                                                                  .removePackage(
-                                                                      package)
-                                                              : cartNotifier
-                                                                  .addPackage(
-                                                                      package);
-                                                        },
-                                                      ),
-                                                    ),
-                                                  ),
-                                                ),
-                                              )
-                                            : const SizedBox
-                                                .shrink(), // Makes sure the widget is hidden when `willBook` is false
-                                      ],
-                                    ),
-                                  );
-                                },
-                              );
-                            },
-                          ),
-                        ),
-                ],
-              ),
-              loading: () => Center(
-                child: Container(
-                  color: Colors.white, // White background
-                  padding: const EdgeInsets.all(16.0), // Optional padding
-                  child: const CircularProgressIndicator(),
-                ),
-              ),
-              error: (error, stack) => Center(child: Text('Error: $error')),
-            ),
-          ),
-        );
-      },
-    ),
-  ];
-});
 
 class ServiceproviderProfileScreenState
     extends ConsumerState<ServiceproviderProfileScreen> {
@@ -698,50 +235,56 @@ class ServiceproviderProfileScreenState
               ),
       ),
       body: SingleChildScrollView(
+        physics: const BouncingScrollPhysics(),
         child: Center(
           child: Column(
             children: [
-              Image.network(
-                sp['service_provider_image'] ?? defaultImage,
+              Container(
+                color: lightGreyColor,
                 width: double.infinity,
                 height: 200,
-                fit: sp['service_provider_image'] == defaultImage
-                    ? BoxFit.contain
-                    : BoxFit.cover,
-                loadingBuilder: (BuildContext context, Widget child,
-                    ImageChunkEvent? loadingProgress) {
-                  return loadingProgress == null
-                      ? child
-                      : Shimmer.fromColors(
-                          baseColor: Colors.grey[300]!,
-                          highlightColor: Colors.grey[100]!,
-                          child: Container(
-                            width: double.infinity,
-                            height: 200,
-                            color: Colors.grey[300],
-                          ),
-                        );
-                },
-                errorBuilder: (BuildContext context, Object error,
-                    StackTrace? stackTrace) {
-                  return Container(
-                    color: lighterGreyColor,
-                    width: double.infinity,
-                    height: 200,
-                    child: const Center(
-                      child: Icon(Icons.error),
-                    ),
-                  );
-                },
+                child: Image.network(
+                  sp['service_provider_image'] ?? defaultImage,
+                  width: double.infinity,
+                  height: 200,
+                  fit: sp['service_provider_image'] == null
+                      ? BoxFit.fitWidth
+                      : BoxFit.cover,
+                  loadingBuilder: (BuildContext context, Widget child,
+                      ImageChunkEvent? loadingProgress) {
+                    return loadingProgress == null
+                        ? child
+                        : Shimmer.fromColors(
+                            baseColor: Colors.grey[300]!,
+                            highlightColor: Colors.grey[100]!,
+                            child: Container(
+                              width: double.infinity,
+                              height: 200,
+                              color: Colors.grey[300],
+                            ),
+                          );
+                  },
+                  errorBuilder: (BuildContext context, Object error,
+                      StackTrace? stackTrace) {
+                    return Container(
+                      color: lighterGreyColor,
+                      width: double.infinity,
+                      height: 200,
+                      child: const Center(
+                        child: Icon(Icons.error),
+                      ),
+                    );
+                  },
+                ),
               ),
-              SizedBox(
-                width: screenPadding(context),
-                child: Column(
-                  children: [
-                    const SizedBox(height: tertiarySizedBox),
-                    customTitleText(context, sp['service_provider_name']),
-                    const SizedBox(height: secondarySizedBox),
-                    Row(
+              Column(
+                children: [
+                  const SizedBox(height: tertiarySizedBox),
+                  customTitleText(context, sp['service_provider_name']),
+                  const SizedBox(height: secondarySizedBox),
+                  SizedBox(
+                    width: screenPadding(context),
+                    child: Row(
                       mainAxisAlignment: MainAxisAlignment
                           .spaceBetween, // Space between tabs and icon
                       children: [
@@ -788,22 +331,19 @@ class ServiceproviderProfileScreenState
                             : const SizedBox.shrink()
                       ],
                     ),
-                    const SizedBox(height: tertiarySizedBox),
-                    asyncTabContent.when(
-                      data: (widgetList) => SizedBox(
-                        height: getScreenHeight(context),
-                        child: ListView(
-                          children: widgetList,
-                        ),
-                      ),
-                      loading: () =>
-                          const Center(child: CircularProgressIndicator()),
-                      error: (error, stack) {
-                        return const Text('');
-                      },
+                  ),
+                  const SizedBox(height: tertiarySizedBox),
+                  asyncTabContent.when(
+                    data: (widgetList) => Column(
+                      children: widgetList,
                     ),
-                  ],
-                ),
+                    loading: () =>
+                        const Center(child: CircularProgressIndicator()),
+                    error: (error, stack) {
+                      return const Text('');
+                    },
+                  ),
+                ],
               ),
               const SizedBox(height: primarySizedBox),
             ],
@@ -813,6 +353,507 @@ class ServiceproviderProfileScreenState
     );
   }
 }
+
+// Define providers for each tab’s content
+final aboutTabProvider = FutureProvider<List<Widget>>((ref) async {
+  // Retrieve the service provider ID
+  final sp = ref.watch(spIndexProvider);
+
+  print('SP ID: ${sp?['sp_id']}');
+
+  // Pet owner user ID
+  String userId = ref.watch(userIdProvider).toString();
+
+  // Variable for service provider rating, checking null values
+  final displayRating = (sp?['average_rating'] as double).toStringAsFixed(1);
+
+  // Ensure 'service_type' is a List<String>
+  List<String> serviceTypes =
+      List<String>.from(sp?['unique_package_service_types'] ?? []);
+
+  // Ensure 'pets_catered' is a List<String>
+  List<String> petsCatered = List<String>.from(sp?['unique_pet_types'] ?? []);
+
+  final timeOpen = sp?['time_open'];
+  final timeClose = sp?['time_close'];
+
+  double latitude = sp?['latitude'];
+  double longitude = sp?['longitude'];
+
+  String fullAddress = sp?['full_address'];
+
+  return [
+    // About tab content
+    Center(
+      child: sp!.isEmpty
+          ? const Center(
+              child: CircularProgressIndicator(),
+            )
+          : Container(
+              padding: const EdgeInsets.only(bottom: 80),
+              child: Column(
+                children: [
+                  Builder(
+                    builder: (context) {
+                      return SizedBox(
+                        width: screenPadding(context),
+                        child: Column(
+                          children: [
+                            spSentimentLabelHeader(CupertinoIcons.text_bubble,
+                                sentimentLabelTextWidget(sp['sentiment_label'])),
+                            const SizedBox(height: secondarySizedBox),
+                      
+                            spDistanceDetailsHeader(
+                              CupertinoIcons.location,
+                              FutureBuilder<String?>(
+                                future: getDistanceToTarget(
+                                    userId, latitude, longitude),
+                                builder: (context, snapshot) {
+                                  if (snapshot.hasError) {
+                                    return regularTextWidget(
+                                        'Error: ${snapshot.error}'); // Display error message if there's an error
+                                  } else if (snapshot.hasData) {
+                                    // Check if the data is not null
+                                    return regularTextWidget(snapshot.data ??
+                                        'Distance not available'); // Display the calculated distance
+                                  } else {
+                                    return regularTextWidget(
+                                        ''); // Handle the case where there is no data
+                                  }
+                                },
+                              ),
+                            ),
+                            const SizedBox(height: secondarySizedBox),
+                      
+                            // This is temporary. Remove this when it's ensured that we don't take null addresses from service providers
+                            sp.isNotEmpty
+                                ? spDetailsHeader(
+                                    Icons.location_on_outlined, fullAddress)
+                                : spDetailsHeader(
+                                    CupertinoIcons.location_solid, 'N/A'),
+                            const SizedBox(height: secondarySizedBox),
+                      
+                            // Rating display logic (assuming 'displayRating' handles null internally)
+                            spDetailsHeader(Icons.star_border, displayRating),
+                            const SizedBox(height: secondarySizedBox),
+                      
+                            spDetailsHeader(
+                              Icons.home_repair_service_outlined,
+                              serviceTypes.join(', '),
+                            ),
+                            const SizedBox(height: secondarySizedBox),
+                      
+                            spDetailsHeader(Icons.access_time,
+                                'Opens from ${formatTime(timeOpen)} to ${formatTime(timeClose)}'),
+                            const SizedBox(height: secondarySizedBox),
+                      
+                            spDetailsHeader(
+                                Icons.call_outlined, sp['phone_number'] ?? 'N/A'),
+                            const SizedBox(height: secondarySizedBox),
+                      
+                            spDetailsHeader(CupertinoIcons.heart,
+                                'Caters ${petsCatered.join(', ')}'),
+                            const SizedBox(height: secondarySizedBox),
+                            GestureDetector(
+                              onTap: () {},
+                              child: const Row(
+                                mainAxisAlignment: MainAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    'Ratings and Reviews',
+                                    style: TextStyle(
+                                      fontWeight: boldWeight,
+                                      color: Colors.black,
+                                      fontSize: regularText,
+                                    ),
+                                  ),
+                                  SizedBox(width: primarySizedBox),
+                                  Icon(
+                                    Icons.arrow_forward_ios_outlined,
+                                    size: 20,
+                                    color: Colors.black,
+                                  )
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                      );
+                    }
+                  ),
+                  const SizedBox(height: secondarySizedBox),
+                  const RatingsAndReviewsWidget()
+                ],
+              ),
+            ),
+    ),
+  ];
+});
+
+final servicesTabProvider = FutureProvider<List<Widget>>((ref) async {
+  // Retrieve the service provider ID
+  final sp = ref.watch(spIndexProvider);
+
+  // Define filter criteria
+  final filterCriteria = ServiceFilterCriteria(
+    spId: sp?['sp_id'].toString() ?? '',
+    petType: ref.watch(selectedAppointmentPetTypeProvider),
+    serviceType: ref.watch(selectedAppointmentPackageServiceTypeProvider),
+    serviceCategory: ref.watch(selectedAppointmentCategoryProvider),
+    weight: ref.watch(selectedAppointmentPetWeightProvider),
+    // size: null,
+  );
+
+  return [
+    Consumer(
+      builder: (context, ref, child) {
+        final allServices = ref.watch(allServicesProvider(filterCriteria));
+
+        return Center(
+          child: allServices.when(
+            data: (servicesList) => Column(
+              children: [
+                // const SizedBox(height: tertiarySizedBox),
+                servicesList.isEmpty
+                    ? const Center(child: Text("No services available"))
+                    : Expanded(
+                        child: ListView.builder(
+                          padding: const EdgeInsets.only(bottom: 80),
+                          itemCount: servicesList.length,
+                          itemBuilder: (context, index) {
+                            final service = servicesList[index];
+
+                            return Consumer(
+                              builder: (context, ref, child) {
+                                final cartServices =
+                                    ref.watch(cartNotifierProvider);
+                                final isInCart = cartServices.any(
+                                    (cartService) =>
+                                        cartService.id == service.serviceId);
+
+                                bool willBook = ref.watch(willBookProvider);
+                                return Card(
+                                  color: Colors.transparent,
+                                  elevation: 0,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(
+                                        primaryBorderRadius),
+                                  ),
+                                  child: Row(
+                                    children: [
+                                      ClipRRect(
+                                        borderRadius: BorderRadius.circular(
+                                            primaryBorderRadius),
+                                        child: Image.network(
+                                          service.serviceImage,
+                                          width: 90,
+                                          height: 85,
+                                          fit: BoxFit.cover,
+                                          loadingBuilder: (context, child,
+                                              loadingProgress) {
+                                            if (loadingProgress == null) {
+                                              return child;
+                                            } else {
+                                              return Shimmer.fromColors(
+                                                baseColor: Colors.grey[300]!,
+                                                highlightColor:
+                                                    Colors.grey[100]!,
+                                                child: Container(
+                                                  width: 90,
+                                                  height: 85,
+                                                  color: Colors.grey[300],
+                                                ),
+                                              );
+                                            }
+                                          },
+                                          errorBuilder:
+                                              (context, error, stackTrace) {
+                                            return Container(
+                                              width: 90,
+                                              height: 85,
+                                              color: Colors.grey[300],
+                                              child: const Icon(Icons.error),
+                                            );
+                                          },
+                                        ),
+                                      ),
+                                      const SizedBox(width: tertiarySizedBox),
+                                      Expanded(
+                                        child: Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            customTitleText(
+                                                context,
+                                                capitalizeFirstLetter(
+                                                    service.serviceName)),
+                                            Row(
+                                              children: [
+                                                regularTextWidget(
+                                                    service.serviceSize),
+                                                regularPrimaryColoredTextWidget(
+                                                    ' • '),
+                                                Text('₱${service.servicePrice}')
+                                              ],
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                      willBook
+                                          ? SizedBox(
+                                              width: 37,
+                                              child: Center(
+                                                child: CircleAvatar(
+                                                  backgroundColor: isInCart
+                                                      ? Colors.red
+                                                      : secondaryColor,
+                                                  child: GestureDetector(
+                                                    onTap: () {
+                                                      ref
+                                                          .read(
+                                                              buttonPressedProvider
+                                                                  .notifier)
+                                                          .setPressed(true);
+                                                    },
+                                                    child: IconButton(
+                                                      icon: Icon(
+                                                        isInCart
+                                                            ? Icons.remove
+                                                            : Icons.add,
+                                                        color: Colors.white,
+                                                        size: 23,
+                                                      ),
+                                                      onPressed: () {
+                                                        final cartNotifier =
+                                                            ref.read(
+                                                                cartNotifierProvider
+                                                                    .notifier);
+                                                        // Add or remove service based on `isInCart`
+                                                        isInCart
+                                                            ? cartNotifier
+                                                                .removeService(
+                                                                    service)
+                                                            : cartNotifier
+                                                                .addService(
+                                                                    service);
+                                                      },
+                                                    ),
+                                                  ),
+                                                ),
+                                              ),
+                                            )
+                                          : const SizedBox
+                                              .shrink(), // Makes sure the widget is hidden when `willBook` is false
+                                    ],
+                                  ),
+                                );
+                              },
+                            );
+                          },
+                        ),
+                      ),
+              ],
+            ),
+            loading: () => Center(
+              child: Container(
+                color: Colors.white,
+                padding: const EdgeInsets.all(16.0),
+                child: const CircularProgressIndicator(),
+              ),
+            ),
+            error: (error, stack) => Center(child: Text('Error: $error')),
+          ),
+        );
+      },
+    ),
+  ];
+});
+
+final packagesTabProvider = FutureProvider<List<Widget>>((ref) async {
+  // Retrieve the service provider ID
+  final sp = ref.watch(spIndexProvider);
+
+  if (sp == null) {
+    return [const Center(child: Text("No provider ID available"))];
+  }
+
+  // Define filter criteria
+  final filterCriteria = PackageFilterCriteria(
+    spId: sp['sp_id'].toString(),
+    petType: ref.watch(selectedAppointmentPetTypeProvider),
+    packageType: ref.watch(selectedAppointmentPackageServiceTypeProvider),
+    packageCategory: ref.watch(selectedAppointmentCategoryProvider),
+    size: null,
+  );
+
+  return [
+    Consumer(
+      builder: (context, ref, child) {
+        final allPackages = ref.watch(allPackagesProvider(filterCriteria));
+
+        return Center(
+          child: SizedBox(
+            height: getScreenHeight(context),
+            child: allPackages.when(
+              data: (packagesList) => Column(
+                children: [
+                  // const SizedBox(height: tertiarySizedBox),
+                  packagesList.isEmpty
+                      ? const Center(child: Text("No packages available"))
+                      : Expanded(
+                          child: ListView.builder(
+                            padding: const EdgeInsets.only(bottom: 80),
+                            itemCount: packagesList.length,
+                            itemBuilder: (context, index) {
+                              final package = packagesList[index];
+
+                              return Consumer(
+                                builder: (context, ref, child) {
+                                  final cartServices =
+                                      ref.watch(cartNotifierProvider);
+                                  final isInCart = cartServices.any(
+                                      (cartService) =>
+                                          cartService.id == package.packageId);
+
+                                  bool willBook = ref.watch(willBookProvider);
+                                  return Card(
+                                    color: Colors.transparent,
+                                    elevation: 0,
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(
+                                          primaryBorderRadius),
+                                    ),
+                                    child: Row(
+                                      children: [
+                                        ClipRRect(
+                                          borderRadius: BorderRadius.circular(
+                                              primaryBorderRadius),
+                                          child: Image.network(
+                                            package.packageImage,
+                                            width: 90,
+                                            height: 85,
+                                            fit: BoxFit.cover,
+                                            loadingBuilder: (context, child,
+                                                loadingProgress) {
+                                              if (loadingProgress == null) {
+                                                return child;
+                                              } else {
+                                                return Shimmer.fromColors(
+                                                  baseColor: Colors.grey[300]!,
+                                                  highlightColor:
+                                                      Colors.grey[100]!,
+                                                  child: Container(
+                                                    width: 90,
+                                                    height: 85,
+                                                    color: Colors.grey[300],
+                                                  ),
+                                                );
+                                              }
+                                            },
+                                            errorBuilder:
+                                                (context, error, stackTrace) {
+                                              return Container(
+                                                width: 90,
+                                                height: 85,
+                                                color: Colors.grey[300],
+                                                child: const Icon(Icons.error),
+                                              );
+                                            },
+                                          ),
+                                        ),
+                                        const SizedBox(width: tertiarySizedBox),
+                                        Expanded(
+                                          child: Column(
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
+                                            children: [
+                                              customTitleText(
+                                                  context,
+                                                  capitalizeFirstLetter(
+                                                      package.packageName)),
+                                              Row(
+                                                children: [
+                                                  regularTextWidget(
+                                                      package.packageSize),
+                                                  regularPrimaryColoredTextWidget(
+                                                      ' • '),
+                                                  Text(
+                                                      '₱${package.packagePrice}')
+                                                ],
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                        willBook
+                                            ? SizedBox(
+                                                width: 37,
+                                                child: Center(
+                                                  child: CircleAvatar(
+                                                    backgroundColor: isInCart
+                                                        ? Colors.red
+                                                        : secondaryColor,
+                                                    child: GestureDetector(
+                                                      onTap: () {
+                                                        ref
+                                                            .read(
+                                                                buttonPressedProvider
+                                                                    .notifier)
+                                                            .setPressed(true);
+                                                      },
+                                                      child: IconButton(
+                                                        icon: Icon(
+                                                          isInCart
+                                                              ? Icons.remove
+                                                              : Icons.add,
+                                                          color: Colors.white,
+                                                          size: 23,
+                                                        ),
+                                                        onPressed: () {
+                                                          final cartNotifier =
+                                                              ref.read(
+                                                                  cartNotifierProvider
+                                                                      .notifier);
+                                                          // Add or remove service based on `isInCart`
+                                                          isInCart
+                                                              ? cartNotifier
+                                                                  .removePackage(
+                                                                      package)
+                                                              : cartNotifier
+                                                                  .addPackage(
+                                                                      package);
+                                                        },
+                                                      ),
+                                                    ),
+                                                  ),
+                                                ),
+                                              )
+                                            : const SizedBox
+                                                .shrink(), // Makes sure the widget is hidden when `willBook` is false
+                                      ],
+                                    ),
+                                  );
+                                },
+                              );
+                            },
+                          ),
+                        ),
+                ],
+              ),
+              loading: () => Center(
+                child: Container(
+                  color: Colors.white, // White background
+                  padding: const EdgeInsets.all(16.0), // Optional padding
+                  child: const CircularProgressIndicator(),
+                ),
+              ),
+              error: (error, stack) => Center(child: Text('Error: $error')),
+            ),
+          ),
+        );
+      },
+    ),
+  ];
+});
 
 TextStyle _getTabTextStyle(bool isSelected) {
   return TextStyle(

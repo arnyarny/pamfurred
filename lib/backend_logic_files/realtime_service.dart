@@ -172,7 +172,7 @@ class RealtimeService {
           final uniqueNotificationId =
               (DateTime.now().millisecondsSinceEpoch % 2147483647).abs();
 
-          final NotificationDetails details =
+          const NotificationDetails details =
               NotificationDetails(android: androidDetails);
 
           String title = '';

@@ -44,12 +44,20 @@ class RealtimeService {
 
               // If the appointment_id is already processed, it is an update (existing record)
               if (!processedAppointmentIds.contains(appointmentId)) {
-                // Assuming that you only want to process updates where the status is 'Upcoming'
+                // Process 'Done' status
                 if (appointmentStatus == 'Done') {
                   processedAppointmentIds.add(appointmentId);
                   _updateProcessedAppointmentIds(
                       loggedInPetOwnerId, processedAppointmentIds);
-                  sendNotification(change, sentNotificationIds);
+                  sendNotification(change, sentNotificationIds, 'done');
+                }
+
+                // Process 'Cancelled' status
+                if (appointmentStatus == 'Cancelled') {
+                  processedAppointmentIds.add(appointmentId);
+                  _updateProcessedAppointmentIds(
+                      loggedInPetOwnerId, processedAppointmentIds);
+                  sendNotification(change, sentNotificationIds, 'cancelled');
                 }
               }
             }
@@ -130,8 +138,8 @@ class RealtimeService {
     }
   }
 
-  void sendNotification(
-      Map<String, dynamic> appointment, Set<String> sentNotificationIds) async {
+  void sendNotification(Map<String, dynamic> appointment,
+      Set<String> sentNotificationIds, String notificationType) async {
     final userId = appointment['sp_id'];
     final appointmentId = appointment['appointment_id'];
 
@@ -155,7 +163,7 @@ class RealtimeService {
               AndroidNotificationDetails(
             'appointment_channel',
             'Appointment Notifications',
-            channelDescription: 'Notifications for upcoming appointments',
+            channelDescription: 'Notifications for appointment updates',
             importance: Importance.high,
             priority: Priority.high,
             icon: 'pamfurred',
@@ -164,21 +172,29 @@ class RealtimeService {
           final uniqueNotificationId =
               (DateTime.now().millisecondsSinceEpoch % 2147483647).abs();
 
-          const NotificationDetails details =
+          final NotificationDetails details =
               NotificationDetails(android: androidDetails);
+
+          String title = '';
+          String body = '';
+
+          if (notificationType == 'done') {
+            title = 'Appointment Done';
+            body = 'Your appointment with $name has been completed.';
+          } else if (notificationType == 'cancelled') {
+            title = 'Appointment Cancelled';
+            body = 'Your appointment with $name has been cancelled.';
+          }
 
           await flutterLocalNotificationsPlugin.show(
             uniqueNotificationId,
-            'Appointment Done',
-            'Your appointment with $name has been completed.',
+            title,
+            body,
             details,
           );
 
           sentNotificationIds.add(appointmentId);
           _updateSentNotificationIds(userId, sentNotificationIds);
-
-          // Save sent notification IDs to the 'user' table
-          await saveSentNotificationIds();
 
           print('Notification sent for appointment ID $appointmentId');
         }

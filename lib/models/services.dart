@@ -11,6 +11,8 @@ class Service implements CartItem {
     required this.serviceType,
     required this.servicePetType,
     required this.serviceSize,
+    required this.minWeight,
+    required this.maxWeight,
   });
   final String serviceServiceProviderId;
   final String serviceId;
@@ -21,6 +23,8 @@ class Service implements CartItem {
   final List<String> serviceType;
   final List<String> servicePetType;
   final String serviceSize;
+  final double minWeight;
+  final double maxWeight;
 
   // Override the CartItem getters
   @override

@@ -148,15 +148,16 @@ class ChooseAppointmentPreferencesScreenState
                       height: 60,
                       child: pet.isEmpty
                           ? const Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Text(
-                                  textAlign: TextAlign.center,
-                                  "No pets with matching pet types for this service provider found.",
-                                  style: TextStyle(
-                                      fontSize: regularText, color: greyColor)),
-                            ],
-                          )
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Text(
+                                    textAlign: TextAlign.center,
+                                    "No pets with matching pet types for this service provider found.",
+                                    style: TextStyle(
+                                        fontSize: regularText,
+                                        color: greyColor)),
+                              ],
+                            )
                           : ListView.builder(
                               physics: const BouncingScrollPhysics(),
                               scrollDirection: Axis.horizontal,
@@ -186,6 +187,14 @@ class ChooseAppointmentPreferencesScreenState
                                               selectedAppointmentPetTypeProvider
                                                   .notifier)
                                           .state = pet[index]['pet_type'];
+                                      // Selected pet weight
+                                      final selectedPetWeight = ref
+                                          .read(
+                                              selectedAppointmentPetWeightProvider
+                                                  .notifier)
+                                          .state = pet[index]['pet_weight'];
+                                      print(
+                                          'Selected pet weight: $selectedPetWeight');
 
                                       ref
                                           .read(

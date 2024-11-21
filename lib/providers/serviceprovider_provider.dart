@@ -56,6 +56,10 @@ final selectedAppointmentPackageServiceTypeProvider =
 // Provider to manage the selected pet type for booking appointment
 final selectedAppointmentPetTypeProvider = StateProvider<String>((ref) => '');
 
+// Provider to manage the selected pet weight for booking appointment
+final selectedAppointmentPetWeightProvider =
+    StateProvider<double?>((ref) => null);
+
 // Provider to manage the selected pet type index for booking appointment
 final selectedAppointmentPetTypeIndexProvider =
     StateProvider<String>((ref) => '');
@@ -75,9 +79,8 @@ final selectedTimeslotProvider = StateProvider<String?>((ref) => null);
 // Holds selected pet's name during appointment
 final selectedPetNameProvider = StateProvider<String>((ref) => '');
 
-
 // Holds selected address during appointment
 final appointmentAddressProvider = StateProvider<String>((ref) => '');
 
-
-
+// Selected service provider category in home screen
+final selectedHomeScreenSpCategoryProvider = StateProvider<String>((ref) => '');

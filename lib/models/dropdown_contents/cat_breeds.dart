@@ -16,6 +16,7 @@ class CatBreed with CustomDropdownListFilter {
 }
 
 const List<CatBreed> catBreedList = [
+  CatBreed('Unknown'),
   CatBreed('Abyssinian'),
   CatBreed('American Bobtail'),
   CatBreed('American Curl'),

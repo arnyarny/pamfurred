@@ -37,6 +37,12 @@ final allServicesProvider =
           ? List<String>.from(service['pet_type'] as List<dynamic>)
           : [],
       serviceSize: service['size'] as String? ?? '',
+      minWeight: service['min_weight'] != null
+          ? double.tryParse(service['min_weight'].toString()) ?? 0.0
+          : 0.0,
+      maxWeight: service['max_weight'] != null
+          ? double.tryParse(service['max_weight'].toString()) ?? 0.0
+          : 0.0,
     );
   }).toList();
 
@@ -65,35 +71,17 @@ final allServicesProvider =
     }).toList();
   }
 
-  // Filter by size if it is provided
-  if (filterCriteria.size != null && filterCriteria.size!.isNotEmpty) {
+  // Filter by weight if it is provided
+  if (filterCriteria.weight != null) {
     serviceList = serviceList.where((service) {
-      return service.serviceSize == filterCriteria.size;
+      return filterCriteria.weight! >= service.minWeight &&
+          filterCriteria.weight! <= service.maxWeight;
     }).toList();
   }
 
   return serviceList;
 });
 
-// Provider to fetch a specific service details by provider ID and service ID
-final specificServiceProvider = FutureProvider.autoDispose
-    .family<Map<String, dynamic>, (String spId, String serviceId)>(
-        (ref, params) async {
-  final (spId, serviceId) = params;
-  final supabase = supabase_flutter.Supabase.instance.client;
-
-  // Call the Supabase RPC function
-  final response = await supabase.rpc('get_service_provider_services', params: {
-    'spid': spId,
-  });
-
-  final services = response as List<dynamic>;
-
-  // Filter to find the specific service by service_id
-  final specificService = services.firstWhere(
-    (service) => service['service_id'] == serviceId,
-    orElse: () => throw Exception('Service not found'),
-  );
-
-  return specificService as Map<String, dynamic>; // Return the specific service
-});
+// Hold selected service ID when a service is selected in search results
+// Selected service provider category in home screen
+final selectedServiceIdProvider = StateProvider<String>((ref) => '');

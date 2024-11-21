@@ -16,6 +16,7 @@ class BunnyBreed with CustomDropdownListFilter {
 }
 
 const List<BunnyBreed> bunnyBreedList = [
+  BunnyBreed('Unknown'),
   BunnyBreed('American'),
   BunnyBreed('Angora'),
   BunnyBreed('Belgian Hare'),

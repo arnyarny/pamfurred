@@ -7,11 +7,11 @@ import 'package:pamfurred/components/custom_appbar.dart';
 import 'package:pamfurred/components/custom_padded_button.dart';
 import 'package:pamfurred/components/globals.dart';
 import 'dart:developer';
-import 'package:pamfurred/models/dog_breeds.dart';
-import 'package:pamfurred/models/cat_breeds.dart';
-import 'package:pamfurred/models/bunny_breeds.dart';
-import 'package:pamfurred/models/pet_type.dart'; // Assuming PetType is in this file
-import 'package:pamfurred/models/sex.dart';
+import 'package:pamfurred/models/dropdown_contents/dog_breeds.dart';
+import 'package:pamfurred/models/dropdown_contents/cat_breeds.dart';
+import 'package:pamfurred/models/dropdown_contents/bunny_breeds.dart';
+import 'package:pamfurred/models/dropdown_contents/pet_type.dart'; // Assuming PetType is in this file
+import 'package:pamfurred/models/dropdown_contents/sex.dart';
 import 'package:pamfurred/providers/user_id.dart';
 import 'package:supabase_flutter/supabase_flutter.dart'; // Import the Sex class
 
@@ -30,7 +30,6 @@ class AddPetProfileScreenState extends ConsumerState<AddPetProfileScreen> {
   final _formKey = GlobalKey<FormState>(); // Key for form validation
   final Map<String, TextEditingController> controllers = {
     'petName': TextEditingController(),
-    'petAge': TextEditingController(),
     'petWeight': TextEditingController(),
     'description': TextEditingController(), // Added description controller
   };
@@ -68,17 +67,13 @@ class AddPetProfileScreenState extends ConsumerState<AddPetProfileScreen> {
                 children: [
                   const Wrap(children: [
                     Text(
-                      'Quickly add your pet’s details like name, age, weight, sex, breed, and type (Dog, Cat, or Bunny). Simply select the pet type, and choose a breed from the filtered list to complete the profile!',
+                      'Quickly add your pet’s details like name, weight, sex, breed, and type (Dog, Cat, or Bunny). Simply select the pet type, and choose a breed from the filtered list to complete the profile!',
                       style: TextStyle(fontSize: regularText, color: greyColor),
                     ),
                   ]),
                   const SizedBox(height: tertiarySizedBox),
                   // Pet Name Text Field
                   buildTextField('Pet Name', 'petName', TextInputType.text),
-                  const SizedBox(height: tertiarySizedBox),
-                  // Pet Age Text Field
-                  buildTextField('Pet Age (mos.)', 'petAge',
-                      const TextInputType.numberWithOptions(decimal: false)),
                   const SizedBox(height: tertiarySizedBox),
                   // Pet Weight Text Field
                   buildTextField(
@@ -185,7 +180,6 @@ class AddPetProfileScreenState extends ConsumerState<AddPetProfileScreen> {
                       if (_formKey.currentState?.validate() ?? false) {
                         // Gather the form data
                         String petName = controllers['petName']!.text;
-                        int petAge = int.parse(controllers['petAge']!.text);
                         double petWeight =
                             double.parse(controllers['petWeight']!.text);
                         String description = controllers['description']!.text;
@@ -202,13 +196,12 @@ class AddPetProfileScreenState extends ConsumerState<AddPetProfileScreen> {
                             await supabase.from('pet_profile').insert({
                           'pet_owner_id': userId,
                           'pet_name': petName,
-                          'age': petAge,
                           'weight': petWeight,
                           'description': description,
                           'date_of_birth': dateOfBirth,
                           'sex': sex,
-                          'pet_type': petType,
-                          'breed': breed,
+                          'pet_type': petType.toLowerCase(),
+                          'breed': breed.toLowerCase(),
                         });
 
                         if (response == null) {
@@ -227,7 +220,7 @@ class AddPetProfileScreenState extends ConsumerState<AddPetProfileScreen> {
                       }
                     },
                   ),
-                  const SizedBox(height: tertiarySizedBox),
+                  const SizedBox(height: secondarySizedBox),
                 ],
               ),
             ),
@@ -273,10 +266,6 @@ class AddPetProfileScreenState extends ConsumerState<AddPetProfileScreen> {
                   value.isNotEmpty &&
                   !RegExp(r'^[A-Za-z\s]+$').hasMatch(value)) {
                 return 'Pet name should contain only letters';
-              }
-              if (controllerKey == 'petAge' &&
-                  (int.tryParse(value) == null || int.parse(value) <= 0)) {
-                return 'Enter a valid pet age';
               }
               if (controllerKey == 'petWeight' &&
                   (double.tryParse(value) == null ||

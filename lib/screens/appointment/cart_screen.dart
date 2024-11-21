@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:pamfurred/components/capitalize_first_letter.dart';
 import 'package:pamfurred/components/custom_appbar.dart';
 import 'package:pamfurred/components/globals.dart';
 import 'package:pamfurred/components/screen_transitions.dart';
@@ -36,7 +37,10 @@ class _CartScreenState extends ConsumerState<CartScreen> {
 
     return Scaffold(
       backgroundColor: Colors.white,
-      appBar: customAppBarWithTitle(context, "Your Cart"),
+      appBar: customAppBarWithTitle(
+        context,
+        "Your Cart",
+      ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
       floatingActionButton: Padding(
         padding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
@@ -140,6 +144,19 @@ class _CartScreenState extends ConsumerState<CartScreen> {
             : Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      TextButton.icon(
+                          label: const Text('Clear Cart'),
+                          onPressed: () {
+                            ref.read(cartNotifierProvider.notifier).clearCart();
+                          },
+                          icon: const Icon(
+                            Icons.delete,
+                          ))
+                    ],
+                  ),
                   // Services Section
                   if (services.isNotEmpty)
                     const Padding(
@@ -215,7 +232,7 @@ class _CartScreenState extends ConsumerState<CartScreen> {
           const SizedBox(width: 10),
           Expanded(
             child: Text(
-              item.name,
+              capitalizeFirstLetter(item.name),
               overflow: TextOverflow.ellipsis,
               style: const TextStyle(fontSize: 16),
             ),

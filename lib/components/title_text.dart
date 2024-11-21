@@ -20,6 +20,20 @@ Text customRegularWeightTitleText(BuildContext context, String text) {
   );
 }
 
+Widget customRegularWeightTitleTextForAddress(BuildContext context, String text) {
+  return SizedBox(
+    width: 350,
+    child: Text(
+      text,
+      style: const TextStyle(
+          fontSize: regularText,
+          fontWeight: regularWeight,
+          color: Colors.black,
+          overflow: TextOverflow.ellipsis),
+    ),
+  );
+}
+
 Text customBoldWeightRegularText(BuildContext context, String text) {
   return Text(
     text,

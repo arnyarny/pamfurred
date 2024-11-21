@@ -1,5 +1,7 @@
 class ServiceProviderItem {
+  final String spId;
   final String spName;
+  final String servicePackageId;
   final String name;
   final String type;
   final String imageUrl;
@@ -10,7 +12,9 @@ class ServiceProviderItem {
   final String sentimentLabel;
 
   ServiceProviderItem(
-      {required this.spName,
+      {required this.spId,
+      required this.spName,
+      required this.servicePackageId,
       required this.name,
       required this.type,
       required this.imageUrl,
@@ -23,7 +27,9 @@ class ServiceProviderItem {
   // Factory constructor to create an instance from a map
   factory ServiceProviderItem.fromService(Map<String, dynamic> service) {
     return ServiceProviderItem(
+      spId: service['sp_id'],
       spName: service['name'],
+      servicePackageId: service['service_id'],
       name: service['service_name'],
       type: 'service',
       imageUrl: service['service_image'],
@@ -37,7 +43,9 @@ class ServiceProviderItem {
 
   factory ServiceProviderItem.fromPackage(Map<String, dynamic> package) {
     return ServiceProviderItem(
+      spId: package['sp_id'],
       spName: package['name'],
+      servicePackageId: package['package_id'],
       name: package['package_name'],
       type: 'package',
       imageUrl: package['package_image'],

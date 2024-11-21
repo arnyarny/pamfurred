@@ -5,6 +5,8 @@ import 'package:pamfurred/models/cart_item.dart';
 import 'package:pamfurred/models/services.dart';
 import 'package:pamfurred/models/packages.dart';
 import 'package:pamfurred/providers/user_id.dart';
+import 'package:quickalert/models/quickalert_type.dart';
+import 'package:quickalert/widgets/quickalert_dialog.dart';
 
 // CartNotifier now requires the userId as a parameter
 class CartNotifier extends StateNotifier<Set<CartItem>> {
@@ -24,9 +26,6 @@ class CartNotifier extends StateNotifier<Set<CartItem>> {
       if (item.serviceProviderId != service.serviceProviderId) {
         return true; // Conflict found: Different service providers
       }
-      if (item.size != service.size) {
-        return true; // Conflict found: Different sizes
-      }
       bool petTypeConflict =
           item.petType.toSet().intersection(service.petType.toSet()).isEmpty;
       if (petTypeConflict) {
@@ -40,9 +39,6 @@ class CartNotifier extends StateNotifier<Set<CartItem>> {
     for (final item in state) {
       if (item.serviceProviderId != package.serviceProviderId) {
         return true; // Conflict found: Different service providers
-      }
-      if (item.size != package.size) {
-        return true; // Conflict found: Different sizes
       }
       bool petTypeConflict =
           item.petType.toSet().intersection(package.petType.toSet()).isEmpty;
@@ -74,44 +70,11 @@ class CartNotifier extends StateNotifier<Set<CartItem>> {
   }
 
   void _showProviderConflictDialog() {
-    showDialog(
+    QuickAlert.show(
       context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          backgroundColor: Colors.white,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(primaryBorderRadius),
-          ),
-          title: const Row(
-            children: [
-              Text('Oops!',
-                  style: TextStyle(
-                      fontWeight: boldWeight,
-                      overflow: TextOverflow.ellipsis,
-                      fontSize: titleFont,
-                      color: primaryColor)),
-            ],
-          ),
-          content: const Text(
-            'You can only book services or packages with matching attributes from the same provider.\n\nThis happens when you book services or packages from two or more service providers or when a service or package you chose are of different sizes or pet types.',
-            style: TextStyle(
-              fontSize: regularText,
-            ),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-              child: const Text(
-                'OK',
-                style:
-                    TextStyle(color: Colors.blue, fontWeight: FontWeight.bold),
-              ),
-            ),
-          ],
-        );
-      },
+      type: QuickAlertType.error,
+      title: 'Oops...',
+      text: 'You can only book services or packages from the same provider.',
     );
   }
 

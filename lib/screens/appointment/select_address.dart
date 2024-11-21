@@ -8,6 +8,7 @@ import 'package:pamfurred/components/custom_appbar.dart';
 import 'package:pamfurred/components/custom_padded_button.dart';
 import 'package:pamfurred/components/globals.dart';
 import 'package:pamfurred/components/screen_transitions.dart';
+import 'package:pamfurred/providers/search_results_provider.dart';
 import 'package:pamfurred/providers/serviceprovider_provider.dart';
 import 'package:pamfurred/screens/appointment/choose_date_and_time.dart';
 import 'package:pamfurred/screens/pin_location.dart';
@@ -41,11 +42,25 @@ class SelectAppointmentAddressScreenState
     // Listen to the addressProvider to update the text field if it changes
     final addressAsyncValue = ref.watch(addressProvider);
 
+    final hasDetectedAddress = ref.watch(hasDetectedAddressProvider);
+
+    final street = ref.watch(streetProvider);
+    final city = ref.watch(cityProvider);
+    final province = ref.watch(provinceProvider);
+
     // Get formatted address for initial text
     String formattedAddress = '';
     addressAsyncValue.whenData((address) {
       formattedAddress =
           '${address['street'] ?? ''}, ${address['city'] ?? ''}, ${address['province'] ?? ''}';
+
+      ref.read(appointmentAddressProvider.notifier).state = formattedAddress;
+    });
+
+    addressAsyncValue.whenData((address) {
+      if (hasDetectedAddress) {
+        formattedAddress = '$street, $city, $province';
+      }
 
       ref.read(appointmentAddressProvider.notifier).state = formattedAddress;
     });
@@ -56,7 +71,7 @@ class SelectAppointmentAddressScreenState
     }
 
     return Scaffold(
-      appBar: customAppBarWithTitleAndIcon(context, 'Select address', [
+      appBar: customAppBarWithTitleAndWidget(context, 'Select address', [
         customSmallPaddedTextButton(
             text: 'Next',
             onPressed: () {

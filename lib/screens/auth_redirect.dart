@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:pamfurred/components/screen_transitions.dart';
 import 'package:pamfurred/providers/appointments_provider.dart';
+import 'package:pamfurred/providers/available_timeslots_provider.dart';
 import 'package:pamfurred/screens/login.dart';
 import 'package:pamfurred/screens/main_screen.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -19,6 +20,7 @@ class AuthRedirectState extends ConsumerState<AuthRedirect> {
     super.initState();
     _checkSession();
     _listenToAppointments(); // Listen to appointment changes after initState
+    _listenToSpAvailability(); // Listen to service provider availability changes after initState
   }
 
   // Listen for changes in the `appointments` table
@@ -29,6 +31,17 @@ class AuthRedirectState extends ConsumerState<AuthRedirect> {
     supabase.from('appointment').stream(primaryKey: ['appointment_id']).listen((event) {
       // Invalidate the provider when the data changes
       ref.invalidate(appointmentDetailsProvider);
+    });
+  }
+
+    // Listen for changes in the `service_provider_availability` table
+  void _listenToSpAvailability() {
+    final supabase = Supabase.instance.client;
+
+    // Stream listens for changes in the service_provider_availability table
+    supabase.from('service_provider_availability').stream(primaryKey: ['availability_id']).listen((event) {
+      // Invalidate the provider when the data changes
+      ref.invalidate(availableTimeslotsProvider);
     });
   }
 

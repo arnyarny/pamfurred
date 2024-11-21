@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pamfurred/models/sp_search_results.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -64,36 +66,70 @@ final combinedSearchResultsProvider =
   return [...serviceItems, ...packageItems];
 });
 
-// Sorted by price (cheapest to most expensive)
+// Sorted by price (cheapest to most expensive) using combinedSearchResultsProvider
 final sortSearchResultsByPrice =
-    FutureProvider.family<List<dynamic>, String>((ref, category) async {
-  final supabase = Supabase.instance.client;
+    FutureProvider.family<List<ServiceProviderItem>, String>(
+        (ref, category) async {
+  // Retrieve combined search results
+  final combinedResults =
+      await ref.watch(combinedSearchResultsProvider(category).future);
 
-  final response =
-      await supabase.rpc('get_service_providers_by_price_range', params: {
-    'service_category_param': category,
-    'min_price': ref.read(minPriceProvider),
-    'max_price': ref.read(maxPriceProvider),
-  });
+  // Retrieve the min and max price from the respective providers
+  final minPrice = ref.read(minPriceProvider);
+  final maxPrice = ref.read(maxPriceProvider);
 
-  return response as List<dynamic>;
+  // Filter results by price range and sort by price (ascending)
+  final filteredAndSortedResults = combinedResults
+      .where((item) => item.price >= minPrice && item.price <= maxPrice)
+      .toList()
+    ..sort((a, b) => a.price.compareTo(b.price));
+
+  return filteredAndSortedResults;
 });
 
-// Sorted by location (nearest to farthest)
+// Sorted by location (nearest to farthest) using combinedSearchResultsProvider
 final sortSearchResultsByLocation =
-    FutureProvider.family<List<dynamic>, String>((ref, category) async {
-  final supabase = Supabase.instance.client;
+    FutureProvider.family<List<ServiceProviderItem>, String>(
+        (ref, category) async {
+  // Retrieve combined search results
+  final combinedResults =
+      await ref.watch(combinedSearchResultsProvider(category).future);
 
-  // Access the latitude and longitude from the providers
+  // Access the latitude and longitude from the respective providers
   final latitude = ref.read(latProvider);
   final longitude = ref.read(longProvider);
 
-  final response =
-      await supabase.rpc('get_service_providers_by_distance', params: {
-    'service_category_param': category,
-    'latitude_param': latitude,
-    'longitude_param': longitude,
-  });
+  // Calculate the distance for each item and sort by distance (ascending)
+  final sortedResults = combinedResults.map((item) {
+    final distance =
+        calculateDistance(latitude!, longitude!, item.latitude, item.longitude);
+    return {'item': item, 'distance': distance};
+  }).toList()
+    ..sort(
+        (a, b) => (a['distance'] as double).compareTo(b['distance'] as double));
 
-  return response as List<dynamic>;
+  // Extract and return the sorted list of items
+  return sortedResults
+      .map((entry) => entry['item'] as ServiceProviderItem)
+      .toList();
 });
+
+// Helper function to calculate the distance between two points
+double calculateDistance(double lat1, double lon1, double lat2, double lon2) {
+  const earthRadius = 6371.0; // Radius of Earth in kilometers
+  final dLat = _degreesToRadians(lat2 - lat1);
+  final dLon = _degreesToRadians(lon2 - lon1);
+
+  final a = (sin(dLat / 2) * sin(dLat / 2)) +
+      cos(_degreesToRadians(lat1)) *
+          cos(_degreesToRadians(lat2)) *
+          (sin(dLon / 2) * sin(dLon / 2));
+  final c = 2 * atan2(sqrt(a), sqrt(1 - a));
+
+  return earthRadius * c;
+}
+
+// Helper function to convert degrees to radians
+double _degreesToRadians(double degrees) {
+  return degrees * pi / 180.0;
+}

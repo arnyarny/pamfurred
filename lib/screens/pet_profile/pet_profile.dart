@@ -27,9 +27,7 @@ class PetProfileScreenState extends ConsumerState<PetProfileScreen> {
       backgroundColor: Colors.white,
       appBar: customAppBar(context),
       body: PullToRefresh(
-        providersToRefresh: [
-          fetchPetByIdProvider(petProfileId)
-        ],
+        providersToRefresh: [fetchPetByIdProvider(petProfileId)],
         child: asyncPet.when(
           data: (pet) {
             if (pet == null) {
@@ -142,8 +140,10 @@ class PetProfileScreenState extends ConsumerState<PetProfileScreen> {
                                     petDesc(
                                         context,
                                         'assets/time.png',
-                                        pet['pet_age']?.toString() ?? 'N/A',
-                                        "mos. old"),
+                                        calculateAgeInMonthsOrWeeks(
+                                                pet['pet_date_of_birth']) ??
+                                            'N/A',
+                                        "age"),
                                     const SizedBox(height: secondarySizedBox),
                                     petDesc(
                                         context,
@@ -280,5 +280,26 @@ class PetProfileScreenState extends ConsumerState<PetProfileScreen> {
 
   editIcon() {
     return const Icon(Icons.edit, size: 18, color: primaryColor);
+  }
+
+  String? calculateAgeInMonthsOrWeeks(String? dateOfBirth) {
+    if (dateOfBirth == null) return null;
+
+    try {
+      final dob = DateTime.parse(dateOfBirth); // Parse yyyy-MM-dd
+      final now = DateTime.now();
+      final ageInMonths = (now.year - dob.year) * 12 + now.month - dob.month;
+      final ageInDays = now.difference(dob).inDays;
+
+      // If the pet is less than 1 month old, calculate in weeks
+      if (ageInMonths < 1) {
+        final ageInWeeks = (ageInDays / 7).round();
+        return '$ageInWeeks week${ageInWeeks > 1 ? 's' : ''} old';
+      } else {
+        return '$ageInMonths month${ageInMonths > 1 ? 's' : ''} old';
+      }
+    } catch (e) {
+      return null; // Return null if parsing fails
+    }
   }
 }

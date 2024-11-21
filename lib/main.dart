@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:pamfurred/backend_logic_files/realtime_service.dart';
 import 'package:pamfurred/components/globals.dart';
 import 'package:pamfurred/screens/auth_redirect.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -45,6 +46,11 @@ void main() async {
   }
 
   await initializeNotifications(); // Initialize local notifications
+
+  final realtimeService = RealtimeService();
+
+  // Start listening to appointments
+  realtimeService.listenToAppointments();
 
   SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp])
       .then((_) {

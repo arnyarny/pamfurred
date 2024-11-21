@@ -22,7 +22,8 @@ import 'package:pamfurred/providers/sp_profile_provider_services.dart';
 import 'package:pamfurred/providers/user_id.dart';
 import 'package:pamfurred/screens/appointment/cart_screen.dart';
 import 'package:pamfurred/screens/appointment/choose_appointment_pref.dart';
-import 'package:pamfurred/screens/appointment/ratings_and_reviews_widget.dart';
+import 'package:pamfurred/components/ratings_and_reviews_widget.dart';
+import 'package:pamfurred/screens/appointment/ratings_and_reviews_screen.dart';
 import 'package:shimmer/shimmer.dart';
 
 // Function to reset providers to null/blank when willBookProvider is false
@@ -384,25 +385,27 @@ final aboutTabProvider = FutureProvider<List<Widget>>((ref) async {
 
   return [
     // About tab content
-    Center(
-      child: sp!.isEmpty
-          ? const Center(
-              child: CircularProgressIndicator(),
-            )
-          : Container(
-              padding: const EdgeInsets.only(bottom: 80),
-              child: Column(
-                children: [
-                  Builder(
-                    builder: (context) {
+    Builder(builder: (context) {
+      return Center(
+        child: sp!.isEmpty
+            ? const Center(
+                child: CircularProgressIndicator(),
+              )
+            : Container(
+                padding: const EdgeInsets.only(bottom: 80),
+                child: Column(
+                  children: [
+                    Builder(builder: (context) {
                       return SizedBox(
                         width: screenPadding(context),
                         child: Column(
                           children: [
-                            spSentimentLabelHeader(CupertinoIcons.text_bubble,
-                                sentimentLabelTextWidget(sp['sentiment_label'])),
+                            spSentimentLabelHeader(
+                                CupertinoIcons.text_bubble,
+                                sentimentLabelTextWidget(
+                                    sp['sentiment_label'])),
                             const SizedBox(height: secondarySizedBox),
-                      
+
                             spDistanceDetailsHeader(
                               CupertinoIcons.location,
                               FutureBuilder<String?>(
@@ -424,7 +427,7 @@ final aboutTabProvider = FutureProvider<List<Widget>>((ref) async {
                               ),
                             ),
                             const SizedBox(height: secondarySizedBox),
-                      
+
                             // This is temporary. Remove this when it's ensured that we don't take null addresses from service providers
                             sp.isNotEmpty
                                 ? spDetailsHeader(
@@ -432,61 +435,72 @@ final aboutTabProvider = FutureProvider<List<Widget>>((ref) async {
                                 : spDetailsHeader(
                                     CupertinoIcons.location_solid, 'N/A'),
                             const SizedBox(height: secondarySizedBox),
-                      
+
                             // Rating display logic (assuming 'displayRating' handles null internally)
                             spDetailsHeader(Icons.star_border, displayRating),
                             const SizedBox(height: secondarySizedBox),
-                      
+
                             spDetailsHeader(
                               Icons.home_repair_service_outlined,
                               serviceTypes.join(', '),
                             ),
                             const SizedBox(height: secondarySizedBox),
-                      
+
                             spDetailsHeader(Icons.access_time,
                                 'Opens from ${formatTime(timeOpen)} to ${formatTime(timeClose)}'),
                             const SizedBox(height: secondarySizedBox),
-                      
-                            spDetailsHeader(
-                                Icons.call_outlined, sp['phone_number'] ?? 'N/A'),
+
+                            spDetailsHeader(Icons.call_outlined,
+                                sp['phone_number'] ?? 'N/A'),
                             const SizedBox(height: secondarySizedBox),
-                      
+
                             spDetailsHeader(CupertinoIcons.heart,
                                 'Caters ${petsCatered.join(', ')}'),
                             const SizedBox(height: secondarySizedBox),
-                            GestureDetector(
-                              onTap: () {},
-                              child: const Row(
-                                mainAxisAlignment: MainAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    'Ratings and Reviews',
-                                    style: TextStyle(
-                                      fontWeight: boldWeight,
-                                      color: Colors.black,
-                                      fontSize: regularText,
-                                    ),
-                                  ),
-                                  SizedBox(width: primarySizedBox),
-                                  Icon(
-                                    Icons.arrow_forward_ios_outlined,
-                                    size: 20,
-                                    color: Colors.black,
-                                  )
-                                ],
-                              ),
-                            ),
                           ],
                         ),
                       );
-                    }
-                  ),
-                  const SizedBox(height: secondarySizedBox),
-                  const RatingsAndReviewsWidget()
-                ],
+                    }),
+                    GestureDetector(
+                      onTap: () {
+                        // Navigate to the service provider’s profile
+                        Navigator.push(context,
+                            slideUpRoute(const RatingsAndReviewsScreen()));
+                      },
+                      child: Column(
+                        children: [
+                          SizedBox(
+                            width: screenPadding(context),
+                            child: const Row(
+                              mainAxisAlignment: MainAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'Ratings and Reviews',
+                                  style: TextStyle(
+                                    fontWeight: boldWeight,
+                                    color: Colors.black,
+                                    fontSize: regularText,
+                                  ),
+                                ),
+                                SizedBox(width: primarySizedBox),
+                                Icon(
+                                  Icons.arrow_forward_ios_outlined,
+                                  size: 20,
+                                  color: Colors.black,
+                                )
+                              ],
+                            ),
+                          ),
+                          const SizedBox(height: secondarySizedBox),
+                          const RatingsAndReviewsWidget(),
+                        ],
+                      ),
+                    )
+                  ],
+                ),
               ),
-            ),
-    ),
+      );
+    }),
   ];
 });
 
@@ -511,148 +525,151 @@ final servicesTabProvider = FutureProvider<List<Widget>>((ref) async {
 
         return Center(
           child: allServices.when(
-            data: (servicesList) => Column(
-              children: [
-                // const SizedBox(height: tertiarySizedBox),
-                servicesList.isEmpty
-                    ? const Center(child: Text("No services available"))
-                    : Expanded(
-                        child: ListView.builder(
-                          padding: const EdgeInsets.only(bottom: 80),
-                          itemCount: servicesList.length,
-                          itemBuilder: (context, index) {
-                            final service = servicesList[index];
+            data: (servicesList) => SizedBox(
+              height: getScreenHeight(context) - 80,
+              child: Column(
+                children: [
+                  servicesList.isEmpty
+                      ? const Center(child: Text("No services available"))
+                      : Expanded(
+                          child: ListView.builder(
+                            padding: const EdgeInsets.only(bottom: 80),
+                            itemCount: servicesList.length,
+                            itemBuilder: (context, index) {
+                              final service = servicesList[index];
 
-                            return Consumer(
-                              builder: (context, ref, child) {
-                                final cartServices =
-                                    ref.watch(cartNotifierProvider);
-                                final isInCart = cartServices.any(
-                                    (cartService) =>
-                                        cartService.id == service.serviceId);
+                              return Consumer(
+                                builder: (context, ref, child) {
+                                  final cartServices =
+                                      ref.watch(cartNotifierProvider);
+                                  final isInCart = cartServices.any(
+                                      (cartService) =>
+                                          cartService.id == service.serviceId);
 
-                                bool willBook = ref.watch(willBookProvider);
-                                return Card(
-                                  color: Colors.transparent,
-                                  elevation: 0,
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(
-                                        primaryBorderRadius),
-                                  ),
-                                  child: Row(
-                                    children: [
-                                      ClipRRect(
-                                        borderRadius: BorderRadius.circular(
-                                            primaryBorderRadius),
-                                        child: Image.network(
-                                          service.serviceImage,
-                                          width: 90,
-                                          height: 85,
-                                          fit: BoxFit.cover,
-                                          loadingBuilder: (context, child,
-                                              loadingProgress) {
-                                            if (loadingProgress == null) {
-                                              return child;
-                                            } else {
-                                              return Shimmer.fromColors(
-                                                baseColor: Colors.grey[300]!,
-                                                highlightColor:
-                                                    Colors.grey[100]!,
-                                                child: Container(
-                                                  width: 90,
-                                                  height: 85,
-                                                  color: Colors.grey[300],
-                                                ),
+                                  bool willBook = ref.watch(willBookProvider);
+                                  return Card(
+                                    color: Colors.transparent,
+                                    elevation: 0,
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(
+                                          primaryBorderRadius),
+                                    ),
+                                    child: Row(
+                                      children: [
+                                        ClipRRect(
+                                          borderRadius: BorderRadius.circular(
+                                              primaryBorderRadius),
+                                          child: Image.network(
+                                            service.serviceImage,
+                                            width: 90,
+                                            height: 85,
+                                            fit: BoxFit.cover,
+                                            loadingBuilder: (context, child,
+                                                loadingProgress) {
+                                              if (loadingProgress == null) {
+                                                return child;
+                                              } else {
+                                                return Shimmer.fromColors(
+                                                  baseColor: Colors.grey[300]!,
+                                                  highlightColor:
+                                                      Colors.grey[100]!,
+                                                  child: Container(
+                                                    width: 90,
+                                                    height: 85,
+                                                    color: Colors.grey[300],
+                                                  ),
+                                                );
+                                              }
+                                            },
+                                            errorBuilder:
+                                                (context, error, stackTrace) {
+                                              return Container(
+                                                width: 90,
+                                                height: 85,
+                                                color: Colors.grey[300],
+                                                child: const Icon(Icons.error),
                                               );
-                                            }
-                                          },
-                                          errorBuilder:
-                                              (context, error, stackTrace) {
-                                            return Container(
-                                              width: 90,
-                                              height: 85,
-                                              color: Colors.grey[300],
-                                              child: const Icon(Icons.error),
-                                            );
-                                          },
+                                            },
+                                          ),
                                         ),
-                                      ),
-                                      const SizedBox(width: tertiarySizedBox),
-                                      Expanded(
-                                        child: Column(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.start,
-                                          children: [
-                                            customTitleText(
-                                                context,
-                                                capitalizeFirstLetter(
-                                                    service.serviceName)),
-                                            Row(
-                                              children: [
-                                                regularTextWidget(
-                                                    service.serviceSize),
-                                                regularPrimaryColoredTextWidget(
-                                                    ' • '),
-                                                Text('₱${service.servicePrice}')
-                                              ],
-                                            ),
-                                          ],
+                                        const SizedBox(width: tertiarySizedBox),
+                                        Expanded(
+                                          child: Column(
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
+                                            children: [
+                                              customTitleText(
+                                                  context,
+                                                  capitalizeFirstLetter(
+                                                      service.serviceName)),
+                                              Row(
+                                                children: [
+                                                  regularTextWidget(
+                                                      service.serviceSize),
+                                                  regularPrimaryColoredTextWidget(
+                                                      ' • '),
+                                                  Text(
+                                                      '₱${service.servicePrice}')
+                                                ],
+                                              ),
+                                            ],
+                                          ),
                                         ),
-                                      ),
-                                      willBook
-                                          ? SizedBox(
-                                              width: 37,
-                                              child: Center(
-                                                child: CircleAvatar(
-                                                  backgroundColor: isInCart
-                                                      ? Colors.red
-                                                      : secondaryColor,
-                                                  child: GestureDetector(
-                                                    onTap: () {
-                                                      ref
-                                                          .read(
-                                                              buttonPressedProvider
-                                                                  .notifier)
-                                                          .setPressed(true);
-                                                    },
-                                                    child: IconButton(
-                                                      icon: Icon(
-                                                        isInCart
-                                                            ? Icons.remove
-                                                            : Icons.add,
-                                                        color: Colors.white,
-                                                        size: 23,
-                                                      ),
-                                                      onPressed: () {
-                                                        final cartNotifier =
-                                                            ref.read(
-                                                                cartNotifierProvider
-                                                                    .notifier);
-                                                        // Add or remove service based on `isInCart`
-                                                        isInCart
-                                                            ? cartNotifier
-                                                                .removeService(
-                                                                    service)
-                                                            : cartNotifier
-                                                                .addService(
-                                                                    service);
+                                        willBook
+                                            ? SizedBox(
+                                                width: 37,
+                                                child: Center(
+                                                  child: CircleAvatar(
+                                                    backgroundColor: isInCart
+                                                        ? Colors.red
+                                                        : secondaryColor,
+                                                    child: GestureDetector(
+                                                      onTap: () {
+                                                        ref
+                                                            .read(
+                                                                buttonPressedProvider
+                                                                    .notifier)
+                                                            .setPressed(true);
                                                       },
+                                                      child: IconButton(
+                                                        icon: Icon(
+                                                          isInCart
+                                                              ? Icons.remove
+                                                              : Icons.add,
+                                                          color: Colors.white,
+                                                          size: 23,
+                                                        ),
+                                                        onPressed: () {
+                                                          final cartNotifier =
+                                                              ref.read(
+                                                                  cartNotifierProvider
+                                                                      .notifier);
+                                                          // Add or remove service based on `isInCart`
+                                                          isInCart
+                                                              ? cartNotifier
+                                                                  .removeService(
+                                                                      service)
+                                                              : cartNotifier
+                                                                  .addService(
+                                                                      service);
+                                                        },
+                                                      ),
                                                     ),
                                                   ),
                                                 ),
-                                              ),
-                                            )
-                                          : const SizedBox
-                                              .shrink(), // Makes sure the widget is hidden when `willBook` is false
-                                    ],
-                                  ),
-                                );
-                              },
-                            );
-                          },
+                                              )
+                                            : const SizedBox
+                                                .shrink(), // Makes sure the widget is hidden when `willBook` is false
+                                      ],
+                                    ),
+                                  );
+                                },
+                              );
+                            },
+                          ),
                         ),
-                      ),
-              ],
+                ],
+              ),
             ),
             loading: () => Center(
               child: Container(
@@ -693,11 +710,10 @@ final packagesTabProvider = FutureProvider<List<Widget>>((ref) async {
 
         return Center(
           child: SizedBox(
-            height: getScreenHeight(context),
+            height: getScreenHeight(context) - 80,
             child: allPackages.when(
               data: (packagesList) => Column(
                 children: [
-                  // const SizedBox(height: tertiarySizedBox),
                   packagesList.isEmpty
                       ? const Center(child: Text("No packages available"))
                       : Expanded(

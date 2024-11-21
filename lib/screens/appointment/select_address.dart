@@ -24,6 +24,7 @@ class SelectAppointmentAddressScreen extends ConsumerStatefulWidget {
 class SelectAppointmentAddressScreenState
     extends ConsumerState<SelectAppointmentAddressScreen> {
   final TextEditingController _controller = TextEditingController();
+  final FocusNode _focusNode = FocusNode();
 
   @override
   void initState() {
@@ -31,9 +32,12 @@ class SelectAppointmentAddressScreenState
 
     // Initialize the controller with the current value of the addressProvider
     final addressAsyncValue = ref.read(addressProvider);
+
     addressAsyncValue.whenData((address) {
       _controller.text =
           '${address['street'] ?? ''}, ${address['city'] ?? ''}, ${address['province'] ?? ''}';
+
+      ref.read(appointmentAddressProvider.notifier).state = _controller.text;
     });
   }
 
@@ -41,7 +45,6 @@ class SelectAppointmentAddressScreenState
   Widget build(BuildContext context) {
     // Listen to the addressProvider to update the text field if it changes
     final addressAsyncValue = ref.watch(addressProvider);
-
     final hasDetectedAddress = ref.watch(hasDetectedAddressProvider);
 
     final street = ref.watch(streetProvider);
@@ -83,12 +86,18 @@ class SelectAppointmentAddressScreenState
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: TypeAheadField<Map<String, String>>(
+          controller: _controller,
+          focusNode: _focusNode,
           debounceDuration: const Duration(milliseconds: 300),
           hideOnEmpty: true,
           hideOnLoading: false,
           hideOnError: false,
           suggestionsCallback: (pattern) async {
-            return pattern.isNotEmpty ? await fetchLocations(pattern) : [];
+            if (pattern.isNotEmpty) {
+              return await fetchLocations(pattern);
+            } else {
+              return [];
+            }
           },
           itemBuilder: (context, suggestion) {
             return ListTile(
@@ -97,6 +106,8 @@ class SelectAppointmentAddressScreenState
           },
           onSelected: (suggestion) {
             _controller.text = suggestion['displayName']!;
+            ref.read(appointmentAddressProvider.notifier).state =
+                _controller.text;
           },
           errorBuilder: (context, error) => const Padding(
             padding: EdgeInsets.all(8.0),

@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pamfurred/components/custom_padded_button.dart';
@@ -309,23 +310,26 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
           );
         },
         child: ClipOval(
-          child: Image.network(
-            imageUrl ??
+          child: CachedNetworkImage(
+            imageUrl: imageUrl ??
                 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR7nreJH6sPRQH2qk3IL_R4j0o1-amatTZn7Q&s',
             height: 40,
             width: 45,
             fit: BoxFit.cover,
-            loadingBuilder: (context, child, loadingProgress) {
-              return loadingProgress == null
-                  ? child
-                  : Shimmer.fromColors(
-                      baseColor: Colors.grey[300]!,
-                      highlightColor: Colors.grey[100]!,
-                      child:
-                          Container(height: 40, width: 45, color: Colors.white),
-                    );
+            placeholder: (context, url) {
+              // Shimmer effect while loading
+              return Shimmer.fromColors(
+                baseColor: Colors.grey[300]!,
+                highlightColor: Colors.grey[100]!,
+                child: Container(
+                  height: 40,
+                  width: 45,
+                  color: Colors.white,
+                ),
+              );
             },
-            errorBuilder: (context, error, stackTrace) {
+            errorWidget: (context, url, error) {
+              // Error placeholder
               return const Icon(Icons.error);
             },
           ),

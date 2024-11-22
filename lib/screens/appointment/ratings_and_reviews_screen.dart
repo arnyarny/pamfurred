@@ -32,6 +32,7 @@ class RatingsAndReviewsScreenState
 
     return Scaffold(
       appBar: customAppBarWithTitle(context, 'Ratings & Reviews'),
+      backgroundColor: Colors.white,
       body: ratingsSummaryWithReviews.when(
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (error, stackTrace) => Center(
@@ -118,7 +119,7 @@ class RatingsAndReviewsScreenState
                                   duration: const Duration(milliseconds: 300),
                                   curve: Curves.easeInOut,
                                   child: SizedBox(
-                                    height: review['review'].length > 30 &&
+                                    height: review['review'].length > 50 &&
                                             !isExpanded
                                         ? 30
                                         : null, // Apply height limit only for long reviews
@@ -127,7 +128,7 @@ class RatingsAndReviewsScreenState
                                       style:
                                           const TextStyle(fontSize: smallText),
                                       overflow: isExpanded ||
-                                              review['review'].length <= 30
+                                              review['review'].length <= 50
                                           ? TextOverflow.visible
                                           : TextOverflow
                                               .ellipsis, // No ellipsis for short texts

@@ -36,21 +36,6 @@ class AddPetProfileScreenState extends ConsumerState<AddPetProfileScreen> {
 
   final supabase = Supabase.instance.client;
 
-  // Function to show the DatePicker
-  Future<void> _selectDate(BuildContext context) async {
-    final DateTime? picked = await showDatePicker(
-      context: context,
-      initialDate: selectedDateOfBirth ?? DateTime.now(),
-      firstDate: DateTime(1900),
-      lastDate: DateTime.now(),
-    );
-    if (picked != null && picked != selectedDateOfBirth)
-      // ignore: curly_braces_in_flow_control_structures
-      setState(() {
-        selectedDateOfBirth = picked;
-      });
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -80,8 +65,11 @@ class AddPetProfileScreenState extends ConsumerState<AddPetProfileScreen> {
                       'Pet Weight (kg)', 'petWeight', TextInputType.number),
                   const SizedBox(height: tertiarySizedBox),
                   // Description Text Field (Longer than other fields)
-                  buildTextField(
-                      'Description', 'description', TextInputType.text),
+                  SizedBox(
+                    height: 112,
+                    child: buildTextField(
+                        'Description', 'description', TextInputType.text),
+                  ),
                   const SizedBox(height: tertiarySizedBox),
                   // Date of Birth Field
                   Row(
@@ -113,12 +101,6 @@ class AddPetProfileScreenState extends ConsumerState<AddPetProfileScreen> {
                                 BorderRadius.circular(secondaryBorderRadius),
                           ),
                         ),
-                        validator: (value) {
-                          if (selectedDateOfBirth == null) {
-                            return 'Pet Date of Birth is required';
-                          }
-                          return null;
-                        },
                       ),
                     ),
                   ),
@@ -242,8 +224,10 @@ class AddPetProfileScreenState extends ConsumerState<AddPetProfileScreen> {
         customRichText(label),
         const SizedBox(height: primarySizedBox),
         SizedBox(
-          height: primaryTextFieldHeight,
+          height: controllerKey == 'description' ? 90 : primaryTextFieldHeight,
           child: TextFormField(
+            minLines: controllerKey == 'description' ? 3 : 1,
+            maxLines: controllerKey == 'description' ? 10 : 1,
             controller: controllers[controllerKey],
             keyboardType: inputType,
             cursorColor: Colors.black,
@@ -320,6 +304,21 @@ class AddPetProfileScreenState extends ConsumerState<AddPetProfileScreen> {
         ),
       ]),
     );
+  }
+
+  // Function to show the DatePicker
+  Future<void> _selectDate(BuildContext context) async {
+    final DateTime? picked = await showDatePicker(
+      context: context,
+      initialDate: selectedDateOfBirth ?? DateTime.now(),
+      firstDate: DateTime(1900),
+      lastDate: DateTime.now(),
+    );
+    if (picked != null && picked != selectedDateOfBirth)
+      // ignore: curly_braces_in_flow_control_structures
+      setState(() {
+        selectedDateOfBirth = picked;
+      });
   }
 }
 

@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -749,22 +750,19 @@ class ServiceProvidersWidget extends ConsumerWidget {
                                 ),
                                 Positioned(
                                   child: ClipRRect(
-                                    borderRadius: BorderRadius.circular(
-                                        primaryBorderRadius),
-                                    child: Image.network(
-                                      imageUrl,
-                                      width: double.infinity,
-                                      height: 150,
-                                      fit: sp['image'] == null
-                                          ? BoxFit.fitWidth
-                                          : BoxFit.contain,
-                                      loadingBuilder: (BuildContext context,
-                                          Widget child,
-                                          ImageChunkEvent? loadingProgress) {
-                                        if (loadingProgress == null) {
-                                          return child; // Image loaded, show the actual image
-                                        } else {
-                                          // Show shimmer while the image is loading
+                                      borderRadius: BorderRadius.circular(
+                                          primaryBorderRadius),
+                                      child: CachedNetworkImage(
+                                        imageUrl: imageUrl,
+                                        width: double.infinity,
+                                        height: 150,
+                                        fit:
+                                            sp['image'] == null
+                                                ? BoxFit.fitWidth
+                                                : BoxFit.contain,
+                                        placeholder:
+                                            (BuildContext context, String url) {
+                                          // Shimmer effect while loading
                                           return SizedBox(
                                             height: 150,
                                             width: double.infinity,
@@ -779,20 +777,26 @@ class ServiceProvidersWidget extends ConsumerWidget {
                                               ),
                                             ),
                                           );
-                                        }
-                                      },
-                                      errorBuilder: (BuildContext context,
-                                          Object exception,
-                                          StackTrace? stackTrace) {
-                                        return const SizedBox(
-                                          width: double.infinity,
-                                          height: 150,
-                                          child:
-                                              Center(child: Icon(Icons.error)),
-                                        );
-                                      },
-                                    ),
-                                  ),
+                                        },
+                                        errorWidget: (BuildContext context,
+                                            String url, dynamic error) {
+                                          // Error placeholder
+                                          return const SizedBox(
+                                            width: double.infinity,
+                                            height: 150,
+                                            child: Center(
+                                              child: Icon(Icons.error),
+                                            ),
+                                          );
+                                        },
+                                        fadeInDuration:
+                                            const Duration(milliseconds: 500),
+                                        fadeOutDuration:
+                                            const Duration(milliseconds: 1000),
+                                        alignment: Alignment.center,
+                                        placeholderFadeInDuration:
+                                            const Duration(milliseconds: 200),
+                                      )),
                                 ),
                               ],
                             ),

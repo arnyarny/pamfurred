@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pamfurred/providers/service_details_provider.dart';
@@ -24,8 +25,11 @@ class ServicePackageDetails extends ConsumerWidget {
                     style: const TextStyle(
                         fontSize: 24, fontWeight: FontWeight.bold)),
                 const SizedBox(height: 8),
-                Image.network(item.imageUrl,
-                    width: double.infinity, height: 200, fit: BoxFit.cover),
+                CachedNetworkImage(
+                    imageUrl: item.imageUrl,
+                    width: double.infinity,
+                    height: 200,
+                    fit: BoxFit.cover),
                 const SizedBox(height: 16),
                 Text('Provider: ${item.spName}',
                     style: const TextStyle(fontSize: 18)),

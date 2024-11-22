@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -16,6 +17,7 @@ import 'package:pamfurred/models/service_filter_criteria.dart';
 import 'package:pamfurred/providers/button_pressed_provider.dart';
 import 'package:pamfurred/providers/cart_provider.dart';
 import 'package:pamfurred/providers/global_providers.dart';
+import 'package:pamfurred/providers/pet_profile_provider.dart';
 import 'package:pamfurred/providers/serviceprovider_provider.dart';
 import 'package:pamfurred/providers/sp_profile_provider_packages.dart';
 import 'package:pamfurred/providers/sp_profile_provider_services.dart';
@@ -24,6 +26,9 @@ import 'package:pamfurred/screens/appointment/cart_screen.dart';
 import 'package:pamfurred/screens/appointment/choose_appointment_pref.dart';
 import 'package:pamfurred/components/ratings_and_reviews_widget.dart';
 import 'package:pamfurred/screens/appointment/ratings_and_reviews_screen.dart';
+import 'package:pamfurred/screens/pet_profile/add_pet_profile.dart';
+import 'package:quickalert/models/quickalert_type.dart';
+import 'package:quickalert/widgets/quickalert_dialog.dart';
 import 'package:shimmer/shimmer.dart';
 
 // Function to reset providers to null/blank when willBookProvider is false
@@ -81,6 +86,12 @@ class ServiceproviderProfileScreenState
         : selectedIndex == 1
             ? ref.watch(servicesTabProvider)
             : ref.watch(packagesTabProvider);
+
+    // Access user ID
+    final userId = ref.watch(userIdProvider);
+
+    // Access the list of pet profiles
+    final petProfileData = ref.watch(petProfileProvider(userId!));
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -223,15 +234,46 @@ class ServiceproviderProfileScreenState
                 key: ValueKey<bool>(
                     willBook), // Key to differentiate the widgets
                 onPressed: () {
-                  showModalBottomSheet(
-                    context: context,
-                    builder: (context) => const SizedBox(
-                        height: 380,
-                        child: ChooseAppointmentPreferencesScreen()),
+                  petProfileData.when(
+                    data: (data) {
+                      if (data.isEmpty) {
+                        QuickAlert.show(
+                          context: context,
+                          type: QuickAlertType.error,
+                          title: 'Oops...',
+                          text:
+                              "You don't have any pet profile yet. Please add a pet profile first.",
+                          confirmBtnText: 'Add now',
+                          onConfirmBtnTap: () {
+                            // Find the context for the dialog and close it without affecting the screen
+                            Navigator.of(context, rootNavigator: true)
+                                .pop(); // This will close the dialog
+
+                            // Navigate to the AddPetProfileScreen after closing the dialog
+                            Navigator.push(
+                              context,
+                              slideUpRoute(const AddPetProfileScreen()),
+                            );
+                          },
+                          showCancelBtn: true,
+                        );
+                      } else {
+                        showModalBottomSheet(
+                          context: context,
+                          builder: (context) => const SizedBox(
+                              height: 380,
+                              child: ChooseAppointmentPreferencesScreen()),
+                        );
+                        setState(() {
+                          ref.read(willBookProvider.notifier).state = true;
+                        });
+                      }
+                    },
+                    error: (error, stackTrace) =>
+                        Center(child: Text('Error: $error')),
+                    loading: () =>
+                        const Center(child: CircularProgressIndicator()),
                   );
-                  setState(() {
-                    ref.read(willBookProvider.notifier).state = true;
-                  });
                 },
               ),
       ),
@@ -244,29 +286,27 @@ class ServiceproviderProfileScreenState
                 color: lightGreyColor,
                 width: double.infinity,
                 height: 200,
-                child: Image.network(
-                  sp['service_provider_image'] ?? defaultImage,
+                child: CachedNetworkImage(
+                  imageUrl: sp['service_provider_image'] ?? defaultImage,
                   width: double.infinity,
                   height: 200,
                   fit: sp['service_provider_image'] == null
                       ? BoxFit.fitWidth
                       : BoxFit.cover,
-                  loadingBuilder: (BuildContext context, Widget child,
-                      ImageChunkEvent? loadingProgress) {
-                    return loadingProgress == null
-                        ? child
-                        : Shimmer.fromColors(
-                            baseColor: Colors.grey[300]!,
-                            highlightColor: Colors.grey[100]!,
-                            child: Container(
-                              width: double.infinity,
-                              height: 200,
-                              color: Colors.grey[300],
-                            ),
-                          );
+                  placeholder: (context, url) {
+                    // Shimmer effect while loading
+                    return Shimmer.fromColors(
+                      baseColor: Colors.grey[300]!,
+                      highlightColor: Colors.grey[100]!,
+                      child: Container(
+                        width: double.infinity,
+                        height: 200,
+                        color: Colors.grey[300],
+                      ),
+                    );
                   },
-                  errorBuilder: (BuildContext context, Object error,
-                      StackTrace? stackTrace) {
+                  errorWidget: (context, url, error) {
+                    // Error widget
                     return Container(
                       color: lighterGreyColor,
                       width: double.infinity,
@@ -557,18 +597,15 @@ final servicesTabProvider = FutureProvider<List<Widget>>((ref) async {
                                     child: Row(
                                       children: [
                                         ClipRRect(
-                                          borderRadius: BorderRadius.circular(
-                                              primaryBorderRadius),
-                                          child: Image.network(
-                                            service.serviceImage,
-                                            width: 90,
-                                            height: 85,
-                                            fit: BoxFit.cover,
-                                            loadingBuilder: (context, child,
-                                                loadingProgress) {
-                                              if (loadingProgress == null) {
-                                                return child;
-                                              } else {
+                                            borderRadius: BorderRadius.circular(
+                                                primaryBorderRadius),
+                                            child: CachedNetworkImage(
+                                              imageUrl: service.serviceImage,
+                                              width: 90,
+                                              height: 85,
+                                              fit: BoxFit.cover,
+                                              placeholder: (context, url) {
+                                                // Shimmer effect while loading
                                                 return Shimmer.fromColors(
                                                   baseColor: Colors.grey[300]!,
                                                   highlightColor:
@@ -579,19 +616,19 @@ final servicesTabProvider = FutureProvider<List<Widget>>((ref) async {
                                                     color: Colors.grey[300],
                                                   ),
                                                 );
-                                              }
-                                            },
-                                            errorBuilder:
-                                                (context, error, stackTrace) {
-                                              return Container(
-                                                width: 90,
-                                                height: 85,
-                                                color: Colors.grey[300],
-                                                child: const Icon(Icons.error),
-                                              );
-                                            },
-                                          ),
-                                        ),
+                                              },
+                                              errorWidget:
+                                                  (context, url, error) {
+                                                // Error widget
+                                                return Container(
+                                                  width: 90,
+                                                  height: 85,
+                                                  color: Colors.grey[300],
+                                                  child:
+                                                      const Icon(Icons.error),
+                                                );
+                                              },
+                                            )),
                                         const SizedBox(width: tertiarySizedBox),
                                         Expanded(
                                           child: Column(
@@ -744,30 +781,26 @@ final packagesTabProvider = FutureProvider<List<Widget>>((ref) async {
                                         ClipRRect(
                                           borderRadius: BorderRadius.circular(
                                               primaryBorderRadius),
-                                          child: Image.network(
-                                            package.packageImage,
+                                          child: CachedNetworkImage(
+                                            imageUrl: package.packageImage,
                                             width: 90,
                                             height: 85,
                                             fit: BoxFit.cover,
-                                            loadingBuilder: (context, child,
-                                                loadingProgress) {
-                                              if (loadingProgress == null) {
-                                                return child;
-                                              } else {
-                                                return Shimmer.fromColors(
-                                                  baseColor: Colors.grey[300]!,
-                                                  highlightColor:
-                                                      Colors.grey[100]!,
-                                                  child: Container(
-                                                    width: 90,
-                                                    height: 85,
-                                                    color: Colors.grey[300],
-                                                  ),
-                                                );
-                                              }
+                                            placeholder: (context, url) {
+                                              // Shimmer effect while loading
+                                              return Shimmer.fromColors(
+                                                baseColor: Colors.grey[300]!,
+                                                highlightColor:
+                                                    Colors.grey[100]!,
+                                                child: Container(
+                                                  width: 90,
+                                                  height: 85,
+                                                  color: Colors.grey[300],
+                                                ),
+                                              );
                                             },
-                                            errorBuilder:
-                                                (context, error, stackTrace) {
+                                            errorWidget: (context, url, error) {
+                                              // Error widget
                                               return Container(
                                                 width: 90,
                                                 height: 85,

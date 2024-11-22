@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pamfurred/components/capitalize_first_letter.dart';
@@ -199,27 +200,25 @@ class _CartScreenState extends ConsumerState<CartScreen> {
         children: [
           ClipRRect(
             borderRadius: BorderRadius.circular(primaryBorderRadius),
-            child: Image.network(
-              item.image,
+            child: CachedNetworkImage(
+              imageUrl: item.image,
               width: 90,
               height: 85,
               fit: BoxFit.cover,
-              loadingBuilder: (context, child, loadingProgress) {
-                if (loadingProgress == null) {
-                  return child;
-                } else {
-                  return Shimmer.fromColors(
-                    baseColor: lightGreyColor,
-                    highlightColor: Colors.grey[100]!,
-                    child: Container(
-                      width: 90,
-                      height: 85,
-                      color: lightGreyColor,
-                    ),
-                  );
-                }
+              placeholder: (context, url) {
+                // Shimmer effect while loading
+                return Shimmer.fromColors(
+                  baseColor: lightGreyColor,
+                  highlightColor: Colors.grey[100]!,
+                  child: Container(
+                    width: 90,
+                    height: 85,
+                    color: lightGreyColor,
+                  ),
+                );
               },
-              errorBuilder: (context, error, stackTrace) {
+              errorWidget: (context, url, error) {
+                // Error widget
                 return Container(
                   width: 90,
                   height: 85,

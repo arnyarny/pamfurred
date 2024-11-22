@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pamfurred/components/capitalize_first_letter.dart';
@@ -68,8 +69,8 @@ class PetProfileScreenState extends ConsumerState<PetProfileScreen> {
                                     padding:
                                         const EdgeInsets.all(secondarySizedBox),
                                     child: ClipOval(
-                                      child: Image.network(
-                                        pet['pet_image'] ?? '',
+                                      child: CachedNetworkImage(
+                                        imageUrl: pet['pet_image'] ?? '',
                                         fit: BoxFit.cover,
                                         width: 151,
                                         height: 151,

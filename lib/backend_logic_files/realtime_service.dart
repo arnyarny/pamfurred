@@ -166,7 +166,7 @@ class RealtimeService {
             channelDescription: 'Notifications for appointment updates',
             importance: Importance.high,
             priority: Priority.high,
-            icon: 'pamfurred',
+            icon: 'Pamfurred',
           );
 
           final uniqueNotificationId =

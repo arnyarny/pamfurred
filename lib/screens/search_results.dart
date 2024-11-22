@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -372,16 +373,27 @@ class ResultsListWidget extends ConsumerWidget {
                               builder: (context, snapshot) {
                                 if (snapshot.connectionState ==
                                     ConnectionState.done) {
-                                  return Image.network(
-                                    provider.imageUrl,
+                                  return CachedNetworkImage(
+                                    imageUrl: provider.imageUrl,
                                     width: 120,
                                     height: 138,
                                     fit: BoxFit.cover,
-                                    errorBuilder: (context, error, stackTrace) {
+                                    placeholder: (context, url) {
+                                      // Placeholder while loading
+                                      return Container(
+                                        width: 120,
+                                        height: 138,
+                                        color: Colors
+                                            .grey[300], // Placeholder color
+                                      );
+                                    },
+                                    errorWidget: (context, url, error) {
+                                      // Error icon if the image fails to load
                                       return const SizedBox(
-                                          height: 138,
-                                          width: 120,
-                                          child: Icon(Icons.error));
+                                        width: 120,
+                                        height: 138,
+                                        child: Icon(Icons.error),
+                                      );
                                     },
                                   );
                                 } else {

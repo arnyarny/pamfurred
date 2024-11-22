@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -62,114 +63,114 @@ class ServiceProvidersGridViewWidget extends ConsumerWidget {
 
     return providerData.when(
         loading: () => PullToRefresh(
-          providersToRefresh: [
-            serviceProviderFutureProvider(serviceCategory)
-          ],
-          child: MasonryGridView.builder(
-            gridDelegate:
-                const SliverSimpleGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 2,
-            ),
-            mainAxisSpacing: primarySizedBox,
-            crossAxisSpacing: primarySizedBox,
-            itemCount: 5,
-            itemBuilder: (context, index) {
-              return Padding(
-                padding: const EdgeInsets.symmetric(
-                    horizontal: secondarySizedBox),
-                child: SizedBox(
-                  width: double.infinity,
-                  child: Card(
-                    shape: RoundedRectangleBorder(
-                      borderRadius:
-                          BorderRadius.circular(secondaryBorderRadius),
-                    ),
-                    elevation: 0,
-                    color: Colors.white,
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Shimmer.fromColors(
-                          baseColor: Colors.grey[300]!,
-                          highlightColor: Colors.grey[100]!,
-                          child: Container(
-                            width: double.infinity,
-                            height: 150,
-                            decoration: BoxDecoration(
-                              color: Colors.white,
-                              borderRadius: BorderRadius.circular(
-                                  primaryBorderRadius),
+              providersToRefresh: [
+                serviceProviderFutureProvider(serviceCategory)
+              ],
+              child: MasonryGridView.builder(
+                gridDelegate:
+                    const SliverSimpleGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: 2,
+                ),
+                mainAxisSpacing: primarySizedBox,
+                crossAxisSpacing: primarySizedBox,
+                itemCount: 5,
+                itemBuilder: (context, index) {
+                  return Padding(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: secondarySizedBox),
+                    child: SizedBox(
+                      width: double.infinity,
+                      child: Card(
+                        shape: RoundedRectangleBorder(
+                          borderRadius:
+                              BorderRadius.circular(secondaryBorderRadius),
+                        ),
+                        elevation: 0,
+                        color: Colors.white,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Shimmer.fromColors(
+                              baseColor: Colors.grey[300]!,
+                              highlightColor: Colors.grey[100]!,
+                              child: Container(
+                                width: double.infinity,
+                                height: 150,
+                                decoration: BoxDecoration(
+                                  color: Colors.white,
+                                  borderRadius: BorderRadius.circular(
+                                      primaryBorderRadius),
+                                ),
+                              ),
                             ),
-                          ),
-                        ),
-                        const SizedBox(height: 8.0),
-                        Shimmer.fromColors(
-                          baseColor: Colors.grey[300]!,
-                          highlightColor: Colors.grey[100]!,
-                          child: Container(
-                            margin: const EdgeInsets.symmetric(
-                                horizontal: 12.0),
-                            width: 120,
-                            height: 15.0,
-                            color: Colors.white,
-                          ),
-                        ),
-                        const SizedBox(height: 8.0),
-                        Padding(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 12.0),
-                          child: Row(
-                            mainAxisAlignment:
-                                MainAxisAlignment.spaceBetween,
-                            children: [
-                              Shimmer.fromColors(
-                                baseColor: Colors.grey[300]!,
-                                highlightColor: Colors.grey[100]!,
-                                child: Container(
-                                  width: 50,
-                                  height: 15.0,
-                                  color: Colors.white,
-                                ),
+                            const SizedBox(height: 8.0),
+                            Shimmer.fromColors(
+                              baseColor: Colors.grey[300]!,
+                              highlightColor: Colors.grey[100]!,
+                              child: Container(
+                                margin: const EdgeInsets.symmetric(
+                                    horizontal: 12.0),
+                                width: 120,
+                                height: 15.0,
+                                color: Colors.white,
                               ),
-                              Shimmer.fromColors(
-                                baseColor: Colors.grey[300]!,
-                                highlightColor: Colors.grey[100]!,
-                                child: Container(
-                                  width: 60,
-                                  height: 15.0,
-                                  color: Colors.white,
-                                ),
-                              ),
-                              Shimmer.fromColors(
-                                baseColor: Colors.grey[300]!,
-                                highlightColor: Colors.grey[100]!,
-                                child: Row(
-                                  children: [
-                                    Icon(
-                                      CupertinoIcons.location,
-                                      color: Colors.grey[400]!,
-                                      size: 19,
-                                    ),
-                                    const SizedBox(width: 5),
-                                    Container(
-                                      width: 40,
+                            ),
+                            const SizedBox(height: 8.0),
+                            Padding(
+                              padding:
+                                  const EdgeInsets.symmetric(horizontal: 12.0),
+                              child: Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Shimmer.fromColors(
+                                    baseColor: Colors.grey[300]!,
+                                    highlightColor: Colors.grey[100]!,
+                                    child: Container(
+                                      width: 50,
                                       height: 15.0,
                                       color: Colors.white,
                                     ),
-                                  ],
-                                ),
+                                  ),
+                                  Shimmer.fromColors(
+                                    baseColor: Colors.grey[300]!,
+                                    highlightColor: Colors.grey[100]!,
+                                    child: Container(
+                                      width: 60,
+                                      height: 15.0,
+                                      color: Colors.white,
+                                    ),
+                                  ),
+                                  Shimmer.fromColors(
+                                    baseColor: Colors.grey[300]!,
+                                    highlightColor: Colors.grey[100]!,
+                                    child: Row(
+                                      children: [
+                                        Icon(
+                                          CupertinoIcons.location,
+                                          color: Colors.grey[400]!,
+                                          size: 19,
+                                        ),
+                                        const SizedBox(width: 5),
+                                        Container(
+                                          width: 40,
+                                          height: 15.0,
+                                          color: Colors.white,
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ],
                               ),
-                            ],
-                          ),
+                            ),
+                          ],
                         ),
-                      ],
+                      ),
                     ),
-                  ),
-                ),
-              );
-            },
-          ),
-        ),
+                  );
+                },
+              ),
+            ),
         error: (error, _) {
           print(error);
           return const ErrorMessage();
@@ -200,19 +201,17 @@ class ServiceProvidersGridViewWidget extends ConsumerWidget {
                 final sp = serviceProviders[index];
                 final imageUrl = sp['service_provider_image'] ??
                     'https://tinyurl.com/3tnt6yyy';
-                final name =
-                    capitalizeFirstLetter(sp['service_provider_name']);
+                final name = capitalizeFirstLetter(sp['service_provider_name']);
                 final rating =
                     (sp['average_rating'] as double).toStringAsFixed(1);
-          
+
                 final spLatitude = sp['latitude'];
                 final spLongitude = sp['longitude'];
-                double latitude =
-                    double.tryParse(spLatitude.toString()) ?? 0.0;
+                double latitude = double.tryParse(spLatitude.toString()) ?? 0.0;
                 double longitude =
                     double.tryParse(spLongitude.toString()) ?? 0.0;
                 final sentimentLabel = sp['sentiment_label'];
-          
+
                 String userId = ref.watch(userIdProvider).toString();
                 return Padding(
                   padding:
@@ -262,41 +261,35 @@ class ServiceProvidersGridViewWidget extends ConsumerWidget {
                                   child: ClipRRect(
                                     borderRadius: BorderRadius.circular(
                                         primaryBorderRadius),
-                                    child: Image.network(
-                                      imageUrl,
+                                    child: CachedNetworkImage(
+                                      imageUrl: imageUrl,
                                       width: double.infinity,
                                       height: 150,
                                       fit: sp['image'] == null
                                           ? BoxFit.cover
                                           : BoxFit.contain,
-                                      loadingBuilder: (BuildContext context,
-                                          Widget child,
-                                          ImageChunkEvent? loadingProgress) {
-                                        if (loadingProgress == null) {
-                                          return child;
-                                        } else {
-                                          return SizedBox(
-                                            height: 150,
-                                            width: double.infinity,
-                                            child: Shimmer.fromColors(
-                                              baseColor: Colors.grey[300]!,
-                                              highlightColor:
-                                                  Colors.grey[100]!,
-                                              child: Container(
-                                                color: Colors.white,
-                                              ),
+                                      placeholder: (context, url) {
+                                        // Shimmer effect while loading
+                                        return SizedBox(
+                                          height: 150,
+                                          width: double.infinity,
+                                          child: Shimmer.fromColors(
+                                            baseColor: Colors.grey[300]!,
+                                            highlightColor: Colors.grey[100]!,
+                                            child: Container(
+                                              color: Colors.white,
                                             ),
-                                          );
-                                        }
+                                          ),
+                                        );
                                       },
-                                      errorBuilder: (BuildContext context,
-                                          Object exception,
-                                          StackTrace? stackTrace) {
+                                      errorWidget: (context, url, error) {
+                                        // Error widget
                                         return const SizedBox(
                                           width: double.infinity,
                                           height: 150,
                                           child: Center(
-                                              child: Icon(Icons.error)),
+                                            child: Icon(Icons.error),
+                                          ),
                                         );
                                       },
                                     ),
@@ -306,8 +299,7 @@ class ServiceProvidersGridViewWidget extends ConsumerWidget {
                             ),
                             const SizedBox(height: secondarySizedBox),
                             Row(
-                              mainAxisAlignment:
-                                  MainAxisAlignment.spaceBetween,
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
                                 SizedBox(
                                   width: 130,
@@ -317,8 +309,7 @@ class ServiceProvidersGridViewWidget extends ConsumerWidget {
                             ),
                             const SizedBox(height: secondarySizedBox),
                             Row(
-                              mainAxisAlignment:
-                                  MainAxisAlignment.spaceBetween,
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
                                 SizedBox(
                                   width: 45,
@@ -351,9 +342,8 @@ class ServiceProvidersGridViewWidget extends ConsumerWidget {
                                       const Icon(CupertinoIcons.location,
                                           size: 19),
                                       SizedBox(
-                                        width: snapshot.data == 'Nearby'
-                                            ? 50
-                                            : 85,
+                                        width:
+                                            snapshot.data == 'Nearby' ? 50 : 85,
                                         height: 20,
                                         child: Text(
                                             snapshot.data ??

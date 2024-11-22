@@ -60,7 +60,7 @@ class RatingsAndReviewsWidget extends ConsumerWidget {
 
             // Reviews section
             SizedBox(
-              height: 10, // Adjust height for cards
+              height: 120, // Adjust height for cards
               child: ListView.builder(
                 padding:
                     const EdgeInsets.symmetric(horizontal: tertiarySizedBox),

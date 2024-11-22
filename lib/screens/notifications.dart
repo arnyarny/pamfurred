@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pamfurred/components/globals.dart';
+import 'package:pamfurred/components/header.dart';
 import 'package:pamfurred/components/pull_to_refresh.dart';
 import 'package:pamfurred/components/title_text.dart';
 import 'package:pamfurred/providers/appointments_provider.dart';
@@ -175,20 +176,6 @@ class NotificationsScreenState extends ConsumerState<NotificationsScreen> {
     );
   }
 
-  // Section header builder
-  Widget buildSectionHeader(String title) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8.0),
-      child: Text(
-        title,
-        style: const TextStyle(
-          fontSize: headerText,
-          fontWeight: FontWeight.bold,
-        ),
-      ),
-    );
-  }
-
   // Reusable card widget for notifications
   // Reusable card widget for notifications
   Widget reusableNotificationCard(int index, Map<String, dynamic> appointment) {
@@ -276,7 +263,8 @@ class NotificationsScreenState extends ConsumerState<NotificationsScreen> {
                       TextSpan(
                         text: appointment['appointment_status'] == 'Done'
                             ? 'completed'
-                            : toLowercase(appointment['appointment_status']), // Null check for 'establishment_name'
+                            : toLowercase(appointment[
+                                'appointment_status']), // Null check for 'establishment_name'
                         style: const TextStyle(
                             fontSize: regularText, color: primaryColor),
                       ),

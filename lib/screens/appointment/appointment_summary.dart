@@ -45,6 +45,9 @@ class AppointmentSummaryScreenState
     // Retrieve the service provider ID
     final sp = ref.watch(spIndexProvider);
 
+    // Get the current time in UTC
+    DateTime timestamp = DateTime.now().toUtc();
+
     final petOwnerIdFromUserTable = await supabase
         .from('pet_owner')
         .select('pet_owner_id')
@@ -62,7 +65,8 @@ class AppointmentSummaryScreenState
           'appointment_time': time,
           'total_amount': totalAmount,
           'appointment_status': appointmentStatus,
-          'appointment_type': appointmentType
+          'appointment_type': appointmentType,
+          'created_at': timestamp.toString(),
         })
         .select('appointment_id')
         .single();
@@ -176,7 +180,7 @@ class AppointmentSummaryScreenState
 
     final asyncPet = ref.watch(fetchPetByIdProvider(appointmentPetId));
 
-     final pet = asyncPet.value;
+    final pet = asyncPet.value;
 
     return Scaffold(
       appBar: customAppBarWithTitle(context, 'Appointment Summary'),

@@ -1,86 +1,26 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pamfurred/components/globals.dart';
-import 'package:pamfurred/components/header.dart';
-// import 'package:pamfurred/components/pull_to_refresh.dart';
-// import 'package:pamfurred/components/header.dart';
+import 'package:pamfurred/components/pull_to_refresh.dart';
 import 'package:pamfurred/components/title_text.dart';
+import 'package:pamfurred/providers/appointments_provider.dart';
 
-class NotificationsScreen extends StatefulWidget {
+class NotificationsScreen extends ConsumerStatefulWidget {
   const NotificationsScreen({super.key});
 
   @override
-  State<NotificationsScreen> createState() => NotificationsScreenState();
+  ConsumerState<NotificationsScreen> createState() =>
+      NotificationsScreenState();
 }
 
-class NotificationsScreenState extends State<NotificationsScreen> {
-  // Mock db that contains notifications data
-  List<Map<String, dynamic>> appointments = [
-    {
-      'status': 'Done',
-      'service_provider': 'Critter Care Grooming Services',
-      'notification_arrival': DateTime.now().subtract(const Duration(hours: 2)),
-    },
-    {
-      'status': 'Cancelled',
-      'service_provider': 'Fuzzy Finish Pet Salon',
-      'notification_arrival': DateTime.now().subtract(const Duration(days: 1)),
-    },
-    {
-      'status': 'Done',
-      'service_provider': 'Tailored Tails Pet Grooming Services',
-      'notification_arrival': DateTime.now().subtract(const Duration(hours: 4)),
-    },
-    {
-      'status': 'Done',
-      'service_provider': 'Mane Attraction Pet Grooming',
-      'notification_arrival':
-          DateTime.now().subtract(const Duration(minutes: 30)),
-    },
-    {
-      'status': 'Cancelled',
-      'service_provider': 'Snip \'n Shine Pet Retreat',
-      'notification_arrival': DateTime.now().subtract(const Duration(days: 3)),
-    },
-    {
-      'status': 'Done',
-      'service_provider': 'Paw-sitively Polished Pet Parlor',
-      'notification_arrival': DateTime.now().subtract(const Duration(hours: 1)),
-    },
-    {
-      'status': 'Done',
-      'service_provider': 'Grooming Glitz and Glam',
-      'notification_arrival':
-          DateTime.now().subtract(const Duration(minutes: 10)),
-    },
-    {
-      'status': 'Done',
-      'service_provider': 'Furry Finishers Pet Salon',
-      'notification_arrival': DateTime.now().subtract(const Duration(hours: 5)),
-    },
-    {
-      'status': 'Cancelled',
-      'service_provider': 'Purrfect Paws Grooming Spa',
-      'notification_arrival': DateTime.now().subtract(const Duration(days: 2)),
-    },
-    {
-      'status': 'Done',
-      'service_provider': 'Paws and Claws Pet Station',
-      'notification_arrival': DateTime.now().subtract(const Duration(hours: 6)),
-    },
-  ];
-
-  // Track the tapped state for each card
-  late List<bool> isTapped;
+class NotificationsScreenState extends ConsumerState<NotificationsScreen> {
+  late List<bool> isTapped; // Track the tapped state for each card
 
   @override
   void initState() {
     super.initState();
-    // Initialize the isTapped list to false for all cards
-    isTapped = List<bool>.filled(appointments.length, false);
-
-    // Sort the appointments by notification arrival in descending order
-    appointments.sort((a, b) =>
-        b['notification_arrival'].compareTo(a['notification_arrival']));
+    isTapped =
+        []; // Initialize the list, but we'll populate it after fetching the data
   }
 
   // Function to check if the date is today
@@ -91,7 +31,16 @@ class NotificationsScreenState extends State<NotificationsScreen> {
         date.day == now.day;
   }
 
-  // Function to compute time elapsed
+  // Function to check if the date is yesterday
+  bool isYesterday(DateTime date) {
+    final now = DateTime.now();
+    final yesterday = now.subtract(const Duration(days: 1));
+    return date.year == yesterday.year &&
+        date.month == yesterday.month &&
+        date.day == yesterday.day;
+  }
+
+  // Function to compute time elapsed since the notification was created
   String timeElapsed(DateTime notificationArrival) {
     final now = DateTime.now();
     final difference = now.difference(notificationArrival);
@@ -123,51 +72,99 @@ class NotificationsScreenState extends State<NotificationsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    // Separate appointments into today and earlier
-    List<Map<String, dynamic>> todayAppointments = appointments
-        .where((appointment) => isToday(appointment['notification_arrival']))
-        .toList();
-    List<Map<String, dynamic>> earlierAppointments = appointments
-        .where((appointment) => !isToday(appointment['notification_arrival']))
-        .toList();
+    final appointmentAsyncValue = ref.watch(appointmentDetailsProvider);
 
-    return Scaffold(
-      backgroundColor: Colors.white,
-      body: SafeArea(
-        child: Align(
-          alignment: Alignment.center,
+    final appointments = appointmentAsyncValue.when(
+      data: (data) {
+        final fetchedAppointments =
+            data['appointments'] as List<Map<String, dynamic>>? ?? [];
+        if (isTapped.length != fetchedAppointments.length) {
+          // Ensure `isTapped` is updated whenever appointments length changes
+          isTapped = List<bool>.filled(fetchedAppointments.length, false);
+        }
+        return fetchedAppointments;
+      },
+      loading: () => [],
+      error: (error, stackTrace) => [],
+    );
+
+    // Sort the appointments by notification arrival in descending order
+    appointments.sort((a, b) => b['created_at'].compareTo(a['created_at']));
+
+    // Separate appointments into "Today," "Yesterday," and "Older"
+    List todayAppointments = appointments.where((appointment) {
+      final createdAt = appointment['created_at'];
+      if (createdAt != null) {
+        final parsedDate = DateTime.parse(createdAt);
+        return isToday(parsedDate);
+      }
+      return false; // Return false if created_at is null
+    }).toList();
+
+    List yesterdayAppointments = appointments.where((appointment) {
+      final createdAt = appointment['created_at'];
+      if (createdAt != null) {
+        final parsedDate = DateTime.parse(createdAt);
+        return isYesterday(parsedDate);
+      }
+      return false; // Return false if created_at is null
+    }).toList();
+
+    List olderAppointments = appointments.where((appointment) {
+      final createdAt = appointment['created_at'];
+      if (createdAt != null) {
+        final parsedDate = DateTime.parse(createdAt);
+        return !isToday(parsedDate) && !isYesterday(parsedDate);
+      }
+      return false; // Return false if created_at is null
+    }).toList();
+
+    return SafeArea(
+      child: Scaffold(
+        backgroundColor: Colors.white,
+        body: Center(
           child: SizedBox(
-            // Using screenPadding() for responsive width
-            width: screenPadding(context),
+            width: screenPadding(context), // Responsive padding
             child: Column(
               children: [
                 const SizedBox(height: secondarySizedBox),
                 Expanded(
-                  // Remove this comment when backend is implemented in this screen
-                  // child: PullToRefresh(
-                  //   providersToRefresh: [
+                  child: PullToRefresh(
+                    providersToRefresh: [appointmentDetailsProvider],
+                    child: ListView(
+                      children: [
+                        // Section for "Today" appointments
+                        if (todayAppointments.isNotEmpty) ...[
+                          buildSectionHeader("Today"),
+                          ...todayAppointments.map((appointment) {
+                            int index = appointments.indexOf(appointment);
+                            return reusableNotificationCard(index, appointment);
+                          }),
+                        ],
 
-                  //   ],
-                  child: ListView(
-                    physics: const BouncingScrollPhysics(),
-                    children: [
-                      // Today header and appointments
-                      buildSectionHeader("Today"),
-                      // Today Appointments
-                      ...todayAppointments.map((appointment) {
-                        int index = appointments.indexOf(appointment);
-                        return reusableNotificationCard(index, appointment);
-                      }),
-                      const SizedBox(height: primarySizedBox),
-                      // Earlier Header
-                      buildSectionHeader("Earlier"),
-                      const SizedBox(height: primarySizedBox),
-                      // Earlier Appointments
-                      ...earlierAppointments.map((appointment) {
-                        int index = appointments.indexOf(appointment);
-                        return reusableNotificationCard(index, appointment);
-                      }),
-                    ],
+                        const SizedBox(height: primarySizedBox),
+
+                        // Section for "Yesterday" appointments
+                        if (yesterdayAppointments.isNotEmpty) ...[
+                          buildSectionHeader("Yesterday"),
+                          ...yesterdayAppointments.map((appointment) {
+                            int index = appointments.indexOf(appointment);
+                            return reusableNotificationCard(index, appointment);
+                          }),
+                        ],
+
+                        const SizedBox(height: primarySizedBox),
+
+                        // Section for "Earlier" appointments
+                        if (olderAppointments.isNotEmpty) ...[
+                          buildSectionHeader("Earlier"),
+                          ...olderAppointments.map((appointment) {
+                            int index = appointments.indexOf(appointment);
+                            return reusableNotificationCard(index, appointment);
+                          }),
+                        ],
+                      ],
+                    ),
                   ),
                 ),
               ],
@@ -178,18 +175,34 @@ class NotificationsScreenState extends State<NotificationsScreen> {
     );
   }
 
-  // Reusable card widget
+  // Section header builder
+  Widget buildSectionHeader(String title) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8.0),
+      child: Text(
+        title,
+        style: const TextStyle(
+          fontSize: headerText,
+          fontWeight: FontWeight.bold,
+        ),
+      ),
+    );
+  }
+
+  // Reusable card widget for notifications
+  // Reusable card widget for notifications
   Widget reusableNotificationCard(int index, Map<String, dynamic> appointment) {
     return GestureDetector(
       onTap: () {
         setState(() {
-          // Toggle the tap state for the specific card
+          // Toggle the tapped state for the specific card
           isTapped[index] = !isTapped[index];
         });
       },
       child: Card(
-        // Change background color based on the tapped state of the specific card
-        color: isTapped[index] ? Colors.white : lighterGreyColor,
+        color: isTapped[index]
+            ? Colors.white
+            : lighterGreyColor, // Toggle card color
         child: Padding(
           padding: const EdgeInsets.all(16.0),
           child: Column(
@@ -197,40 +210,92 @@ class NotificationsScreenState extends State<NotificationsScreen> {
             children: [
               Row(
                 children: [
-                  customTitleText(context, "Appointment "),
-                  customTitleText(context, toLowercase(appointment['status'])),
+                  if (appointment['appointment_status'] == 'Upcoming') ...[
+                    customTitleText(context, 'Upcoming '),
+                    customTitleText(context, "appointment"),
+                  ],
+                  if (appointment['appointment_status'] != 'Upcoming') ...[
+                    customTitleText(context, "Appointment"),
+                    customTitleText(
+                        context,
+                        toLowercase(appointment['appointment_status'] == "Done"
+                            ? " completed"
+                            : " ${appointment['appointment_status']}")),
+                  ]
                 ],
               ),
               const SizedBox(height: primarySizedBox),
               RichText(
-                  text: TextSpan(children: [
-                const TextSpan(
-                    text: "Your appointment with ",
-                    style:
-                        TextStyle(fontSize: regularText, color: Colors.black)),
-                // Displaying service provider's name
-                TextSpan(
-                    text: '${appointment['service_provider']}',
-                    style: const TextStyle(
-                        fontSize: regularText, color: primaryColor)),
-                const TextSpan(
-                    text: " has been ",
-                    style:
-                        TextStyle(fontSize: regularText, color: Colors.black)),
-                // Displaying appointment status
-                TextSpan(
-                    text: toLowercase(appointment['status']),
-                    style: const TextStyle(
-                        fontSize: regularText, color: primaryColor)),
-                const TextSpan(
-                    text: ".",
-                    style:
-                        TextStyle(fontSize: regularText, color: Colors.black)),
-              ])),
+                text: TextSpan(
+                  children: [
+                    // Determine the initial message based on appointment status
+                    TextSpan(
+                      text: (() {
+                        if (appointment['appointment_status'] == 'Upcoming') {
+                          return 'You have an';
+                        } else {
+                          return 'Your appointment with';
+                        }
+                      })(),
+                      style: const TextStyle(
+                          fontSize: regularText, color: Colors.black),
+                    ),
+                    if (appointment['appointment_status'] == 'Upcoming') ...[
+                      const TextSpan(
+                        text:
+                            ' upcoming ', // Null check for 'establishment_name'
+                        style: TextStyle(
+                            fontSize: regularText, color: primaryColor),
+                      ),
+                      const TextSpan(
+                        text:
+                            'appointment with', // Null check for 'establishment_name'
+                        style: TextStyle(
+                            fontSize: regularText, color: Colors.black),
+                      ),
+                      TextSpan(
+                        text:
+                            ' ${appointment['establishment_name']}', // Null check for 'establishment_name'
+                        style: const TextStyle(
+                            fontSize: regularText, color: primaryColor),
+                      ),
+                    ],
+                    if (appointment['appointment_status'] != 'Upcoming') ...[
+                      TextSpan(
+                        text:
+                            ' ${appointment['establishment_name']}', // Null check for 'establishment_name'
+                        style: const TextStyle(
+                            fontSize: regularText, color: primaryColor),
+                      ),
+                      const TextSpan(
+                        text:
+                            ' has been ', // Null check for 'establishment_name'
+                        style: TextStyle(
+                            fontSize: regularText, color: Colors.black),
+                      ),
+                      TextSpan(
+                        text: appointment['appointment_status'] == 'Done'
+                            ? 'completed'
+                            : toLowercase(appointment['appointment_status']), // Null check for 'establishment_name'
+                        style: const TextStyle(
+                            fontSize: regularText, color: primaryColor),
+                      ),
+                    ],
+                    // Final period to end the sentence
+                    const TextSpan(
+                      text: ".",
+                      style:
+                          TextStyle(fontSize: regularText, color: Colors.black),
+                    ),
+                  ],
+                ),
+              ),
+
               const SizedBox(height: primarySizedBox),
               // Displaying notification arrival time
               Text(
-                timeElapsed(appointment['notification_arrival']),
+                timeElapsed(DateTime.parse(
+                    appointment['created_at'] ?? DateTime.now().toString())),
                 style:
                     const TextStyle(fontSize: smallText, color: Colors.black),
               ),

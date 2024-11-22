@@ -49,6 +49,7 @@ class NotificationsScreenState extends ConsumerState<NotificationsScreen> {
     final minutes = difference.inMinutes;
     final hours = difference.inHours;
     final days = difference.inDays;
+    final weeks = (days / 7).floor();
     final months = (days / 30).floor();
     final years = (days / 365).floor();
 
@@ -60,8 +61,10 @@ class NotificationsScreenState extends ConsumerState<NotificationsScreen> {
       result = "$minutes minute${minutes == 1 ? '' : 's'} ago";
     } else if (hours < 24) {
       result = "$hours hour${hours == 1 ? '' : 's'} ago";
-    } else if (days < 30) {
+    } else if (days < 7) {
       result = "$days day${days == 1 ? '' : 's'} ago";
+    } else if (days < 30) {
+      result = "$weeks week${weeks == 1 ? '' : 's'} ago";
     } else if (days < 365) {
       result = "$months month${months == 1 ? '' : 's'} ago";
     } else {

@@ -1,34 +1,35 @@
-import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-Future<void> storeLocation(
-    double latitude, double longitude, String userId) async {
-  final supabase = Supabase.instance.client;
+// Location State class
+class LocationState {
+  final double latitude;
+  final double longitude;
 
-  // Fetch the user and their address details based on the ID
-  final response = await supabase
-      .from('user') // Replace with your actual user table name
-      .select(
-          '*, address(address_id)')
-      .eq('user_id', userId) // Filter by ID
-      .single();
+  LocationState({required this.latitude, required this.longitude});
+}
 
-  // Access the user data
-  final userData = response;
+// Location Notifier
+class LocationNotifier extends StateNotifier<LocationState> {
+  LocationNotifier()
+      : super(LocationState(latitude: 0.0, longitude: 0.0)); // Default values
 
-  // Check if the user has an associated address
-  if (userData != null && userData['address'] != null) {
-    final addressId = userData['address']['address_id']; // Get the address ID
-
-    // Store the latitude and longitude in the addresses table
-    await supabase
-        .from('address') // Replace with your actual addresses table name
-        .update({
-      'latitude': latitude,
-      'longitude': longitude,
-    }).eq('address_id', addressId);
-
-    print('Location updated successfully: $latitude, $longitude');
-  } else {
-    print('No associated address found for the service provider.');
+  void updateLocation(double latitude, double longitude) {
+    state = LocationState(latitude: latitude, longitude: longitude);
   }
+}
+
+// Location provider
+final locationProvider =
+    StateNotifierProvider<LocationNotifier, LocationState>((ref) {
+  return LocationNotifier();
+});
+
+// Store location function
+Future<void> storeLocation(
+    double latitude, double longitude, WidgetRef ref) async {
+  // Update the location state locally using the provider
+  final locationNotifier = ref.read(locationProvider.notifier);
+  locationNotifier.updateLocation(latitude, longitude);
+
+  print('Location stored locally: $latitude, $longitude');
 }

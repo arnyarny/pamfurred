@@ -4,7 +4,7 @@ import 'package:email_validator/email_validator.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pamfurred/components/screen_transitions.dart';
 import 'package:pamfurred/screens/main_screen.dart';
-import 'package:pamfurred/tests/register.dart';
+import 'package:pamfurred/screens/register/intro_to_app.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../components/globals.dart';
 
@@ -163,14 +163,17 @@ class LoginScreenState extends ConsumerState<LoginScreen> {
                                   }
                                   return null;
                                 },
-                                cursorColor: const Color.fromRGBO(74, 74, 74, 1),
+                                cursorColor:
+                                    const Color.fromRGBO(74, 74, 74, 1),
                                 focusNode: emailFocusNode,
                                 controller: emailController,
                                 keyboardType: TextInputType.emailAddress,
-                                readOnly: isLoading, // Disable input when loading
+                                readOnly:
+                                    isLoading, // Disable input when loading
                                 decoration: InputDecoration(
                                   contentPadding: const EdgeInsets.all(10.0),
-                                  prefixIcon: const Icon(Icons.person, size: 19),
+                                  prefixIcon:
+                                      const Icon(Icons.person, size: 19),
                                   labelText: emailFocusNode.hasFocus
                                       ? ''
                                       : 'Email address',
@@ -197,7 +200,8 @@ class LoginScreenState extends ConsumerState<LoginScreen> {
                               height: 50,
                               child: TextFormField(
                                 textAlignVertical: TextAlignVertical.center,
-                                cursorColor: const Color.fromRGBO(74, 74, 74, 1),
+                                cursorColor:
+                                    const Color.fromRGBO(74, 74, 74, 1),
                                 focusNode: passwordFocusNode,
                                 controller: passwordController,
                                 obscureText: obscureText,
@@ -206,7 +210,8 @@ class LoginScreenState extends ConsumerState<LoginScreen> {
                                       ? 'Please enter password'
                                       : null;
                                 },
-                                readOnly: isLoading, // Disable input when loading
+                                readOnly:
+                                    isLoading, // Disable input when loading
                                 decoration: InputDecoration(
                                   contentPadding: const EdgeInsets.all(10.0),
                                   prefixIcon: Transform.rotate(
@@ -290,8 +295,9 @@ class LoginScreenState extends ConsumerState<LoginScreen> {
                                           secondaryBorderRadius),
                                     ),
                                   ),
-                                  backgroundColor: WidgetStateProperty.all<Color>(
-                                      primaryColor),
+                                  backgroundColor:
+                                      WidgetStateProperty.all<Color>(
+                                          primaryColor),
                                 ),
                                 child: isLoading
                                     ? const CircularProgressIndicator(
@@ -319,15 +325,18 @@ class LoginScreenState extends ConsumerState<LoginScreen> {
                                     ),
                                     TextSpan(
                                       text: "Register",
-                                      style: const TextStyle(color: primaryColor),
+                                      style:
+                                          const TextStyle(color: primaryColor),
                                       recognizer: TapGestureRecognizer()
                                         ..onTap = () {
                                           Navigator.push(
-                                              context,
-                                              rightToLeftRoute(
-                                                  const RegisterScreen()));
+                                            context,
+                                            slideUpRoute(
+                                              const StartYourJourneyScreen(),
+                                            ),
+                                          );
                                         },
-                                    )
+                                    ),
                                   ],
                                 ),
                               ),

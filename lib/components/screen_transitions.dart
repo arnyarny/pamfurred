@@ -39,45 +39,26 @@ Route crossFadeRoute(Widget page) {
   );
 }
 
-// 3) Slide up:
-Route slideUpRoute(Widget page) {
+Route slideUpRoute(Widget page, {bool reverse = false}) {
   return PageRouteBuilder(
     pageBuilder: (context, animation, secondaryAnimation) => page,
     transitionsBuilder: (context, animation, secondaryAnimation, child) {
-      const begin = Offset(0.0, 1.0);
-      const end = Offset.zero;
-      const curve = Curves.ease;
+      // Define the direction based on the 'reverse' flag
+      final begin = reverse
+          ? const Offset(0.0, -1.0)
+          : const Offset(
+              0.0, 1.0); // If reverse, slide up, otherwise slide down
+      const end = Offset.zero; // Always ends at the final position (no offset)
+      const curve = Curves.ease; // Smooth curve for the transition
 
       var tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
       var offsetAnimation = animation.drive(tween);
 
+      // Return the SlideTransition with the defined offset animation
       return SlideTransition(
         position: offsetAnimation,
         child: child,
       );
     },
-  );
-}
-
-// 4) Slide down:
-Route slideDownRoute(Widget page) {
-  return PageRouteBuilder(
-    pageBuilder: (context, animation, secondaryAnimation) => page,
-    transitionsBuilder: (context, animation, secondaryAnimation, child) {
-      // When pushing, animate up. When popping, animate down.
-      const begin = Offset(0.0, 1.0); // Start from bottom
-      const end = Offset.zero; // End at the current position
-      const curve = Curves.ease;
-
-      var tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
-      var offsetAnimation = animation.drive(tween);
-
-      return SlideTransition(
-        position: offsetAnimation,
-        child: child,
-      );
-    },
-    reverseTransitionDuration:
-        const Duration(milliseconds: 300), // Customize duration for pop
   );
 }

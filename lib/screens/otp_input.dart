@@ -1,5 +1,8 @@
 import 'dart:async'; // Import this to use Timer
 import 'package:flutter/material.dart';
+import 'package:pamfurred/components/custom_appbar.dart';
+import 'package:pamfurred/components/custom_padded_button.dart';
+import 'package:pamfurred/components/globals.dart';
 import 'package:pamfurred/screens/successful_registration.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -150,7 +153,8 @@ class OtpVerificationScreenState extends State<OtpVerificationScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text("OTP Verification")),
+      appBar: customAppBarWithTitle(context, "Verify email address"),
+      backgroundColor: Colors.white,
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
@@ -159,6 +163,9 @@ class OtpVerificationScreenState extends State<OtpVerificationScreen> {
             Text(
               "Enter the OTP sent to ${widget.email}",
               textAlign: TextAlign.center,
+              style: const TextStyle(
+                fontSize: regularText,
+              ),
             ),
             const SizedBox(height: 20),
             TextField(
@@ -169,14 +176,12 @@ class OtpVerificationScreenState extends State<OtpVerificationScreen> {
               ),
               keyboardType: TextInputType.number,
             ),
-            const SizedBox(height: 20),
+            const SizedBox(height: tertiarySizedBox),
             _isLoading
                 ? const CircularProgressIndicator()
-                : ElevatedButton(
-                    onPressed: verifyOTP,
-                    child: const Text("Verify OTP"),
-                  ),
-            const SizedBox(height: 20),
+                : customPaddedTextButton(
+                    text: "Verify OTP", onPressed: verifyOTP),
+            const SizedBox(height: secondarySizedBox),
             _isResending
                 ? const CircularProgressIndicator()
                 : Column(
@@ -185,9 +190,12 @@ class OtpVerificationScreenState extends State<OtpVerificationScreen> {
                         onPressed: _canResendOtp
                             ? resendOTP
                             : null, // Disable button if necessary
-                        child: Text(_canResendOtp
-                            ? "Resend OTP"
-                            : "Resend in $_remainingTime s"),
+                        child: Text(
+                          _canResendOtp
+                              ? "Resend OTP"
+                              : "Resend in $_remainingTime s",
+                          style: const TextStyle(fontSize: regularText),
+                        ),
                       ),
                     ],
                   ),

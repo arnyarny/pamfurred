@@ -124,7 +124,7 @@ class CredentialsScreenState extends State<CredentialsScreen> {
       backgroundColor: Colors.white,
       body: Padding(
         padding: primaryPadding,
-        child: Expanded(
+        child: SingleChildScrollView(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -133,7 +133,10 @@ class CredentialsScreenState extends State<CredentialsScreen> {
               formDescription(context,
                   "Enter your email address and choose a password to create an account. This will allow you to log in securely and enable service providers to contact you regarding your appointments"),
               const SizedBox(height: secondarySizedBox),
-              buildTextField("Email address", "email", widget.controllers,
+              CustomTextField(
+                  label: "Email address",
+                  controllerKey: "email",
+                  controllers: widget.controllers,
                   isEmail: true),
               const SizedBox(height: secondarySizedBox),
               PasswordTextField(
@@ -144,7 +147,7 @@ class CredentialsScreenState extends State<CredentialsScreen> {
               const SizedBox(height: secondarySizedBox),
               if (_errorMessage != null) ...[
                 SizedBox(
-                  height: 100,
+                  height: 50,
                   child: Wrap(
                     children: [
                       Text(
@@ -156,7 +159,6 @@ class CredentialsScreenState extends State<CredentialsScreen> {
                 ),
                 const SizedBox(height: secondarySizedBox),
               ],
-              const SizedBox(height: tertiarySizedBox),
               CustomWideButton(
                 text: "Register",
                 onPressed: _isLoading

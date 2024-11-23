@@ -45,13 +45,17 @@ class PersonalInformationScreenState extends State<PersonalInformationScreen> {
             Row(
               children: [
                 Expanded(
-                  child: buildTextField(
-                      "First name", "firstName", widget.controllers),
+                  child: CustomTextField(
+                      label: "First name",
+                      controllerKey: "firstName",
+                      controllers: widget.controllers),
                 ),
                 const SizedBox(width: primarySizedBox),
                 Expanded(
-                  child: buildTextField(
-                      "Last name", "lastName", widget.controllers),
+                  child: CustomTextField(
+                      label: "Last name",
+                      controllerKey: "lastName",
+                      controllers: widget.controllers),
                 ),
               ],
             ),

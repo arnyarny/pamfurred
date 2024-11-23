@@ -50,20 +50,30 @@ class AddressDetailsScreenState extends State<AddressDetailsScreen> {
             Row(
               children: [
                 Expanded(
-                  child: buildTextField(
-                      "Floor/Unit/Room", "floorUnitRoom", widget.controllers),
+                  child: CustomTextField(
+                      label: "Floor/Unit/Room",
+                      controllerKey: "floorUnitRoom",
+                      controllers: widget.controllers),
                 ),
                 const SizedBox(width: primarySizedBox),
                 Expanded(
-                  child: buildTextField(
-                      "Street name", "street", widget.controllers),
+                  child: CustomTextField(
+                      label: "Street name",
+                      controllerKey: "street",
+                      controllers: widget.controllers),
                 ),
               ],
             ),
             const SizedBox(height: secondarySizedBox),
-            buildTextField("Barangay", "barangay", widget.controllers),
+            CustomTextField(
+                label: "Barangay",
+                controllerKey: "barangay",
+                controllers: widget.controllers),
             const SizedBox(width: primarySizedBox),
-            buildTextField("City", "city", widget.controllers),
+            CustomTextField(
+                label: "City",
+                controllerKey: "city",
+                controllers: widget.controllers),
             if (_showError) ...[
               const SizedBox(height: 8.0),
               const Text(

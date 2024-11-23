@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:pamfurred/components/globals.dart';
+import 'package:password_strength_checker/password_strength_checker.dart';
 
 class PasswordTextField extends StatefulWidget {
   final String label;
@@ -19,6 +20,32 @@ class PasswordTextField extends StatefulWidget {
 
 class PasswordTextFieldState extends State<PasswordTextField> {
   bool _obscurePassword = true;
+  final FocusNode _focusNode = FocusNode();
+  bool _isFocused = false;
+
+  // Persist ValueNotifier to track password strength
+  final ValueNotifier<PasswordStrength?> _passNotifier =
+      ValueNotifier<PasswordStrength?>(null);
+
+  @override
+  void initState() {
+    super.initState();
+    _focusNode.addListener(_handleFocusChange);
+  }
+
+  @override
+  void dispose() {
+    _focusNode.removeListener(_handleFocusChange);
+    _focusNode.dispose();
+    _passNotifier.dispose(); // Dispose the notifier when the widget is disposed
+    super.dispose();
+  }
+
+  void _handleFocusChange() {
+    setState(() {
+      _isFocused = _focusNode.hasFocus;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -38,6 +65,7 @@ class PasswordTextFieldState extends State<PasswordTextField> {
         TextFormField(
           controller: widget.controllers[widget.controllerKey],
           obscureText: _obscurePassword,
+          focusNode: _focusNode,
           keyboardType: TextInputType.text,
           textCapitalization: TextCapitalization.none,
           decoration: InputDecoration(
@@ -56,6 +84,10 @@ class PasswordTextFieldState extends State<PasswordTextField> {
               },
             ),
           ),
+          onChanged: (value) {
+            // Update the password strength whenever the password is typed
+            _passNotifier.value = PasswordStrength.calculate(text: value);
+          },
           validator: (value) {
             if (value == null || value.isEmpty) {
               return "${widget.label} is required";
@@ -63,6 +95,14 @@ class PasswordTextFieldState extends State<PasswordTextField> {
             return null;
           },
         ),
+        const SizedBox(height: secondarySizedBox),
+        // Only show PasswordStrengthChecker if there's text or if focused
+        if (_isFocused ||
+            (widget.controllers[widget.controllerKey]?.text.isNotEmpty ??
+                false))
+          PasswordStrengthChecker(
+            strength: _passNotifier, // Use the existing ValueNotifier
+          ),
       ],
     );
   }

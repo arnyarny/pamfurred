@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart'; // For date formatting
+import 'package:pamfurred/components/capitalize_first_letter.dart';
 import 'package:pamfurred/components/custom_appbar.dart';
 import 'package:pamfurred/components/custom_padded_button.dart';
 import 'package:pamfurred/components/globals.dart';
@@ -262,14 +263,14 @@ class AddPetProfileScreenState extends ConsumerState<AddPetProfileScreen> {
                 ? [
                     TextInputFormatter.withFunction((oldValue, newValue) {
                       final newText =
-                          _capitalize(newValue.text); // Capitalize every word
+                          capitalize(newValue.text); // Capitalize every word
                       return newValue.copyWith(text: newText);
                     }),
                   ]
                 : controllerKey == 'description'
                     ? [
                         TextInputFormatter.withFunction((oldValue, newValue) {
-                          final newText = _capitalizeFirstLetter(newValue
+                          final newText = capitalizeFirstLetter(newValue
                               .text); // Capitalize only the first letter
                           return newValue.copyWith(text: newText);
                         }),
@@ -279,15 +280,6 @@ class AddPetProfileScreenState extends ConsumerState<AddPetProfileScreen> {
         ),
       ],
     );
-  }
-
-  String _capitalize(String input) {
-    return input
-        .split(' ')
-        .map((word) => word.isNotEmpty
-            ? word[0].toUpperCase() + word.substring(1).toLowerCase()
-            : '')
-        .join(' ');
   }
 
   // Updated custom rich text method
@@ -320,11 +312,6 @@ class AddPetProfileScreenState extends ConsumerState<AddPetProfileScreen> {
         selectedDateOfBirth = picked;
       });
   }
-}
-
-String _capitalizeFirstLetter(String text) {
-  if (text.isEmpty) return text;
-  return text[0].toUpperCase() + text.substring(1);
 }
 
 // Updated function signature with 5 parameters

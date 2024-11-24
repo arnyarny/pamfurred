@@ -52,8 +52,7 @@ class HomeScreenState extends ConsumerState<HomeScreen> {
     _scrollController.addListener(_scrollListener);
     LocationService locationService = LocationService();
     locationService.determinePosition(context).then((position) {
-      final userId = ref.watch(userIdProvider);
-      storeLocation(position.latitude, position.longitude, userId!);
+      storeLocation(position.latitude, position.longitude, ref);
     }).catchError((error) {
       // Handle errors appropriately
       print(error);
@@ -756,10 +755,9 @@ class ServiceProvidersWidget extends ConsumerWidget {
                                         imageUrl: imageUrl,
                                         width: double.infinity,
                                         height: 150,
-                                        fit:
-                                            sp['image'] == null
-                                                ? BoxFit.fitWidth
-                                                : BoxFit.contain,
+                                        fit: sp['image'] == null
+                                            ? BoxFit.fitWidth
+                                            : BoxFit.contain,
                                         placeholder:
                                             (BuildContext context, String url) {
                                           // Shimmer effect while loading

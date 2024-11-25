@@ -17,7 +17,6 @@ import 'package:pamfurred/providers/user_id.dart';
 import 'package:pamfurred/screens/appointment/successful_appointment.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../components/globals.dart';
-import 'package:uuid/uuid.dart';
 
 class AppointmentSummaryScreen extends ConsumerStatefulWidget {
   const AppointmentSummaryScreen({super.key});
@@ -160,12 +159,9 @@ class AppointmentSummaryScreenState
 
   // Function to insert a new notification into the notification table
   Future<void> insertNotification(String appointmentId) async {
-    final uuid = Uuid(); // UUID package for generating unique IDs
-    final notificationId = uuid.v4(); // Generate a new notification ID
     final supabase = Supabase.instance.client;
 
     final response = await supabase.from('notification').insert({
-      'notification_id': notificationId,
       'appointment_id': appointmentId,
       'appointment_notif_type': 'Upcoming', // Or any type based on your logic
       'created_at':

@@ -130,35 +130,32 @@ class NotificationsScreenState extends ConsumerState<NotificationsScreen> {
       child: Scaffold(
         backgroundColor: Colors.white,
         body: notifications.isEmpty
-            ? PullToRefresh(
-                providersToRefresh: [notificationDetailsProvider],
-                child: const Center(
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(
-                        Icons.notifications_off,
-                        size: 48.0,
+            ? const Center(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(
+                      Icons.notifications_off,
+                      size: 48.0,
+                      color: secondaryGreyColor,
+                    ),
+                    SizedBox(height: secondarySizedBox),
+                    Text(
+                      'All caught up!',
+                      style: TextStyle(
+                        fontSize: titleFont,
+                        fontWeight: FontWeight.bold,
                         color: secondaryGreyColor,
                       ),
-                      SizedBox(height: secondarySizedBox),
-                      Text(
-                        'All caught up!',
-                        style: TextStyle(
-                          fontSize: titleFont,
-                          fontWeight: FontWeight.bold,
-                          color: secondaryGreyColor,
-                        ),
+                    ),
+                    Text(
+                      'You have no new notifications.',
+                      style: TextStyle(
+                        fontSize: regularText,
+                        color: secondaryGreyColor,
                       ),
-                      Text(
-                        'You have no new notifications.',
-                        style: TextStyle(
-                          fontSize: regularText,
-                          color: secondaryGreyColor,
-                        ),
-                      ),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
               )
             : Center(
@@ -172,7 +169,9 @@ class NotificationsScreenState extends ConsumerState<NotificationsScreen> {
                         const SizedBox(height: secondarySizedBox),
                         Expanded(
                           child: PullToRefresh(
-                            providersToRefresh: [notificationDetailsProvider],
+                            providersToRefresh: [
+                              notificationDetailsProvider(userId)
+                            ],
                             child: ListView(
                               children: [
                                 // Section for "Today" notifications

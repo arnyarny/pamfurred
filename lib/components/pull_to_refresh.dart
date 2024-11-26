@@ -11,7 +11,7 @@ class CustomHeader extends StatelessWidget {
     return const ClassicHeader(
       refreshingText: '',
       completeText: '',
-      failedText: 'Refresh Failed',
+      failedText: '',
       idleText: '',
       releaseText: '',
       height: 100.0, // Adjust height for pull distance
@@ -69,6 +69,7 @@ class PullToRefreshState extends ConsumerState<PullToRefresh> {
           refreshController.refreshCompleted();
         } catch (e) {
           refreshController.refreshFailed();
+          print(e);
         }
       },
       child: widget.child, // Display the passed child widget

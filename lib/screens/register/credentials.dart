@@ -131,7 +131,7 @@ class CredentialsScreenState extends State<CredentialsScreen> {
               buildSectionHeader("Credentials"),
               const SizedBox(height: secondaryBorderRadius),
               formDescription(context,
-                  "Enter your email address and choose a password to create an account. This will allow you to log in securely and enable service providers to contact you regarding your appointments"),
+                  "Enter your email address and choose a password to create an account. This will allow you to log in securely and enable service providers to contact you regarding your appointments."),
               const SizedBox(height: secondarySizedBox),
               CustomTextField(
                   label: "Email address",

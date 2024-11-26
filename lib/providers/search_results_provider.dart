@@ -10,8 +10,10 @@ final sortResultsProvider = StateProvider<String>((ref) => 'All');
 // Address providers
 final hasDetectedAddressProvider = StateProvider<bool>((ref) => false);
 final streetProvider = StateProvider<String>((ref) => '');
+final barangayProvider = StateProvider<String>((ref) => '');
 final cityProvider = StateProvider<String>((ref) => '');
 final provinceProvider = StateProvider<String>((ref) => '');
+final fullAddressProvider = StateProvider<String>((ref) => '');
 final latProvider = StateProvider<double?>((ref) => null);
 final longProvider = StateProvider<double?>((ref) => null);
 

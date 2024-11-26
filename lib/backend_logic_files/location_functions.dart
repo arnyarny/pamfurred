@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:geocoding/geocoding.dart';
+import 'package:pamfurred/backend_logic_files/store_location.dart';
 import 'package:pamfurred/providers/user_id.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -43,6 +44,17 @@ final addressProvider = FutureProvider<Map<String, String>>((ref) async {
   return {};
 });
 
+// Fetch longlat from the stored riverpod state without backend
+final addressProviderWithoutBackend =
+    FutureProvider<Map<String, String>>((ref) async {
+  final location =
+      ref.watch(locationProvider); // Get the current location state
+  if (location.latitude != 0.0 && location.longitude != 0.0) {
+    return await fetchAddress(location.latitude, location.longitude);
+  }
+  return {};
+});
+
 // Function to fetch address from latitude and longitude
 Future<Map<String, String>> fetchAddress(
     double latitude, double longitude) async {
@@ -53,6 +65,7 @@ Future<Map<String, String>> fetchAddress(
       'city': placemarks[0].locality ?? '',
       'province': placemarks[0].administrativeArea ?? '',
       'street': placemarks[0].street ?? '',
+      'barangay': placemarks[0].subLocality ?? '',
     };
   } catch (e) {
     print("Error retrieving address: $e");

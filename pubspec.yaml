@@ -139,6 +139,8 @@ dependencies:
 
   password_strength_checker: ^1.2.4
 
+  philippines_rpcmb: ^0.0.3
+
 dev_dependencies:
   flutter_test:
     sdk: flutter

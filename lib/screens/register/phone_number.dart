@@ -104,6 +104,7 @@ class PhoneNumberScreenState extends State<PhoneNumberScreen> {
                           'street': TextEditingController(),
                           'barangay': TextEditingController(),
                           'city': TextEditingController(),
+                          'province': TextEditingController(),
                         }),
                       ));
                 } else {

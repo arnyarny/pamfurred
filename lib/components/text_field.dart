@@ -18,10 +18,10 @@ class CustomTextField extends StatefulWidget {
   });
 
   @override
-  _CustomTextFieldState createState() => _CustomTextFieldState();
+  CustomTextFieldState createState() => CustomTextFieldState();
 }
 
-class _CustomTextFieldState extends State<CustomTextField> {
+class CustomTextFieldState extends State<CustomTextField> {
   final FocusNode _focusNode = FocusNode();
   String? _errorMessage;
 

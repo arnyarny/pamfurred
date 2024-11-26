@@ -79,6 +79,9 @@ class PinAddressState extends ConsumerState<PinAddress>
         ref.read(latProvider.notifier).state = location.latitude,
         ref.read(longProvider.notifier).state = location.longitude,
       );
+      ref.read(barangayProvider.notifier).state =
+          placemarks[0].subLocality ?? '';
+      ref.read(streetProvider.notifier).state = placemarks[0].street ?? '';
       ref.read(cityProvider.notifier).state = placemarks[0].locality ?? '';
       ref.read(provinceProvider.notifier).state =
           placemarks[0].administrativeArea ?? '';

@@ -1,14 +1,20 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_typeahead/flutter_typeahead.dart';
+import 'package:pamfurred/backend_logic_files/fetch_locations.dart';
 import 'package:pamfurred/components/custom_appbar.dart';
 import 'package:pamfurred/components/globals.dart';
 import 'package:pamfurred/components/header.dart';
 import 'package:pamfurred/components/screen_transitions.dart';
 import 'package:pamfurred/components/text_field.dart';
 import 'package:pamfurred/components/width_expanded_button.dart';
+import 'package:pamfurred/providers/serviceprovider_provider.dart';
+import 'package:pamfurred/screens/pin_location.dart';
+// import 'package:pamfurred/screens/register/address_test.dart';
 import 'package:pamfurred/screens/register/credentials.dart';
 import 'package:pamfurred/screens/register/intro_to_app.dart';
 
-class AddressDetailsScreen extends StatefulWidget {
+class AddressDetailsScreen extends ConsumerStatefulWidget {
   final Map<String, TextEditingController> controllers;
 
   const AddressDetailsScreen({super.key, required this.controllers});
@@ -17,8 +23,11 @@ class AddressDetailsScreen extends StatefulWidget {
   AddressDetailsScreenState createState() => AddressDetailsScreenState();
 }
 
-class AddressDetailsScreenState extends State<AddressDetailsScreen> {
+class AddressDetailsScreenState extends ConsumerState<AddressDetailsScreen> {
   bool _showError = false;
+
+  final TextEditingController _controller = TextEditingController();
+  final FocusNode _focusNode = FocusNode();
 
   bool _validateFields() {
     final floorUnitRoom =
@@ -47,6 +56,73 @@ class AddressDetailsScreenState extends State<AddressDetailsScreen> {
             formDescription(context,
                 "Please enter your address so that we can show you nearby service providers and services based on your location."),
             const SizedBox(height: tertiarySizedBox),
+            Padding(
+              padding: const EdgeInsets.only(bottom: secondarySizedBox),
+              child: TypeAheadField<Map<String, String>>(
+                controller: _controller,
+                focusNode: _focusNode,
+                debounceDuration: const Duration(milliseconds: 300),
+                hideOnEmpty: true,
+                hideOnLoading: false,
+                hideOnError: false,
+                suggestionsCallback: (pattern) async {
+                  if (pattern.isNotEmpty) {
+                    return await fetchLocations(pattern);
+                  } else {
+                    return [];
+                  }
+                },
+                itemBuilder: (context, suggestion) {
+                  return ListTile(
+                    title: Text(suggestion['displayName'] ?? 'Unknown'),
+                  );
+                },
+                onSelected: (suggestion) {
+                  _controller.text = suggestion['displayName']!;
+                  ref.read(appointmentAddressProvider.notifier).state =
+                      _controller.text;
+                },
+                errorBuilder: (context, error) => const Padding(
+                  padding: EdgeInsets.all(8.0),
+                  child: Text('Error fetching suggestions.'),
+                ),
+                loadingBuilder: (context) => const Padding(
+                  padding: EdgeInsets.all(8.0),
+                  child: CircularProgressIndicator(),
+                ),
+                emptyBuilder: (context) => const Padding(
+                  padding: EdgeInsets.all(8.0),
+                  child: Text('No results found.'),
+                ),
+                animationDuration: const Duration(milliseconds: 300),
+                builder: (context, controller, focusNode) {
+                  return TextField(
+                    controller: _controller,
+                    focusNode: focusNode,
+                    autofocus: false,
+                    decoration: InputDecoration(
+                      labelText: 'Type or pin address',
+                      suffixIcon: IconButton(
+                        icon:
+                            const Icon(Icons.my_location, color: primaryColor),
+                        onPressed: () {
+                          // Navigator.push(context,
+                          //     slideUpRoute(const TestPhilippineDropdown()));
+                          Navigator.push(
+                            context,
+                            slideUpRoute(const PinAddress()),
+                          );
+                        },
+                      ),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8.0),
+                      ),
+                    ),
+                    style: const TextStyle(fontSize: regularText),
+                  );
+                },
+              ),
+            ),
             Row(
               children: [
                 Expanded(

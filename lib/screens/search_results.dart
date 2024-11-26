@@ -15,7 +15,7 @@ import 'package:pamfurred/components/custom_appbar.dart';
 import 'package:pamfurred/components/globals.dart';
 import 'package:pamfurred/providers/service_details_provider.dart';
 import 'package:pamfurred/providers/serviceprovider_provider.dart';
-import 'package:pamfurred/screens/pin_location.dart';
+// import 'package:pamfurred/screens/pin_location.dart';
 import 'package:pamfurred/screens/service_package_details.dart';
 import 'package:shimmer/shimmer.dart';
 
@@ -84,17 +84,19 @@ class SearchResultsScreenState extends ConsumerState<SearchResultsScreen> {
   }
 
   Widget buildDrawer(BuildContext context) {
-    final hasDetectedAddress = ref.read(hasDetectedAddressProvider);
-    final street = ref.watch(streetProvider);
-    final city = ref.watch(cityProvider);
-    final province = ref.watch(provinceProvider);
+    // final hasDetectedAddress = ref.read(hasDetectedAddressProvider);
+    // final street = ref.watch(streetProvider);
+    // final city = ref.watch(cityProvider);
+    // final province = ref.watch(provinceProvider);
 
     final minValue = ref.watch(minPriceProvider);
     final maxValue = ref.watch(maxPriceProvider);
-    var currentRangeValues = RangeValues(minValue, maxValue);
+    var currentRangeValues =
+        RangeValues(minValue.toDouble(), maxValue.toDouble());
     return Drawer(
       child: Container(
         padding: const EdgeInsets.all(secondarySizedBox),
+        margin: const EdgeInsets.only(top: quaternarySizedBox),
         decoration: BoxDecoration(
           color: Colors.grey[200],
         ),
@@ -140,18 +142,18 @@ class SearchResultsScreenState extends ConsumerState<SearchResultsScreen> {
                   child: Row(
                     children: [
                       Radio<String>(
-                        value: 'Location',
+                        value: 'Distance',
                         groupValue: selectedFilter,
                         onChanged: (String? value) {
                           setState(() {
                             selectedFilter = value!;
                             ref.read(sortResultsProvider.notifier).state =
-                                'Location';
+                                'Distance';
                           });
                         },
                       ),
                       const Text(
-                        'Location',
+                        'Distance',
                         style: TextStyle(fontSize: regularText),
                       ),
                     ],
@@ -185,44 +187,45 @@ class SearchResultsScreenState extends ConsumerState<SearchResultsScreen> {
             const SizedBox(height: tertiarySizedBox),
 
             // Conditional rendering based on the selected filter
-            if (selectedFilter == 'Location') ...[
-              const Row(
-                mainAxisAlignment: MainAxisAlignment.start,
-                children: [
-                  Text(
-                    'Location',
-                    style:
-                        TextStyle(fontSize: titleFont, fontWeight: boldWeight),
-                  ),
-                ],
-              ),
-              const SizedBox(height: secondarySizedBox),
-              Row(
-                children: [
-                  Expanded(
-                    child: TextField(
-                      decoration: InputDecoration(
-                        hintText: hasDetectedAddress
-                            ? '$street, $city, $province'
-                            : 'Enter location',
-                        suffixIcon: IconButton(
-                          icon: const Icon(Icons.my_location,
-                              color: primaryColor),
-                          onPressed: () {
-                            Navigator.push(
-                                context, slideUpRoute(const PinAddress()));
-                          },
-                        ),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(8.0),
-                        ),
-                      ),
-                      style: const TextStyle(fontSize: regularText),
-                    ),
-                  ),
-                ],
-              ),
-            ] else if (selectedFilter == 'Price') ...[
+            // if (selectedFilter == 'Location') ...[
+            //   const Row(
+            //     mainAxisAlignment: MainAxisAlignment.start,
+            //     children: [
+            //       Text(
+            //         'Location',
+            //         style:
+            //             TextStyle(fontSize: titleFont, fontWeight: boldWeight),
+            //       ),
+            //     ],
+            //   ),
+            //   const SizedBox(height: secondarySizedBox),
+            // Row(
+            //   children: [
+            //     Expanded(
+            //       child: TextField(
+            //         decoration: InputDecoration(
+            //           hintText: hasDetectedAddress
+            //               ? '$street, $city, $province'
+            //               : 'Enter location',
+            //           suffixIcon: IconButton(
+            //             icon: const Icon(Icons.my_location,
+            //                 color: primaryColor),
+            //             onPressed: () {
+            //               Navigator.push(
+            //                   context, slideUpRoute(const PinAddress()));
+            //             },
+            //           ),
+            //           border: OutlineInputBorder(
+            //             borderRadius: BorderRadius.circular(8.0),
+            //           ),
+            //         ),
+            //         style: const TextStyle(fontSize: regularText),
+            //       ),
+            //     ),
+            //   ],
+            // ),
+            // ]
+            if (selectedFilter == 'Price') ...[
               Column(
                 children: [
                   Row(
@@ -271,7 +274,7 @@ class SearchResultsScreenState extends ConsumerState<SearchResultsScreen> {
                 ],
               ),
             ],
-            const SizedBox(height: quaternarySizedBox),
+            const SizedBox(height: secondarySizedBox),
             TextButton(
               onPressed: () {
                 // Add your action here
@@ -323,7 +326,7 @@ class ResultsListWidget extends ConsumerWidget {
     final providerDataAsync = checkResultsSorter == 'All' ||
             checkResultsSorter == ''
         ? ref.watch(combinedSearchResultsProvider(selectedCategory))
-        : checkResultsSorter == 'Location'
+        : checkResultsSorter == 'Distance'
             ? ref.watch(sortSearchResultsByLocation(selectedCategory))
             : checkResultsSorter == 'Price'
                 ? ref.watch(sortSearchResultsByPrice(selectedCategory))

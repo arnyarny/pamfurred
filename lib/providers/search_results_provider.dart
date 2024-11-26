@@ -1,6 +1,7 @@
 import 'dart:math';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:pamfurred/backend_logic_files/store_location.dart';
 import 'package:pamfurred/models/sp_search_results.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -19,7 +20,7 @@ final longProvider = StateProvider<double?>((ref) => null);
 
 // Price providers
 final minPriceProvider = StateProvider<double>((ref) => 0);
-final maxPriceProvider = StateProvider<double>((ref) => 200);
+final maxPriceProvider = StateProvider<double>((ref) => 1000);
 
 // For services
 final searchResultsServiceProviderServices =
@@ -97,14 +98,17 @@ final sortSearchResultsByLocation =
   final combinedResults =
       await ref.watch(combinedSearchResultsProvider(category).future);
 
+  final location =
+      ref.watch(locationProvider); // Get the current location state
+
   // Access the latitude and longitude from the respective providers
-  final latitude = ref.read(latProvider);
-  final longitude = ref.read(longProvider);
+  final latitude = location.latitude;
+  final longitude = location.longitude;
 
   // Calculate the distance for each item and sort by distance (ascending)
   final sortedResults = combinedResults.map((item) {
     final distance =
-        calculateDistance(latitude!, longitude!, item.latitude, item.longitude);
+        calculateDistance(latitude, longitude, item.latitude, item.longitude);
     return {'item': item, 'distance': distance};
   }).toList()
     ..sort(

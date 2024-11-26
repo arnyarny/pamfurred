@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:pamfurred/components/screen_transitions.dart';
 import 'package:pamfurred/providers/appointments_provider.dart';
 import 'package:pamfurred/providers/available_timeslots_provider.dart';
+import 'package:pamfurred/providers/notifications_provider.dart';
+import 'package:pamfurred/providers/pet_profile_provider.dart';
 import 'package:pamfurred/screens/login.dart';
 import 'package:pamfurred/screens/main_screen.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -59,7 +61,7 @@ class AuthRedirectState extends ConsumerState<AuthRedirect> {
         .from('pet_profile')
         .stream(primaryKey: ['pet_profile_id']).listen((event) {
       // Invalidate the provider when the data changes
-      ref.invalidate(availableTimeslotsProvider);
+      ref.invalidate(petProfileProvider);
     });
   }
 
@@ -71,7 +73,7 @@ class AuthRedirectState extends ConsumerState<AuthRedirect> {
         .from('notification')
         .stream(primaryKey: ['notification_id']).listen((event) {
       // Invalidate the provider when the data changes
-      ref.invalidate(availableTimeslotsProvider);
+      ref.invalidate(notificationDetailsProvider);
     });
   }
 

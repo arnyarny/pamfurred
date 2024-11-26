@@ -152,22 +152,16 @@ class AppointmentSummaryScreenState
     final response =
         await supabase.from('appointment_item').insert(appointmentItems);
 
-    print('Appointment items inserted successfully: $response');
-
-    return response;
-  }
-
-  // Function to insert a new notification into the notification table
-  Future<void> insertNotification(String appointmentId) async {
-    final supabase = Supabase.instance.client;
-
-    final response = await supabase.from('notification').insert({
+    await supabase.from('notification').insert({
       'appointment_id': appointmentId,
       'appointment_notif_type': 'Upcoming', // Or any type based on your logic
       'created_at':
           DateTime.now().toUtc().toIso8601String(), // Current timestamp in UTC
     }).execute();
-    print('Notification inserted successfully');
+
+    print('Appointment items inserted successfully: $response');
+
+    return response;
   }
 
   @override
@@ -263,7 +257,7 @@ class AppointmentSummaryScreenState
                       onPressed: cartProducts.isEmpty
                           ? null
                           : () async {
-                              final appointmentId = await createAppointment(
+                              final newAppointment = await createAppointment(
                                 petOwnerId: ref
                                     .read(userIdProvider)
                                     .toString(), // Pet owner ID
@@ -276,7 +270,7 @@ class AppointmentSummaryScreenState
                                 petProfileId: appointmentPetId,
                               );
 
-                              if (appointmentId != null) {
+                              if (newAppointment != null) {
                                 // Fetch the service provider name using Riverpod's ref
                                 final serviceProviderName =
                                     await fetchServiceProviderName(ref);
@@ -289,10 +283,7 @@ class AppointmentSummaryScreenState
 
                                 // Insert appointment items into the table
                                 await insertAppointmentItems(
-                                    appointmentId.toString());
-
-                                // Insert notification entry into the notification table
-                                await insertNotification(appointmentId);
+                                    newAppointment.toString());
 
                                 if (context.mounted) {
                                   Navigator.push(

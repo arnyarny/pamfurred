@@ -157,6 +157,19 @@ class AppointmentSummaryScreenState
     return response;
   }
 
+  // Function to insert a new notification into the notification table
+  Future<void> insertNotification(String appointmentId) async {
+    final supabase = Supabase.instance.client;
+
+    final response = await supabase.from('notification').insert({
+      'appointment_id': appointmentId,
+      'appointment_notif_type': 'Upcoming', // Or any type based on your logic
+      'created_at':
+          DateTime.now().toUtc().toIso8601String(), // Current timestamp in UTC
+    }).execute();
+    print('Notification inserted successfully');
+  }
+
   @override
   Widget build(BuildContext context) {
     final sp = ref.watch(spIndexProvider);
@@ -247,64 +260,71 @@ class AppointmentSummaryScreenState
                   const SizedBox(height: quaternarySizedBox),
                   Center(
                     child: TextButton(
-                        onPressed: cartProducts.isEmpty
-                            ? null
-                            : () async {
-                                final appointmentId = await createAppointment(
-                                  petOwnerId: ref
-                                      .read(userIdProvider)
-                                      .toString(), // Pet owner ID
-                                  totalAmount: total,
-                                  appointmentStatus: 'Upcoming',
-                                  date: formatDateToShort('$appointmentDate'),
-                                  time: '$appointmentTime',
-                                  appointmentType: servicePackageType,
-                                  address: appointmentAddress,
-                                  petProfileId: appointmentPetId,
-                                );
+                      onPressed: cartProducts.isEmpty
+                          ? null
+                          : () async {
+                              final appointmentId = await createAppointment(
+                                petOwnerId: ref
+                                    .read(userIdProvider)
+                                    .toString(), // Pet owner ID
+                                totalAmount: total,
+                                appointmentStatus: 'Upcoming',
+                                date: formatDateToShort('$appointmentDate'),
+                                time: '$appointmentTime',
+                                appointmentType: servicePackageType,
+                                address: appointmentAddress,
+                                petProfileId: appointmentPetId,
+                              );
 
-                                if (appointmentId != null) {
-                                  // Fetch the service provider name using Riverpod's ref
-                                  final serviceProviderName =
-                                      await fetchServiceProviderName(ref);
+                              if (appointmentId != null) {
+                                // Fetch the service provider name using Riverpod's ref
+                                final serviceProviderName =
+                                    await fetchServiceProviderName(ref);
 
-                                  if (serviceProviderName != null) {
-                                    // Show the notification with the service provider name
-                                    await showAppointmentNotification(
-                                        serviceProviderName);
-                                  }
-                                  await insertAppointmentItems(
-                                      appointmentId.toString());
-                                  if (context.mounted) {
-                                    Navigator.push(
-                                      context,
-                                      crossFadeRoute(
-                                          const SuccessfulAppointment()),
-                                    );
-                                  }
+                                if (serviceProviderName != null) {
+                                  // Show the notification with the service provider name
+                                  await showAppointmentNotification(
+                                      serviceProviderName);
                                 }
-                              },
-                        style: ButtonStyle(
-                            shape:
-                                WidgetStateProperty.all<RoundedRectangleBorder>(
-                              RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(
-                                    secondaryBorderRadius),
-                              ),
-                            ),
-                            backgroundColor: WidgetStateProperty.all<Color>(
-                              primaryColor,
-                            )),
-                        child: const Padding(
-                          padding: EdgeInsets.all(4),
-                          child: Text(
-                            'Confirm appointment',
-                            style: TextStyle(
-                                color: Colors.white,
-                                fontSize: regularText,
-                                fontWeight: FontWeight.normal),
+
+                                // Insert appointment items into the table
+                                await insertAppointmentItems(
+                                    appointmentId.toString());
+
+                                // Insert notification entry into the notification table
+                                await insertNotification(appointmentId);
+
+                                if (context.mounted) {
+                                  Navigator.push(
+                                    context,
+                                    crossFadeRoute(
+                                        const SuccessfulAppointment()),
+                                  );
+                                }
+                              }
+                            },
+                      style: ButtonStyle(
+                        shape: WidgetStateProperty.all<RoundedRectangleBorder>(
+                          RoundedRectangleBorder(
+                            borderRadius:
+                                BorderRadius.circular(secondaryBorderRadius),
                           ),
-                        )),
+                        ),
+                        backgroundColor:
+                            WidgetStateProperty.all<Color>(primaryColor),
+                      ),
+                      child: const Padding(
+                        padding: EdgeInsets.all(4),
+                        child: Text(
+                          'Confirm appointment',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: regularText,
+                            fontWeight: FontWeight.normal,
+                          ),
+                        ),
+                      ),
+                    ),
                   )
                 ],
               ),

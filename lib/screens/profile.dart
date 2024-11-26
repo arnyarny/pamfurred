@@ -70,12 +70,6 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
       // Use your session data to get user info (modify as needed based on how you manage user info)
       final userId = userSession.user.id; // Get user ID from session
 
-      final username = await Supabase.instance.client
-          .from('pet_owner')
-          .select()
-          .eq('pet_owner_id', userId) // Query based on the current user's ID
-          .single();
-
       final userDetails = await Supabase.instance.client
           .from('user')
           .select()
@@ -91,7 +85,6 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
           .single();
 
       setState(() {
-        profileData = username;
         mapUserDetails = userDetails;
         mapUserAddress = addressDetails;
         isLoading = false;
@@ -151,7 +144,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          buildSectionHeader(profileData?['username'] ?? ''),
+                          buildSectionHeader("${mapUserDetails?['first_name']} "
+                              "${mapUserDetails?['last_name']}"),
                           IconButton(
                             onPressed: () {
                               // Set visibility to false when loading
@@ -266,6 +260,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                       _buildDetailsCard(context, "Personal details"),
                       const SizedBox(height: primarySizedBox),
                       _buildAccountCard(context),
+                      const SizedBox(height: quaternarySizedBox),
                     ],
                   ),
                 ),
@@ -354,7 +349,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
             ]),
             const SizedBox(height: secondarySizedBox),
             SizedBox(
-              height: 364,
+              height: 275,
               child: Column(
                 children: [
                   _detailsCard(
@@ -367,11 +362,6 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                     context: context,
                     title: "Phone number",
                     details: mapUserDetails?['phone_number'] ?? '',
-                  ),
-                  _detailsCard(
-                    context: context,
-                    title: "Email address",
-                    details: profileData?['email'] ?? '',
                   ),
                   _detailsCard(
                     context: context,
@@ -400,7 +390,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
         child: Column(
           children: [
             Row(mainAxisAlignment: MainAxisAlignment.start, children: [
-              customTitleText(context, "Account"),
+              customTitleText(context, "Credentials"),
             ]),
             const SizedBox(height: primarySizedBox),
             SizedBox(
@@ -409,8 +399,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                 children: [
                   _detailsCard(
                     context: context,
-                    title: "Username",
-                    details: profileData?['username'] ?? '',
+                    title: "Email address",
+                    details: profileData?['email'] ?? '',
                   ),
                   const InkWell(
                     child: Card(
@@ -438,7 +428,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                         ),
                       ),
                     ),
-                  )
+                  ),
                 ],
               ),
             ),
@@ -522,16 +512,6 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
         await Supabase.instance.client
             .from('pet_owner')
             .update({'email': newEmail}).eq(
-                'user_id', userSession.user.id); // Use the session user ID
-        _fetchUserData(); // Refresh user data
-      }
-    } else if (field == "Username") {
-      final newUsername =
-          await _showEditSingleFieldDialog(context, details, "Username");
-      if (newUsername != null) {
-        await Supabase.instance.client
-            .from('pet_owner')
-            .update({'username': newUsername}).eq(
                 'user_id', userSession.user.id); // Use the session user ID
         _fetchUserData(); // Refresh user data
       }

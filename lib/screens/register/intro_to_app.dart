@@ -108,7 +108,6 @@ class StartYourJourneyScreenState extends State<StartYourJourneyScreen>
                         PersonalInformationScreen(controllers: {
                           'firstName': TextEditingController(),
                           'lastName': TextEditingController(),
-                          'phoneNumber': TextEditingController(),
                         }),
                       ),
                     );

@@ -1,14 +1,16 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl_phone_field/intl_phone_field.dart';
 import 'package:pamfurred/components/custom_appbar.dart';
 import 'package:pamfurred/components/globals.dart';
 import 'package:pamfurred/components/header.dart';
 import 'package:pamfurred/components/screen_transitions.dart';
 import 'package:pamfurred/components/width_expanded_button.dart';
+import 'package:pamfurred/providers/register.dart';
 import 'package:pamfurred/screens/register/address_info.dart';
 import 'package:pamfurred/screens/register/intro_to_app.dart';
 
-class PhoneNumberScreen extends StatefulWidget {
+class PhoneNumberScreen extends ConsumerStatefulWidget {
   final Map<String, TextEditingController> controllers;
 
   const PhoneNumberScreen({super.key, required this.controllers});
@@ -17,7 +19,7 @@ class PhoneNumberScreen extends StatefulWidget {
   PhoneNumberScreenState createState() => PhoneNumberScreenState();
 }
 
-class PhoneNumberScreenState extends State<PhoneNumberScreen> {
+class PhoneNumberScreenState extends ConsumerState<PhoneNumberScreen> {
   bool _showError = false;
 
   /// Validates if the phone number contains exactly 10 digits, including the country code
@@ -95,6 +97,8 @@ class PhoneNumberScreenState extends State<PhoneNumberScreen> {
                 if (_validatePhoneNumber()) {
                   setState(() {
                     _showError = false;
+                    ref.read(phoneNumberProvider.notifier).state =
+                        widget.controllers['phoneNumber']!.text.trim();
                   });
                   Navigator.push(
                       context,
@@ -104,7 +108,6 @@ class PhoneNumberScreenState extends State<PhoneNumberScreen> {
                           'street': TextEditingController(),
                           'barangay': TextEditingController(),
                           'city': TextEditingController(),
-                          'province': TextEditingController(),
                         }),
                       ));
                 } else {

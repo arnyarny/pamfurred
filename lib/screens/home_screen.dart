@@ -697,7 +697,6 @@ class ServiceProvidersWidget extends ConsumerWidget {
                     double.tryParse(spLongitude.toString()) ?? 0.0;
                 final sentimentLabel = sp['sentiment_label'];
 
-                String userId = ref.watch(userIdProvider).toString();
                 return Padding(
                   padding:
                       const EdgeInsets.symmetric(horizontal: primarySizedBox),
@@ -819,7 +818,7 @@ class ServiceProvidersWidget extends ConsumerWidget {
                                   children: [
                                     FutureBuilder<String?>(
                                       future: getDistanceToTarget(
-                                          userId, latitude, longitude),
+                                          ref, latitude, longitude),
                                       builder: (context, snapshot) {
                                         if (snapshot.hasError) {
                                           return SizedBox(

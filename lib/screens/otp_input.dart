@@ -87,13 +87,6 @@ class OtpVerificationScreenState extends State<OtpVerificationScreen>
       );
 
       if (response.user != null) {
-        // OTP verification successful
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('OTP verification successful')),
-          );
-        }
-
         // Navigate to the home screen or any other screen
         if (mounted) {
           Navigator.pushReplacement(

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:pamfurred/components/confetti.dart';
 import 'package:pamfurred/components/screen_transitions.dart';
 import 'package:pamfurred/screens/main_screen.dart';
 
@@ -25,6 +26,7 @@ class _SuccessfulRegistrationState extends State<SuccessfulRegistration> {
             ),
           ),
           Column(mainAxisAlignment: MainAxisAlignment.center, children: [
+            const ConfettiDisplay(),
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
@@ -71,8 +73,7 @@ class _SuccessfulRegistrationState extends State<SuccessfulRegistration> {
                   height: primaryTextFieldHeight,
                   child: TextButton(
                     onPressed: () {
-                      Navigator.push(
-                          context, crossFadeRoute(MainScreen()));
+                      Navigator.push(context, crossFadeRoute(MainScreen()));
                     },
                     style: ButtonStyle(
                       shape: WidgetStateProperty.all<RoundedRectangleBorder>(

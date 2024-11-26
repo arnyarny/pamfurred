@@ -16,7 +16,6 @@ import 'package:pamfurred/models/service_filter_criteria.dart';
 import 'package:pamfurred/providers/serviceprovider_provider.dart';
 import 'package:pamfurred/providers/sp_profile_provider_packages.dart';
 import 'package:pamfurred/providers/sp_profile_provider_services.dart';
-import 'package:pamfurred/providers/user_id.dart';
 import 'package:pamfurred/screens/appointment/serviceprovider_profile.dart';
 import 'package:pamfurred/screens/home_screen.dart';
 import 'package:shimmer/shimmer.dart';
@@ -212,7 +211,6 @@ class ServiceProvidersGridViewWidget extends ConsumerWidget {
                     double.tryParse(spLongitude.toString()) ?? 0.0;
                 final sentimentLabel = sp['sentiment_label'];
 
-                String userId = ref.watch(userIdProvider).toString();
                 return Padding(
                   padding:
                       const EdgeInsets.symmetric(horizontal: primarySizedBox),
@@ -326,8 +324,8 @@ class ServiceProvidersGridViewWidget extends ConsumerWidget {
                             ),
                             const SizedBox(height: secondarySizedBox),
                             FutureBuilder<String?>(
-                              future: getDistanceToTarget(
-                                  userId, latitude, longitude),
+                              future:
+                                  getDistanceToTarget(ref, latitude, longitude),
                               builder: (context, snapshot) {
                                 if (snapshot.hasError) {
                                   return SizedBox(

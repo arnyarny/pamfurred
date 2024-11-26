@@ -6,6 +6,7 @@ import 'package:intl/intl.dart'; // For date formatting
 import 'package:pamfurred/components/capitalize_first_letter.dart';
 import 'package:pamfurred/components/custom_appbar.dart';
 import 'package:pamfurred/components/custom_padded_button.dart';
+import 'package:pamfurred/components/dropdown_decoration.dart';
 import 'package:pamfurred/components/globals.dart';
 import 'dart:developer';
 import 'package:pamfurred/models/dropdown_contents/dog_breeds.dart';
@@ -332,27 +333,7 @@ getTitleWithDropdown<T extends CustomDropdownListFilter>(
       ),
       const SizedBox(height: secondarySizedBox),
       CustomDropdown<T>.search(
-        decoration: CustomDropdownDecoration(
-          closedFillColor: lighterGreyColor,
-          expandedFillColor: Colors.white,
-          closedSuffixIcon: const Icon(Icons.arrow_drop_down),
-          expandedSuffixIcon: const Icon(Icons.arrow_drop_up),
-          closedBorder: Border.all(color: greyColor.withOpacity(.1), width: .8),
-          closedBorderRadius: BorderRadius.circular(secondaryBorderRadius),
-          closedErrorBorder: Border.all(color: Colors.red),
-          closedErrorBorderRadius: BorderRadius.circular(secondaryBorderRadius),
-          expandedBorder: Border.all(color: primaryColor, width: .15),
-          expandedBorderRadius: BorderRadius.circular(secondaryBorderRadius),
-          hintStyle: const TextStyle(color: greyColor, fontSize: regularText),
-          noResultFoundStyle:
-              const TextStyle(color: Colors.red, fontSize: regularText),
-          errorStyle: const TextStyle(color: Colors.red, fontSize: regularText),
-          listItemStyle:
-              const TextStyle(color: Colors.black, fontSize: regularText),
-          overlayScrollbarDecoration: const ScrollbarThemeData(
-            thumbColor: WidgetStatePropertyAll(lightGreyColor),
-          ),
-        ),
+        decoration: getDropdownDecoration(),
         hintText: hintText,
         items: list,
         excludeSelected: false,

@@ -402,9 +402,6 @@ final aboutTabProvider = FutureProvider<List<Widget>>((ref) async {
 
   print('SP ID: ${sp?['sp_id']}');
 
-  // Pet owner user ID
-  String userId = ref.watch(userIdProvider).toString();
-
   // Variable for service provider rating, checking null values
   final displayRating = (sp?['average_rating'] as double).toStringAsFixed(1);
 
@@ -418,129 +415,132 @@ final aboutTabProvider = FutureProvider<List<Widget>>((ref) async {
   final timeOpen = sp?['time_open'];
   final timeClose = sp?['time_close'];
 
-  double latitude = sp?['latitude'];
-  double longitude = sp?['longitude'];
-
   String fullAddress = sp?['full_address'];
 
   return [
     // About tab content
-    Builder(builder: (context) {
-      return Center(
-        child: sp!.isEmpty
-            ? const Center(
-                child: CircularProgressIndicator(),
-              )
-            : Container(
-                padding: const EdgeInsets.only(bottom: 80),
-                child: Column(
-                  children: [
-                    Builder(builder: (context) {
-                      return SizedBox(
-                        width: screenPadding(context),
+    Consumer(
+      builder: (context, ref, _) {
+        double latitude = sp?['latitude'];
+        double longitude = sp?['longitude'];
+
+        final distanceFromSp = getDistanceToTarget(ref, latitude, longitude);
+
+        return Center(
+          child: sp!.isEmpty
+              ? const Center(
+                  child: CircularProgressIndicator(),
+                )
+              : Container(
+                  padding: const EdgeInsets.only(bottom: 80),
+                  child: Column(
+                    children: [
+                      Builder(builder: (context) {
+                        return SizedBox(
+                          width: screenPadding(context),
+                          child: Column(
+                            children: [
+                              spSentimentLabelHeader(
+                                  CupertinoIcons.text_bubble,
+                                  sentimentLabelTextWidget(
+                                      sp['sentiment_label'])),
+                              const SizedBox(height: secondarySizedBox),
+
+                              spDistanceDetailsHeader(
+                                CupertinoIcons.location,
+                                FutureBuilder<String?>(
+                                  future: distanceFromSp,
+                                  builder: (context, snapshot) {
+                                    if (snapshot.hasError) {
+                                      return regularTextWidget(
+                                          'Error: ${snapshot.error}'); // Display error message if there's an error
+                                    } else if (snapshot.hasData) {
+                                      // Check if the data is not null
+                                      return regularTextWidget(snapshot.data ??
+                                          'Distance not available'); // Display the calculated distance
+                                    } else {
+                                      return regularTextWidget(
+                                          ''); // Handle the case where there is no data
+                                    }
+                                  },
+                                ),
+                              ),
+                              const SizedBox(height: secondarySizedBox),
+
+                              // This is temporary. Remove this when it's ensured that we don't take null addresses from service providers
+                              sp.isNotEmpty
+                                  ? spDetailsHeader(
+                                      Icons.location_on_outlined, fullAddress)
+                                  : spDetailsHeader(
+                                      CupertinoIcons.location_solid, 'N/A'),
+                              const SizedBox(height: secondarySizedBox),
+
+                              // Rating display logic (assuming 'displayRating' handles null internally)
+                              spDetailsHeader(Icons.star_border, displayRating),
+                              const SizedBox(height: secondarySizedBox),
+
+                              spDetailsHeader(
+                                Icons.home_repair_service_outlined,
+                                serviceTypes.join(', '),
+                              ),
+                              const SizedBox(height: secondarySizedBox),
+
+                              spDetailsHeader(Icons.access_time,
+                                  'Opens from ${formatTime(timeOpen)} to ${formatTime(timeClose)}'),
+                              const SizedBox(height: secondarySizedBox),
+
+                              spDetailsHeader(Icons.call_outlined,
+                                  sp['phone_number'] ?? 'N/A'),
+                              const SizedBox(height: secondarySizedBox),
+
+                              spDetailsHeader(CupertinoIcons.heart,
+                                  'Caters ${petsCatered.join(', ')}'),
+                              const SizedBox(height: secondarySizedBox),
+                            ],
+                          ),
+                        );
+                      }),
+                      GestureDetector(
+                        onTap: () {
+                          // Navigate to the service provider’s profile
+                          Navigator.push(context,
+                              slideUpRoute(const RatingsAndReviewsScreen()));
+                        },
                         child: Column(
                           children: [
-                            spSentimentLabelHeader(
-                                CupertinoIcons.text_bubble,
-                                sentimentLabelTextWidget(
-                                    sp['sentiment_label'])),
-                            const SizedBox(height: secondarySizedBox),
-
-                            spDistanceDetailsHeader(
-                              CupertinoIcons.location,
-                              FutureBuilder<String?>(
-                                future: getDistanceToTarget(
-                                    userId, latitude, longitude),
-                                builder: (context, snapshot) {
-                                  if (snapshot.hasError) {
-                                    return regularTextWidget(
-                                        'Error: ${snapshot.error}'); // Display error message if there's an error
-                                  } else if (snapshot.hasData) {
-                                    // Check if the data is not null
-                                    return regularTextWidget(snapshot.data ??
-                                        'Distance not available'); // Display the calculated distance
-                                  } else {
-                                    return regularTextWidget(
-                                        ''); // Handle the case where there is no data
-                                  }
-                                },
+                            SizedBox(
+                              width: screenPadding(context),
+                              child: const Row(
+                                mainAxisAlignment: MainAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    'Ratings and Reviews',
+                                    style: TextStyle(
+                                      fontWeight: boldWeight,
+                                      color: Colors.black,
+                                      fontSize: regularText,
+                                    ),
+                                  ),
+                                  SizedBox(width: primarySizedBox),
+                                  Icon(
+                                    Icons.arrow_forward_ios_outlined,
+                                    size: 20,
+                                    color: Colors.black,
+                                  )
+                                ],
                               ),
                             ),
                             const SizedBox(height: secondarySizedBox),
-
-                            // This is temporary. Remove this when it's ensured that we don't take null addresses from service providers
-                            sp.isNotEmpty
-                                ? spDetailsHeader(
-                                    Icons.location_on_outlined, fullAddress)
-                                : spDetailsHeader(
-                                    CupertinoIcons.location_solid, 'N/A'),
-                            const SizedBox(height: secondarySizedBox),
-
-                            // Rating display logic (assuming 'displayRating' handles null internally)
-                            spDetailsHeader(Icons.star_border, displayRating),
-                            const SizedBox(height: secondarySizedBox),
-
-                            spDetailsHeader(
-                              Icons.home_repair_service_outlined,
-                              serviceTypes.join(', '),
-                            ),
-                            const SizedBox(height: secondarySizedBox),
-
-                            spDetailsHeader(Icons.access_time,
-                                'Opens from ${formatTime(timeOpen)} to ${formatTime(timeClose)}'),
-                            const SizedBox(height: secondarySizedBox),
-
-                            spDetailsHeader(Icons.call_outlined,
-                                sp['phone_number'] ?? 'N/A'),
-                            const SizedBox(height: secondarySizedBox),
-
-                            spDetailsHeader(CupertinoIcons.heart,
-                                'Caters ${petsCatered.join(', ')}'),
-                            const SizedBox(height: secondarySizedBox),
+                            const RatingsAndReviewsWidget(),
                           ],
                         ),
-                      );
-                    }),
-                    GestureDetector(
-                      onTap: () {
-                        // Navigate to the service provider’s profile
-                        Navigator.push(context,
-                            slideUpRoute(const RatingsAndReviewsScreen()));
-                      },
-                      child: Column(
-                        children: [
-                          SizedBox(
-                            width: screenPadding(context),
-                            child: const Row(
-                              mainAxisAlignment: MainAxisAlignment.start,
-                              children: [
-                                Text(
-                                  'Ratings and Reviews',
-                                  style: TextStyle(
-                                    fontWeight: boldWeight,
-                                    color: Colors.black,
-                                    fontSize: regularText,
-                                  ),
-                                ),
-                                SizedBox(width: primarySizedBox),
-                                Icon(
-                                  Icons.arrow_forward_ios_outlined,
-                                  size: 20,
-                                  color: Colors.black,
-                                )
-                              ],
-                            ),
-                          ),
-                          const SizedBox(height: secondarySizedBox),
-                          const RatingsAndReviewsWidget(),
-                        ],
-                      ),
-                    )
-                  ],
+                      )
+                    ],
+                  ),
                 ),
-              ),
-      );
-    }),
+        );
+      },
+    ),
   ];
 });
 

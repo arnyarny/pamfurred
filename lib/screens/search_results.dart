@@ -15,7 +15,6 @@ import 'package:pamfurred/components/custom_appbar.dart';
 import 'package:pamfurred/components/globals.dart';
 import 'package:pamfurred/providers/service_details_provider.dart';
 import 'package:pamfurred/providers/serviceprovider_provider.dart';
-import 'package:pamfurred/providers/user_id.dart';
 import 'package:pamfurred/screens/pin_location.dart';
 import 'package:pamfurred/screens/service_package_details.dart';
 import 'package:shimmer/shimmer.dart';
@@ -342,7 +341,6 @@ class ResultsListWidget extends ConsumerWidget {
             itemBuilder: (context, index) {
               var provider = providers[index];
 
-              String userId = ref.watch(userIdProvider).toString();
               return SizedBox(
                 height: 150,
                 child: Column(
@@ -468,7 +466,7 @@ class ResultsListWidget extends ConsumerWidget {
                                           children: [
                                             FutureBuilder<String?>(
                                               future: getDistanceToTarget(
-                                                  userId,
+                                                  ref,
                                                   provider.latitude,
                                                   provider.longitude),
                                               builder: (context, snapshot) {

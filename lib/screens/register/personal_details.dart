@@ -1,14 +1,16 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pamfurred/components/custom_appbar.dart';
 import 'package:pamfurred/components/globals.dart';
 import 'package:pamfurred/components/header.dart';
 import 'package:pamfurred/components/screen_transitions.dart';
 import 'package:pamfurred/components/text_field.dart';
 import 'package:pamfurred/components/width_expanded_button.dart';
+import 'package:pamfurred/providers/register.dart';
 import 'package:pamfurred/screens/register/intro_to_app.dart';
 import 'package:pamfurred/screens/register/phone_number.dart';
 
-class PersonalInformationScreen extends StatefulWidget {
+class PersonalInformationScreen extends ConsumerStatefulWidget {
   final Map<String, TextEditingController> controllers;
 
   const PersonalInformationScreen({super.key, required this.controllers});
@@ -18,17 +20,18 @@ class PersonalInformationScreen extends StatefulWidget {
       PersonalInformationScreenState();
 }
 
-class PersonalInformationScreenState extends State<PersonalInformationScreen> {
+class PersonalInformationScreenState
+    extends ConsumerState<PersonalInformationScreen> {
   bool _showError = false;
-
-  bool _validateFields() {
-    final firstName = widget.controllers['firstName']?.text.trim() ?? '';
-    final lastName = widget.controllers['lastName']?.text.trim() ?? '';
-    return firstName.isNotEmpty && lastName.isNotEmpty;
-  }
 
   @override
   Widget build(BuildContext context) {
+    bool validateFields() {
+      final firstName = widget.controllers['firstName']?.text.trim() ?? '';
+      final lastName = widget.controllers['lastName']?.text.trim() ?? '';
+      return firstName.isNotEmpty && lastName.isNotEmpty;
+    }
+
     return Scaffold(
       appBar: customAppBar(context),
       backgroundColor: Colors.white,
@@ -69,7 +72,7 @@ class PersonalInformationScreenState extends State<PersonalInformationScreen> {
             const SizedBox(height: tertiarySizedBox),
             CustomWideButton(
               text: "Next",
-              validator: _validateFields,
+              validator: validateFields,
               onValidationFailed: () {
                 setState(() {
                   _showError = true;
@@ -78,6 +81,10 @@ class PersonalInformationScreenState extends State<PersonalInformationScreen> {
               onPressed: () {
                 setState(() {
                   _showError = false;
+                  ref.read(firstNameProvider.notifier).state =
+                      widget.controllers['firstName']!.text.trim();
+                  ref.read(lastNameProvider.notifier).state =
+                      widget.controllers['lastName']!.text.trim();
                 });
                 Navigator.push(
                     context,

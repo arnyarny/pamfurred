@@ -81,8 +81,6 @@ class NotificationsScreenState extends ConsumerState<NotificationsScreen> {
     final notificationDetailsAsync =
         ref.watch(notificationDetailsProvider(userId));
 
-    print('Notification details: $notificationDetailsAsync');
-
     final notifications = notificationDetailsAsync.when(
       data: (data) {
         final fetchednotifications =

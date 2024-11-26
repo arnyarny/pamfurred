@@ -157,7 +157,7 @@ class AppointmentSummaryScreenState
       'appointment_notif_type': 'Upcoming', // Or any type based on your logic
       'created_at':
           DateTime.now().toUtc().toIso8601String(), // Current timestamp in UTC
-    }).execute();
+    });
 
     print('Appointment items inserted successfully: $response');
 

@@ -4,7 +4,8 @@ import 'package:pamfurred/components/globals.dart';
 import 'package:pamfurred/components/header.dart';
 import 'package:pamfurred/components/pull_to_refresh.dart';
 import 'package:pamfurred/components/title_text.dart';
-import 'package:pamfurred/providers/appointments_provider.dart';
+import 'package:pamfurred/providers/notifications_provider.dart';
+import 'package:pamfurred/providers/user_id.dart';
 
 class NotificationsScreen extends ConsumerStatefulWidget {
   const NotificationsScreen({super.key});
@@ -76,27 +77,29 @@ class NotificationsScreenState extends ConsumerState<NotificationsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final appointmentAsyncValue = ref.watch(appointmentDetailsProvider);
+    final userId = ref.read(userIdProvider).toString();
+    final notificationDetailsAsync =
+        ref.watch(notificationDetailsProvider(userId));
 
-    final appointments = appointmentAsyncValue.when(
+    final notifications = notificationDetailsAsync.when(
       data: (data) {
-        final fetchedAppointments =
-            data['appointments'] as List<Map<String, dynamic>>? ?? [];
-        if (isTapped.length != fetchedAppointments.length) {
-          // Ensure `isTapped` is updated whenever appointments length changes
-          isTapped = List<bool>.filled(fetchedAppointments.length, false);
+        final fetchednotifications =
+            data['notifications'] as List<Map<String, dynamic>>? ?? [];
+        if (isTapped.length != fetchednotifications.length) {
+          // Ensure `isTapped` is updated whenever notifications length changes
+          isTapped = List<bool>.filled(fetchednotifications.length, false);
         }
-        return fetchedAppointments;
+        return fetchednotifications;
       },
       loading: () => [],
       error: (error, stackTrace) => [],
     );
 
-    // Sort the appointments by notification arrival in descending order
-    appointments.sort((a, b) => b['created_at'].compareTo(a['created_at']));
+    // Sort the notifications by notification arrival in descending order
+    notifications.sort((a, b) => b['created_at'].compareTo(a['created_at']));
 
-    // Separate appointments into "Today," "Yesterday," and "Older"
-    List todayAppointments = appointments.where((appointment) {
+    // Separate notifications into "Today," "Yesterday," and "Older"
+    List todaynotifications = notifications.where((appointment) {
       final createdAt = appointment['created_at'];
       if (createdAt != null) {
         final parsedDate = DateTime.parse(createdAt);
@@ -105,7 +108,7 @@ class NotificationsScreenState extends ConsumerState<NotificationsScreen> {
       return false; // Return false if created_at is null
     }).toList();
 
-    List yesterdayAppointments = appointments.where((appointment) {
+    List yesterdaynotifications = notifications.where((appointment) {
       final createdAt = appointment['created_at'];
       if (createdAt != null) {
         final parsedDate = DateTime.parse(createdAt);
@@ -114,7 +117,7 @@ class NotificationsScreenState extends ConsumerState<NotificationsScreen> {
       return false; // Return false if created_at is null
     }).toList();
 
-    List olderAppointments = appointments.where((appointment) {
+    List oldernotifications = notifications.where((appointment) {
       final createdAt = appointment['created_at'];
       if (createdAt != null) {
         final parsedDate = DateTime.parse(createdAt);
@@ -126,55 +129,93 @@ class NotificationsScreenState extends ConsumerState<NotificationsScreen> {
     return SafeArea(
       child: Scaffold(
         backgroundColor: Colors.white,
-        body: Center(
-          child: SizedBox(
-            width: screenPadding(context), // Responsive padding
-            child: Column(
-              children: [
-                const SizedBox(height: secondarySizedBox),
-                Expanded(
-                  child: PullToRefresh(
-                    providersToRefresh: [appointmentDetailsProvider],
-                    child: ListView(
-                      children: [
-                        // Section for "Today" appointments
-                        if (todayAppointments.isNotEmpty) ...[
-                          buildSectionHeader("Today"),
-                          ...todayAppointments.map((appointment) {
-                            int index = appointments.indexOf(appointment);
-                            return reusableNotificationCard(index, appointment);
-                          }),
-                        ],
-
-                        const SizedBox(height: primarySizedBox),
-
-                        // Section for "Yesterday" appointments
-                        if (yesterdayAppointments.isNotEmpty) ...[
-                          buildSectionHeader("Yesterday"),
-                          ...yesterdayAppointments.map((appointment) {
-                            int index = appointments.indexOf(appointment);
-                            return reusableNotificationCard(index, appointment);
-                          }),
-                        ],
-
-                        const SizedBox(height: primarySizedBox),
-
-                        // Section for "Earlier" appointments
-                        if (olderAppointments.isNotEmpty) ...[
-                          buildSectionHeader("Earlier"),
-                          ...olderAppointments.map((appointment) {
-                            int index = appointments.indexOf(appointment);
-                            return reusableNotificationCard(index, appointment);
-                          }),
-                        ],
-                      ],
-                    ),
+        body: notifications.isEmpty
+            ? PullToRefresh(
+                providersToRefresh: [notificationDetailsProvider],
+                child: const Center(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        Icons.notifications_off,
+                        size: 48.0,
+                        color: secondaryGreyColor,
+                      ),
+                      SizedBox(height: secondarySizedBox),
+                      Text(
+                        'All caught up!',
+                        style: TextStyle(
+                          fontSize: titleFont,
+                          fontWeight: FontWeight.bold,
+                          color: secondaryGreyColor,
+                        ),
+                      ),
+                      Text(
+                        'You have no new notifications.',
+                        style: TextStyle(
+                          fontSize: regularText,
+                          color: secondaryGreyColor,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
-              ],
-            ),
-          ),
-        ),
+              )
+            : Center(
+                child: SizedBox(
+                  width: screenPadding(context), // Responsive padding
+                  child: Column(
+                    children: [
+                      const SizedBox(height: secondarySizedBox),
+                      Expanded(
+                        child: PullToRefresh(
+                          providersToRefresh: [notificationDetailsProvider],
+                          child: ListView(
+                            children: [
+                              // Section for "Today" notifications
+                              if (todaynotifications.isNotEmpty) ...[
+                                buildSectionHeader("Today"),
+                                ...todaynotifications.map((appointment) {
+                                  int index =
+                                      notifications.indexOf(appointment);
+                                  return reusableNotificationCard(
+                                      index, appointment);
+                                }),
+                              ],
+
+                              const SizedBox(height: primarySizedBox),
+
+                              // Section for "Yesterday" notifications
+                              if (yesterdaynotifications.isNotEmpty) ...[
+                                buildSectionHeader("Yesterday"),
+                                ...yesterdaynotifications.map((appointment) {
+                                  int index =
+                                      notifications.indexOf(appointment);
+                                  return reusableNotificationCard(
+                                      index, appointment);
+                                }),
+                              ],
+
+                              const SizedBox(height: primarySizedBox),
+
+                              // Section for "Earlier" notifications
+                              if (oldernotifications.isNotEmpty) ...[
+                                buildSectionHeader("Earlier"),
+                                ...oldernotifications.map((appointment) {
+                                  int index =
+                                      notifications.indexOf(appointment);
+                                  return reusableNotificationCard(
+                                      index, appointment);
+                                }),
+                              ],
+                            ],
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
       ),
     );
   }
@@ -200,17 +241,18 @@ class NotificationsScreenState extends ConsumerState<NotificationsScreen> {
             children: [
               Row(
                 children: [
-                  if (appointment['appointment_status'] == 'Upcoming') ...[
+                  if (appointment['appointment_notif_type'] == 'Upcoming') ...[
                     customTitleText(context, 'Upcoming '),
                     customTitleText(context, "appointment"),
                   ],
-                  if (appointment['appointment_status'] != 'Upcoming') ...[
+                  if (appointment['appointment_notif_type'] != 'Upcoming') ...[
                     customTitleText(context, "Appointment"),
                     customTitleText(
                         context,
-                        toLowercase(appointment['appointment_status'] == "Done"
-                            ? " completed"
-                            : " ${appointment['appointment_status']}")),
+                        toLowercase(
+                            appointment['appointment_notif_type'] == "Done"
+                                ? " completed"
+                                : " ${appointment['appointment_notif_type']}")),
                   ]
                 ],
               ),
@@ -221,7 +263,8 @@ class NotificationsScreenState extends ConsumerState<NotificationsScreen> {
                     // Determine the initial message based on appointment status
                     TextSpan(
                       text: (() {
-                        if (appointment['appointment_status'] == 'Upcoming') {
+                        if (appointment['appointment_notif_type'] ==
+                            'Upcoming') {
                           return 'You have an';
                         } else {
                           return 'Your appointment with';
@@ -230,7 +273,8 @@ class NotificationsScreenState extends ConsumerState<NotificationsScreen> {
                       style: const TextStyle(
                           fontSize: regularText, color: Colors.black),
                     ),
-                    if (appointment['appointment_status'] == 'Upcoming') ...[
+                    if (appointment['appointment_notif_type'] ==
+                        'Upcoming') ...[
                       const TextSpan(
                         text:
                             ' upcoming ', // Null check for 'establishment_name'
@@ -250,7 +294,8 @@ class NotificationsScreenState extends ConsumerState<NotificationsScreen> {
                             fontSize: regularText, color: primaryColor),
                       ),
                     ],
-                    if (appointment['appointment_status'] != 'Upcoming') ...[
+                    if (appointment['appointment_notif_type'] !=
+                        'Upcoming') ...[
                       TextSpan(
                         text:
                             ' ${appointment['establishment_name']}', // Null check for 'establishment_name'
@@ -264,10 +309,10 @@ class NotificationsScreenState extends ConsumerState<NotificationsScreen> {
                             fontSize: regularText, color: Colors.black),
                       ),
                       TextSpan(
-                        text: appointment['appointment_status'] == 'Done'
+                        text: appointment['appointment_notif_type'] == 'Done'
                             ? 'completed'
                             : toLowercase(appointment[
-                                'appointment_status']), // Null check for 'establishment_name'
+                                'appointment_notif_type']), // Null check for 'establishment_name'
                         style: const TextStyle(
                             fontSize: regularText, color: primaryColor),
                       ),

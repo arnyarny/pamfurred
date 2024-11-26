@@ -205,17 +205,17 @@ class HomeScreenState extends ConsumerState<HomeScreen> {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       SizedBox(height: secondarySizedBox),
-                      Icon(Icons.event_busy, size: 40, color: primaryColor),
+                      Icon(Icons.event_busy, size: 40, color: secondaryGreyColor),
                       SizedBox(height: secondarySizedBox),
                       Text(
                         "No upcoming appointments yet!",
                         style: TextStyle(
-                            fontSize: regularText, color: darkGreyColor),
+                            fontSize: regularText, color: secondaryGreyColor),
                       ),
                       SizedBox(height: primarySizedBox),
                       Text(
                         "Browse service providers to book an appointment.",
-                        style: TextStyle(fontSize: smallText, color: greyColor),
+                        style: TextStyle(fontSize: smallText, color: secondaryGreyColor),
                       ),
                       SizedBox(height: primarySizedBox),
                     ],

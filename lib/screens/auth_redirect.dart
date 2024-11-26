@@ -21,6 +21,8 @@ class AuthRedirectState extends ConsumerState<AuthRedirect> {
     _checkSession();
     _listenToAppointments(); // Listen to appointment changes after initState
     _listenToSpAvailability(); // Listen to service provider availability changes after initState
+    _listenToPetProfiles();
+    _listenToNotifications();
   }
 
   // Listen for changes in the `appointments` table
@@ -28,18 +30,46 @@ class AuthRedirectState extends ConsumerState<AuthRedirect> {
     final supabase = Supabase.instance.client;
 
     // Stream listens for changes in the appointments table
-    supabase.from('appointment').stream(primaryKey: ['appointment_id']).listen((event) {
+    supabase
+        .from('appointment')
+        .stream(primaryKey: ['appointment_id']).listen((event) {
       // Invalidate the provider when the data changes
       ref.invalidate(appointmentDetailsProvider);
     });
   }
 
-    // Listen for changes in the `service_provider_availability` table
+  // Listen for changes in the `service_provider_availability` table
   void _listenToSpAvailability() {
     final supabase = Supabase.instance.client;
 
     // Stream listens for changes in the service_provider_availability table
-    supabase.from('service_provider_availability').stream(primaryKey: ['availability_id']).listen((event) {
+    supabase
+        .from('service_provider_availability')
+        .stream(primaryKey: ['availability_id']).listen((event) {
+      // Invalidate the provider when the data changes
+      ref.invalidate(availableTimeslotsProvider);
+    });
+  }
+
+  void _listenToPetProfiles() {
+    final supabase = Supabase.instance.client;
+
+    // Stream listens for changes in the service_provider_availability table
+    supabase
+        .from('pet_profile')
+        .stream(primaryKey: ['pet_profile_id']).listen((event) {
+      // Invalidate the provider when the data changes
+      ref.invalidate(availableTimeslotsProvider);
+    });
+  }
+
+  void _listenToNotifications() {
+    final supabase = Supabase.instance.client;
+
+    // Stream listens for changes in the service_provider_availability table
+    supabase
+        .from('notification')
+        .stream(primaryKey: ['notification_id']).listen((event) {
       // Invalidate the provider when the data changes
       ref.invalidate(availableTimeslotsProvider);
     });
@@ -65,7 +95,8 @@ class AuthRedirectState extends ConsumerState<AuthRedirect> {
   @override
   Widget build(BuildContext context) {
     return const Scaffold(
-      body: Center(child: CircularProgressIndicator()), // While checking session
+      body:
+          Center(child: CircularProgressIndicator()), // While checking session
     );
   }
 }

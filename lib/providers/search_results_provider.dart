@@ -77,8 +77,8 @@ final sortSearchResultsByPrice =
       await ref.watch(combinedSearchResultsProvider(category).future);
 
   // Retrieve the min and max price from the respective providers
-  final minPrice = ref.read(minPriceProvider);
-  final maxPrice = ref.read(maxPriceProvider);
+  final minPrice = ref.watch(minPriceProvider);
+  final maxPrice = ref.watch(maxPriceProvider);
 
   // Filter results by price range and sort by price (ascending)
   final filteredAndSortedResults = combinedResults

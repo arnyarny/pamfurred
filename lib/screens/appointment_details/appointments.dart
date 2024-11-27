@@ -5,7 +5,7 @@ import 'package:pamfurred/components/time_and_date_formatter.dart';
 import 'package:pamfurred/components/title_text.dart';
 import 'package:pamfurred/providers/appointments_provider.dart';
 import 'package:pamfurred/screens/give_feedback.dart';
-import '../components/globals.dart';
+import '../../components/globals.dart';
 
 class AppointmentsScreen extends ConsumerStatefulWidget {
   const AppointmentsScreen({super.key});

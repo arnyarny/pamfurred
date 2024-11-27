@@ -78,7 +78,8 @@ class AppointmentSummaryScreenState
     return appointmentId;
   }
 
-  Future<void> showAppointmentNotification(String serviceProviderName) async {
+  Future<void> showAppointmentNotification(
+      String serviceProviderName, String appointmentId) async {
     const AndroidNotificationDetails androidDetails =
         AndroidNotificationDetails(
       'pamfurred_appointment_channel', // Channel ID
@@ -99,7 +100,7 @@ class AppointmentSummaryScreenState
       'Appointment Confirmed!', // Notification Title
       'You have an appointment with $serviceProviderName.', // Notification Body
       notificationDetails,
-      payload: 'appointment_with_$serviceProviderName', // Optional payload
+      payload: appointmentId, //Include appointment_id to handle the notification click
     );
   }
 
@@ -275,10 +276,13 @@ class AppointmentSummaryScreenState
                                 final serviceProviderName =
                                     await fetchServiceProviderName(ref);
 
+                                final appointmentId =
+                                    ref.read(appointmentIdProvider);
+
                                 if (serviceProviderName != null) {
                                   // Show the notification with the service provider name
                                   await showAppointmentNotification(
-                                      serviceProviderName);
+                                      serviceProviderName, appointmentId);
                                 }
 
                                 // Insert appointment items into the table

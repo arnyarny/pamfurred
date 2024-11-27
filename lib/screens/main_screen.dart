@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pamfurred/providers/global_providers.dart';
 import 'package:pamfurred/screens/home_screen.dart';
-import 'package:pamfurred/screens/appointments.dart';
+import 'package:pamfurred/screens/appointment_details/appointments.dart';
 import 'package:pamfurred/screens/notifications.dart';
 import 'package:pamfurred/screens/profile.dart';
 import '../components/bottom_navbar.dart';

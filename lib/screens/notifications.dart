@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:pamfurred/components/empty_list_widget.dart';
 import 'package:pamfurred/components/globals.dart';
 import 'package:pamfurred/components/header.dart';
 import 'package:pamfurred/components/pull_to_refresh.dart';
@@ -130,34 +131,9 @@ class NotificationsScreenState extends ConsumerState<NotificationsScreen> {
       child: Scaffold(
         backgroundColor: Colors.white,
         body: notifications.isEmpty
-            ? const Center(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(
-                      Icons.notifications_off,
-                      size: 48.0,
-                      color: secondaryGreyColor,
-                    ),
-                    SizedBox(height: secondarySizedBox),
-                    Text(
-                      'All caught up!',
-                      style: TextStyle(
-                        fontSize: titleFont,
-                        fontWeight: FontWeight.bold,
-                        color: secondaryGreyColor,
-                      ),
-                    ),
-                    Text(
-                      'You have no new notifications.',
-                      style: TextStyle(
-                        fontSize: regularText,
-                        color: secondaryGreyColor,
-                      ),
-                    ),
-                  ],
-                ),
-              )
+            ? Center(
+                child: emptyListWidget(Icons.notifications_off,
+                    'All caught up!', 'You have no new notifications.'))
             : Center(
                 child: Padding(
                   padding:

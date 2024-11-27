@@ -20,7 +20,7 @@ final longProvider = StateProvider<double?>((ref) => null);
 
 // Price providers
 final minPriceProvider = StateProvider<double>((ref) => 0);
-final maxPriceProvider = StateProvider<double>((ref) => 1000);
+final maxPriceProvider = StateProvider<double>((ref) => 5000);
 
 // For services
 final searchResultsServiceProviderServices =

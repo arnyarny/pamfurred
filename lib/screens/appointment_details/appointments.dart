@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
+import 'package:pamfurred/components/screen_transitions.dart';
 import 'package:pamfurred/components/time_and_date_formatter.dart';
 import 'package:pamfurred/components/title_text.dart';
 import 'package:pamfurred/providers/appointments_provider.dart';
+import 'package:pamfurred/screens/appointment_details/appointment_details.dart';
 import 'package:pamfurred/screens/give_feedback.dart';
 import '../../components/globals.dart';
 
@@ -134,19 +136,10 @@ class AppointmentsScreenState extends ConsumerState<AppointmentsScreen>
           elevation: 1.5,
           child: Column(mainAxisSize: MainAxisSize.min, children: <Widget>[
             GestureDetector(
-              onTap: appointment['appointment_status'] == 'Done'
-                  ? () {
-                      ref.read(tappedSpAppointmentIdProvider.notifier).state =
-                          appointment['sp_id'];
-                      showModalBottomSheet(
-                        context: context,
-                        isScrollControlled: true,
-                        builder: (BuildContext context) {
-                          return const GiveFeedbackBottomSheet();
-                        },
-                      );
-                    }
-                  : null,
+              onTap: () {
+                Navigator.push(
+                    context, slideUpRoute(const AppointmentDetailsScreen()));
+              },
               child: ListTile(
                 title: customBoldWeightRegularText(
                     context, '${appointment['establishment_name'] ?? 'N/A'}'),
@@ -157,7 +150,8 @@ class AppointmentsScreenState extends ConsumerState<AppointmentsScreen>
                     Text(
                       appointment['appointment_date'] == null
                           ? 'N/A'
-                          : secondaryFormatDate(appointment['appointment_date']),
+                          : secondaryFormatDate(
+                              appointment['appointment_date']),
                       style: const TextStyle(color: darkGreyColor),
                     ),
                     const SizedBox(height: primarySizedBox),
@@ -176,6 +170,39 @@ class AppointmentsScreenState extends ConsumerState<AppointmentsScreen>
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: <Widget>[
+                  GestureDetector(
+                    onTap: () {
+                      ref.read(tappedSpAppointmentIdProvider.notifier).state =
+                          appointment['sp_id'];
+                      ref.read(selectedAppointmentIdProvider.notifier).state =
+                          appointment['appointment_id'];
+                      showModalBottomSheet(
+                        context: context,
+                        isScrollControlled: true,
+                        builder: (BuildContext context) {
+                          return const GiveFeedbackBottomSheet();
+                        },
+                      );
+                    },
+                    child: appointment['appointment_status'] == 'Done' &&
+                            appointment['is_reviewed'] == false
+                        ? const Text(
+                            'Give feedback',
+                            style: TextStyle(
+                              color: secondaryColor,
+                              shadows: <Shadow>[
+                                Shadow(
+                                  offset: Offset(1.0, 1.0), // Smaller offset
+                                  blurRadius: 2.0, // Reduced blur
+                                  color: lightGreyColor, // Softer color
+                                ),
+                              ],
+                            ),
+                          )
+                        : const SizedBox
+                            .shrink(), // Show nothing if conditions are not met
+                  ),
+                  const SizedBox(width: quaternarySizedBox),
                   Text(
                     appointment['appointment_status'] ?? 'Unknown',
                     style: TextStyle(

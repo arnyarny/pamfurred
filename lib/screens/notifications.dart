@@ -4,9 +4,11 @@ import 'package:pamfurred/components/empty_list_widget.dart';
 import 'package:pamfurred/components/globals.dart';
 import 'package:pamfurred/components/header.dart';
 import 'package:pamfurred/components/pull_to_refresh.dart';
+import 'package:pamfurred/components/screen_transitions.dart';
 import 'package:pamfurred/components/title_text.dart';
 import 'package:pamfurred/providers/notifications_provider.dart';
 import 'package:pamfurred/providers/user_id.dart';
+import 'package:pamfurred/screens/appointment_details/appointment_details.dart';
 
 class NotificationsScreen extends ConsumerStatefulWidget {
   const NotificationsScreen({super.key});
@@ -205,6 +207,10 @@ class NotificationsScreenState extends ConsumerState<NotificationsScreen> {
     return GestureDetector(
       onTap: () {
         setState(() {
+          ref.read(selectedNotificationIdProvider.notifier).state =
+              notification['notification_id'];
+          Navigator.push(
+              context, slideUpRoute(const AppointmentDetailsScreen()));
           // Toggle the tapped state for the specific card
           isTapped[index] = !isTapped[index];
         });

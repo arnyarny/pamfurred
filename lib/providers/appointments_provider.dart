@@ -40,3 +40,5 @@ final appointmentSpIndexProvider = Provider<Map<String, dynamic>?>((ref) {
 });
 
 final tappedSpAppointmentIdProvider = StateProvider<String>((ref) => '');
+
+final selectedAppointmentIdProvider = StateProvider<String>((ref) => '');

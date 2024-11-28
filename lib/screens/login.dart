@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:email_validator/email_validator.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pamfurred/components/screen_transitions.dart';
+import 'package:pamfurred/providers/global_providers.dart';
 import 'package:pamfurred/screens/main_screen.dart';
 import 'package:pamfurred/screens/register/intro_to_app.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -53,8 +54,18 @@ class LoginScreenState extends ConsumerState<LoginScreen> {
     final session = Supabase.instance.client.auth.currentSession;
 
     if (session != null) {
+      // Access the Riverpod provider to switch to the home screen (index 1)
+      ref.read(bottomNavBarIndexProvider.notifier).state = 0;
+
+      // Animate to the home screen (index 0) using the PageController
+      final pageController = ref.read(pageControllerProvider);
+      pageController.animateToPage(
+        0,
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeInOut,
+      );
       // User is already logged in
-      Navigator.push(context, slideUpRoute(MainScreen()));
+      Navigator.push(context, slideUpRoute(const MainScreen()));
     } else {
       // If there's no session, stay on the login screen and display a message or widget
       setState(() {
@@ -82,13 +93,20 @@ class LoginScreenState extends ConsumerState<LoginScreen> {
         final isEmailVerified = response.user!.emailConfirmedAt != null;
 
         if (isEmailVerified) {
-          // Navigate to MainScreen if authentication is successful
-          mainScreenKey.currentState
-              ?.switchToPage(0); // Make sure the user goes to the home screen
+          // Access the Riverpod provider to switch to the home screen (index 1)
+          ref.read(bottomNavBarIndexProvider.notifier).state = 0;
+
+          // Animate to the home screen (index 0) using the PageController
+          final pageController = ref.read(pageControllerProvider);
+          pageController.animateToPage(
+            0,
+            duration: const Duration(milliseconds: 300),
+            curve: Curves.easeInOut,
+          );
           if (mounted) {
             Navigator.pushReplacement(
               context,
-              crossFadeRoute(MainScreen()),
+              crossFadeRoute(const MainScreen()),
             );
           }
         } else {

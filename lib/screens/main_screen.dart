@@ -7,28 +7,26 @@ import 'package:pamfurred/screens/notifications.dart';
 import 'package:pamfurred/screens/profile.dart';
 import '../components/bottom_navbar.dart';
 
-// Declare the GlobalKey once, outside of any widget tree
-final GlobalKey<MainScreenState> mainScreenKey = GlobalKey<MainScreenState>();
+// Define a provider for managing the PageController
+final pageControllerProvider = Provider<PageController>((ref) {
+  return PageController();
+});
 
 class MainScreen extends ConsumerStatefulWidget {
-  MainScreen({Key? key})
-      : super(key: mainScreenKey); // Use global key for MainScreen
+  const MainScreen({super.key});
 
   @override
-  MainScreenState createState() => MainScreenState();
+  ConsumerState<MainScreen> createState() => _MainScreenState();
 }
 
-class MainScreenState extends ConsumerState<MainScreen> {
-  final PageController _pageController = PageController();
+class _MainScreenState extends ConsumerState<MainScreen> {
   final double bottomNavHeight = 60.0;
-
-  // Current index is managed by Riverpod provider
-  int get currentIndex => ref.watch(bottomNavBarIndexProvider);
 
   // Method to switch pages
   void switchToPage(int index) {
     ref.read(bottomNavBarIndexProvider.notifier).state = index;
-    _pageController.animateToPage(
+    final pageController = ref.read(pageControllerProvider);
+    pageController.animateToPage(
       index,
       duration: const Duration(milliseconds: 300),
       curve: Curves.easeInOut,
@@ -36,14 +34,10 @@ class MainScreenState extends ConsumerState<MainScreen> {
   }
 
   @override
-  void dispose() {
-    _pageController.dispose();
-    super.dispose();
-  }
-
-  @override
   Widget build(BuildContext context) {
+    final currentIndex = ref.watch(bottomNavBarIndexProvider);
     final isVisible = ref.watch(visibilityProvider);
+    final pageController = ref.read(pageControllerProvider);
 
     final List<Widget> screens = [
       const HomeScreen(),
@@ -54,7 +48,7 @@ class MainScreenState extends ConsumerState<MainScreen> {
 
     return Scaffold(
       body: PageView(
-        controller: _pageController,
+        controller: pageController,
         physics: const NeverScrollableScrollPhysics(),
         onPageChanged: (index) {
           ref.read(bottomNavBarIndexProvider.notifier).state = index;

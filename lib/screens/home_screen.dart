@@ -205,7 +205,8 @@ class HomeScreenState extends ConsumerState<HomeScreen> {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       SizedBox(height: secondarySizedBox),
-                      Icon(Icons.event_busy, size: 40, color: secondaryGreyColor),
+                      Icon(Icons.event_busy,
+                          size: 40, color: secondaryGreyColor),
                       SizedBox(height: secondarySizedBox),
                       Text(
                         "No upcoming appointments yet!",
@@ -215,7 +216,8 @@ class HomeScreenState extends ConsumerState<HomeScreen> {
                       SizedBox(height: primarySizedBox),
                       Text(
                         "Browse service providers to book an appointment.",
-                        style: TextStyle(fontSize: smallText, color: secondaryGreyColor),
+                        style: TextStyle(
+                            fontSize: smallText, color: secondaryGreyColor),
                       ),
                       SizedBox(height: primarySizedBox),
                     ],
@@ -359,8 +361,16 @@ class HomeScreenState extends ConsumerState<HomeScreen> {
               : customPaddedTextButton(
                   text: "View appointments",
                   onPressed: () {
-                    mainScreenKey.currentState
-                        ?.switchToPage(1); // Switch to Appointments page
+                    // Access the Riverpod provider to switch to the appointments screen (index 1)
+                    ref.read(bottomNavBarIndexProvider.notifier).state = 1;
+
+                    // Animate to the appointments screen (index 1) using the PageController
+                    final pageController = ref.read(pageControllerProvider);
+                    pageController.animateToPage(
+                      1,
+                      duration: const Duration(milliseconds: 300),
+                      curve: Curves.easeInOut,
+                    );
                   },
                 );
         },

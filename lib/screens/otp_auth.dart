@@ -172,7 +172,6 @@ class _OTPAuthState extends State<OTPAuth> {
                     height: primaryTextFieldHeight,
                     child: TextButton(
                       onPressed: () {
-                        // This is temporary; My emulator does not work well
                         Navigator.push(context,
                             rightToLeftRoute(const SuccessfulRegistration()));
                         // _getLocationPermission(context);

@@ -54,16 +54,8 @@ class LoginScreenState extends ConsumerState<LoginScreen> {
     final session = Supabase.instance.client.auth.currentSession;
 
     if (session != null) {
-      // Access the Riverpod provider to switch to the home screen (index 1)
-      ref.read(bottomNavBarIndexProvider.notifier).state = 0;
-
-      // Animate to the home screen (index 0) using the PageController
-      final pageController = ref.read(pageControllerProvider);
-      pageController.animateToPage(
-        0,
-        duration: const Duration(milliseconds: 300),
-        curve: Curves.easeInOut,
-      );
+      ref.read(bottomNavBarIndexProvider.notifier).state =
+          0; // Switch to Home page
       // User is already logged in
       Navigator.push(context, slideUpRoute(const MainScreen()));
     } else {
@@ -93,20 +85,14 @@ class LoginScreenState extends ConsumerState<LoginScreen> {
         final isEmailVerified = response.user!.emailConfirmedAt != null;
 
         if (isEmailVerified) {
-          // Access the Riverpod provider to switch to the home screen (index 1)
-          ref.read(bottomNavBarIndexProvider.notifier).state = 0;
+          // Navigate to MainScreen if authentication is successful
+          ref.read(bottomNavBarIndexProvider.notifier).state =
+              0; // Switch to the Home screen (index 0)
 
-          // Animate to the home screen (index 0) using the PageController
-          final pageController = ref.read(pageControllerProvider);
-          pageController.animateToPage(
-            0,
-            duration: const Duration(milliseconds: 300),
-            curve: Curves.easeInOut,
-          );
           if (mounted) {
             Navigator.pushReplacement(
               context,
-              crossFadeRoute(const MainScreen()),
+              crossFadeRoute(const MainScreen()), // Navigate to MainScreen
             );
           }
         } else {

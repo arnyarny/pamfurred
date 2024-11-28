@@ -6,7 +6,7 @@ class ServiceProviderItem {
   final String type;
   final String imageUrl;
   final int price;
-  final double averageRating;
+  final num averageRating;
   final double latitude;
   final double longitude;
   final String sentimentLabel;

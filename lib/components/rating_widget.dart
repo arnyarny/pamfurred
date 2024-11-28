@@ -2,12 +2,17 @@ import 'package:flutter/material.dart';
 import 'package:pamfurred/components/globals.dart';
 
 Widget ratingWidget(String? rating) {
-  // Check for invalid rating values and handle them
-  if (rating == null || rating.isEmpty || rating == "N/A") {
+  // Handle invalid or zero ratings
+  if (rating == null ||
+      rating.isEmpty ||
+      rating == "N/A" ||
+      rating == "0" ||
+      rating == "0.0") {
     return const Row(
       children: [
         Icon(Icons.star_border, size: 19, color: secondaryColor),
-        Text('N/A')
+        SizedBox(width: 4),
+        Text('N/A'),
       ],
     );
   }

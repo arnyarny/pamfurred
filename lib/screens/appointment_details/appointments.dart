@@ -178,7 +178,6 @@ class AppointmentsScreenState extends ConsumerState<AppointmentsScreen>
                           appointment['appointment_id'];
                       showModalBottomSheet(
                         context: context,
-                        isScrollControlled: true,
                         builder: (BuildContext context) {
                           return const GiveFeedbackBottomSheet();
                         },

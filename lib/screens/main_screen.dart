@@ -7,37 +7,43 @@ import 'package:pamfurred/screens/notifications.dart';
 import 'package:pamfurred/screens/profile.dart';
 import '../components/bottom_navbar.dart';
 
-// Define a provider for managing the PageController
-final pageControllerProvider = Provider<PageController>((ref) {
-  return PageController();
-});
-
 class MainScreen extends ConsumerStatefulWidget {
   const MainScreen({super.key});
 
   @override
-  ConsumerState<MainScreen> createState() => _MainScreenState();
+  MainScreenState createState() => MainScreenState();
 }
 
-class _MainScreenState extends ConsumerState<MainScreen> {
-  final double bottomNavHeight = 60.0;
+class MainScreenState extends ConsumerState<MainScreen> {
+  late PageController _pageController;
 
-  // Method to switch pages
-  void switchToPage(int index) {
-    ref.read(bottomNavBarIndexProvider.notifier).state = index;
-    final pageController = ref.read(pageControllerProvider);
-    pageController.animateToPage(
-      index,
-      duration: const Duration(milliseconds: 300),
-      curve: Curves.easeInOut,
-    );
+  @override
+  void initState() {
+    super.initState();
+    _pageController = PageController();
+  }
+
+  @override
+  void dispose() {
+    _pageController.dispose();
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    final currentIndex = ref.watch(bottomNavBarIndexProvider);
     final isVisible = ref.watch(visibilityProvider);
-    final pageController = ref.read(pageControllerProvider);
+    final currentIndex = ref.watch(bottomNavBarIndexProvider);
+
+    // Sync the PageController with the current index whenever it changes
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (_pageController.hasClients) {
+        _pageController.animateToPage(
+          currentIndex, // Animate to the correct page
+          duration: const Duration(milliseconds: 300),
+          curve: Curves.easeInOut, // Add a smooth animation curve
+        );
+      }
+    });
 
     final List<Widget> screens = [
       const HomeScreen(),
@@ -48,8 +54,7 @@ class _MainScreenState extends ConsumerState<MainScreen> {
 
     return Scaffold(
       body: PageView(
-        controller: pageController,
-        physics: const NeverScrollableScrollPhysics(),
+        controller: _pageController,
         onPageChanged: (index) {
           ref.read(bottomNavBarIndexProvider.notifier).state = index;
         },
@@ -57,12 +62,14 @@ class _MainScreenState extends ConsumerState<MainScreen> {
       ),
       bottomNavigationBar: AnimatedContainer(
         duration: const Duration(milliseconds: 300),
-        height: isVisible ? bottomNavHeight : 0,
+        height: isVisible ? 60.0 : 0,
         curve: Curves.easeInOut,
         child: isVisible
             ? CustomBottomNavBar(
                 currentIndex: currentIndex,
-                onTap: (index) => switchToPage(index),
+                onTap: (index) {
+                  ref.read(bottomNavBarIndexProvider.notifier).state = index;
+                },
               )
             : null,
       ),

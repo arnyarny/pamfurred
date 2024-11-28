@@ -25,14 +25,18 @@ Route crossFadeRoute(Widget page) {
   return PageRouteBuilder(
     pageBuilder: (context, animation, secondaryAnimation) => page,
     transitionsBuilder: (context, animation, secondaryAnimation, child) {
+      // Fade transition setup
       var begin = 0.0;
       var end = 1.0;
-      var curve = Curves.ease;
+      var curve = Curves.easeInOut;
 
+      // Create a tween animation for fade effect
       var tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+      var opacityAnimation = animation.drive(tween);
 
+      // Return the FadeTransition with opacity animation
       return FadeTransition(
-        opacity: animation.drive(tween),
+        opacity: opacityAnimation,
         child: child,
       );
     },

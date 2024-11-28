@@ -86,13 +86,13 @@ class NotificationsScreenState extends ConsumerState<NotificationsScreen> {
 
     final notifications = notificationDetailsAsync.when(
       data: (data) {
-        final fetchednotifications =
+        final fetchedNotifications =
             data['notifications'] as List<Map<String, dynamic>>? ?? [];
-        if (isTapped.length != fetchednotifications.length) {
+        if (isTapped.length != fetchedNotifications.length) {
           // Ensure `isTapped` is updated whenever notifications length changes
-          isTapped = List<bool>.filled(fetchednotifications.length, false);
+          isTapped = List<bool>.filled(fetchedNotifications.length, false);
         }
-        return fetchednotifications;
+        return fetchedNotifications;
       },
       loading: () => [],
       error: (error, stackTrace) => [],
@@ -102,7 +102,7 @@ class NotificationsScreenState extends ConsumerState<NotificationsScreen> {
     notifications.sort((a, b) => b['created_at'].compareTo(a['created_at']));
 
     // Separate notifications into "Today," "Yesterday," and "Older"
-    List todaynotifications = notifications.where((notification) {
+    List todayNotifications = notifications.where((notification) {
       final createdAt = notification['created_at'];
       if (createdAt != null) {
         final parsedDate = DateTime.parse(createdAt);
@@ -111,7 +111,7 @@ class NotificationsScreenState extends ConsumerState<NotificationsScreen> {
       return false; // Return false if created_at is null
     }).toList();
 
-    List yesterdaynotifications = notifications.where((notification) {
+    List yesterdayNotifications = notifications.where((notification) {
       final createdAt = notification['created_at'];
       if (createdAt != null) {
         final parsedDate = DateTime.parse(createdAt);
@@ -120,7 +120,7 @@ class NotificationsScreenState extends ConsumerState<NotificationsScreen> {
       return false; // Return false if created_at is null
     }).toList();
 
-    List oldernotifications = notifications.where((notification) {
+    List olderNotifications = notifications.where((notification) {
       final createdAt = notification['created_at'];
       if (createdAt != null) {
         final parsedDate = DateTime.parse(createdAt);
@@ -153,9 +153,9 @@ class NotificationsScreenState extends ConsumerState<NotificationsScreen> {
                             child: ListView(
                               children: [
                                 // Section for "Today" notifications
-                                if (todaynotifications.isNotEmpty) ...[
+                                if (todayNotifications.isNotEmpty) ...[
                                   buildSectionHeader("Today"),
-                                  ...todaynotifications.map((notification) {
+                                  ...todayNotifications.map((notification) {
                                     int index =
                                         notifications.indexOf(notification);
                                     return reusableNotificationCard(
@@ -166,9 +166,9 @@ class NotificationsScreenState extends ConsumerState<NotificationsScreen> {
                                 const SizedBox(height: primarySizedBox),
 
                                 // Section for "Yesterday" notifications
-                                if (yesterdaynotifications.isNotEmpty) ...[
+                                if (yesterdayNotifications.isNotEmpty) ...[
                                   buildSectionHeader("Yesterday"),
-                                  ...yesterdaynotifications.map((notification) {
+                                  ...yesterdayNotifications.map((notification) {
                                     int index =
                                         notifications.indexOf(notification);
                                     return reusableNotificationCard(
@@ -179,9 +179,9 @@ class NotificationsScreenState extends ConsumerState<NotificationsScreen> {
                                 const SizedBox(height: primarySizedBox),
 
                                 // Section for "Earlier" notifications
-                                if (oldernotifications.isNotEmpty) ...[
+                                if (olderNotifications.isNotEmpty) ...[
                                   buildSectionHeader("Earlier"),
-                                  ...oldernotifications.map((notification) {
+                                  ...olderNotifications.map((notification) {
                                     int index =
                                         notifications.indexOf(notification);
                                     return reusableNotificationCard(

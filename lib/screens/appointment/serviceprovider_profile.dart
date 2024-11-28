@@ -403,31 +403,36 @@ final aboutTabProvider = FutureProvider<List<Widget>>((ref) async {
   print('SP ID: ${sp?['sp_id']}');
 
   // Variable for service provider rating, checking null values
-  final displayRating = (sp?['average_rating'] as double).toStringAsFixed(1);
+  final rating = (sp!['average_rating'] is int
+          ? (sp['average_rating'] as int).toDouble()
+          : sp['average_rating'] as double)
+      .toStringAsFixed(1);
+
+  final displayRating = rating == '0.0' || rating == '0' ? 'N/A' : rating;
 
   // Ensure 'service_type' is a List<String>
   List<String> serviceTypes =
-      List<String>.from(sp?['unique_package_service_types'] ?? []);
+      List<String>.from(sp['unique_package_service_types'] ?? []);
 
   // Ensure 'pets_catered' is a List<String>
-  List<String> petsCatered = List<String>.from(sp?['unique_pet_types'] ?? []);
+  List<String> petsCatered = List<String>.from(sp['unique_pet_types'] ?? []);
 
-  final timeOpen = sp?['time_open'];
-  final timeClose = sp?['time_close'];
+  final timeOpen = sp['time_open'];
+  final timeClose = sp['time_close'];
 
-  String fullAddress = sp?['full_address'];
+  String fullAddress = sp['full_address'];
 
   return [
     // About tab content
     Consumer(
       builder: (context, ref, _) {
-        double latitude = sp?['latitude'];
-        double longitude = sp?['longitude'];
+        double latitude = sp['latitude'];
+        double longitude = sp['longitude'];
 
         final distanceFromSp = getDistanceToTarget(ref, latitude, longitude);
 
         return Center(
-          child: sp!.isEmpty
+          child: sp.isEmpty
               ? const Center(
                   child: CircularProgressIndicator(),
                 )

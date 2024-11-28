@@ -5,7 +5,6 @@ import 'package:pamfurred/components/globals.dart';
 import 'package:pamfurred/components/pull_to_refresh.dart';
 import 'package:pamfurred/components/rating_widget.dart';
 import 'package:pamfurred/providers/ratings_and_reviews_provider.dart';
-import 'package:pamfurred/providers/reviews_provider.dart';
 import 'package:pamfurred/providers/serviceprovider_provider.dart';
 import 'package:rating_summary/rating_summary.dart';
 
@@ -51,7 +50,7 @@ class RatingsAndReviewsScreenState
           }).toList(); // Only keep feedbacks that have reviews
 
           return PullToRefresh(
-            providersToRefresh: [reviewsProvider],
+            providersToRefresh: [ratingsSummaryWithReviewsProvider(spId)],
             child: SingleChildScrollView(
               child: Column(
                 children: [

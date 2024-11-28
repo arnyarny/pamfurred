@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 // Handle the appbar and bottom nav bar visibility in home screen
@@ -14,6 +15,11 @@ class VisibilityState extends StateNotifier<bool> {
 
 final visibilityProvider = StateNotifierProvider<VisibilityState, bool>((ref) {
   return VisibilityState();
+});
+
+// Provider to hold the page controller
+final pageControllerProvider = Provider<PageController>((ref) {
+  return PageController();
 });
 
 // Provider to manage the selected tab index (in the ServiceProviderScreen)

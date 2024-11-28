@@ -5,7 +5,7 @@ import 'package:pamfurred/components/screen_transitions.dart';
 import 'package:pamfurred/providers/global_providers.dart';
 import 'package:pamfurred/screens/main_screen.dart';
 
-import '../components/globals.dart';
+import '../../components/globals.dart';
 
 class SuccessfulRegistration extends ConsumerStatefulWidget {
   const SuccessfulRegistration({super.key});

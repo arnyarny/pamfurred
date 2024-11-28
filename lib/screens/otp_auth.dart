@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_otp_text_field/flutter_otp_text_field.dart';
 import 'package:pamfurred/components/custom_appbar.dart';
 import 'package:pamfurred/components/screen_transitions.dart';
-import 'package:pamfurred/screens/successful_registration.dart';
+import 'package:pamfurred/screens/register/successful_registration.dart';
 import '../components/globals.dart';
 
 class OTPAuth extends StatefulWidget {

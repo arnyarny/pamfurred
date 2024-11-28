@@ -6,7 +6,7 @@ import 'package:pamfurred/components/time_and_date_formatter.dart';
 import 'package:pamfurred/components/title_text.dart';
 import 'package:pamfurred/providers/appointments_provider.dart';
 import 'package:pamfurred/screens/appointment_details/appointment_details.dart';
-import 'package:pamfurred/screens/give_feedback.dart';
+import 'package:pamfurred/screens/appointment_details/give_feedback.dart';
 import '../../components/globals.dart';
 
 class AppointmentsScreen extends ConsumerStatefulWidget {
@@ -93,11 +93,13 @@ class AppointmentsScreenState extends ConsumerState<AppointmentsScreen>
   Widget _buildAppointmentList(
       int tabIndex, List<Map<String, dynamic>> appointmentList) {
     final filteredAppointments = appointmentList.where((appointment) {
-      final dateFormat = DateFormat('MM/dd/yyyy');
+      final dateFormat =
+          DateFormat('yyyy-MM-dd HH:mm'); // Update format as needed
       DateTime appointmentDate;
 
       try {
-        appointmentDate = dateFormat.parse(appointment['appointment_date']);
+        appointmentDate = dateFormat.parse(
+            '${appointment['appointment_date']} ${appointment['appointment_time']}');
       } catch (e) {
         appointmentDate = DateTime.now();
       }
@@ -105,9 +107,10 @@ class AppointmentsScreenState extends ConsumerState<AppointmentsScreen>
       switch (tabIndex) {
         case 0: // Today
           final today = DateTime.now();
-          return appointmentDate.month == today.month &&
+          return appointmentDate.year == today.year &&
+              appointmentDate.month == today.month &&
               appointmentDate.day == today.day &&
-              appointmentDate.year == today.year;
+              appointment['appointment_status'] == 'Today';
         case 1: // Upcoming
           return appointment['appointment_status'] == 'Upcoming';
         case 2: // All
@@ -120,6 +123,15 @@ class AppointmentsScreenState extends ConsumerState<AppointmentsScreen>
           return false;
       }
     }).toList();
+
+    // Sort appointments by `appointment_date` and `appointment_time`
+    filteredAppointments.sort((a, b) {
+      final dateTimeA = DateFormat('yyyy-MM-dd HH:mm')
+          .parse('${a['appointment_date']} ${a['appointment_time']}');
+      final dateTimeB = DateFormat('yyyy-MM-dd HH:mm')
+          .parse('${b['appointment_date']} ${b['appointment_time']}');
+      return dateTimeA.compareTo(dateTimeB);
+    });
 
     if (filteredAppointments.isEmpty) {
       return const Center(child: Text('No Appointments Available'));

@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:pamfurred/components/custom_appbar.dart';
 import 'package:pamfurred/components/custom_padded_button.dart';
 import 'package:pamfurred/components/globals.dart';
-import 'package:pamfurred/screens/successful_registration.dart';
+import 'package:pamfurred/screens/register/successful_registration.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:video_player/video_player.dart';
 

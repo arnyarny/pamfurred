@@ -92,33 +92,40 @@ class RealtimeService {
         body = 'Your appointment with $serviceProviderName has been cancelled.';
       }
 
-      // Display the notification
-      const AndroidNotificationDetails androidDetails =
+// Display the notification with expanded text support
+      final AndroidNotificationDetails androidDetails =
           AndroidNotificationDetails(
-        'appointment_channel',
-        'Appointment Notifications',
-        channelDescription: 'Notifications for appointment updates',
-        importance: Importance.max,
-        priority: Priority.max,
-        icon: 'pamfurred',
+        'appointment_channel', // Channel ID
+        'Appointment Notifications', // Channel Name
+        channelDescription:
+            'Notifications for appointment updates', // Channel Description
+        importance: Importance.max, // Max importance for prominent display
+        priority: Priority.max, // Max priority
+        styleInformation: BigTextStyleInformation(
+          body, // Full text for expanded view
+          contentTitle: title, // Title in expanded view
+        ),
+        icon: 'pamfurred', // Notification icon
       );
 
-      const NotificationDetails details =
+      final NotificationDetails details =
           NotificationDetails(android: androidDetails);
 
+// Generate a unique notification ID
       final uniqueNotificationId =
           (DateTime.now().millisecondsSinceEpoch % 2147483647).abs();
 
+// Show the notification
       await flutterLocalNotificationsPlugin.show(
-        uniqueNotificationId,
-        title,
-        body,
-        details,
+        uniqueNotificationId, // Unique notification ID
+        title, // Title for collapsed view
+        body, // Body for collapsed view
+        details, // Notification details
       );
 
       print('Notification sent for appointment ID $appointmentId');
     } catch (e) {
-      print('Error creating notification: $e');
+      print('Skipping notifications, already sent');
     }
   }
 }

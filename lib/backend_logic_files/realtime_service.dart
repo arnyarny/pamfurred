@@ -50,18 +50,13 @@ class RealtimeService {
       String appointmentId, String notificationType) async {
     try {
       // Check if a notification already exists for this appointment and type
-      final existingNotification = await _client
+      await _client
           .from('notification')
           .select('notification_id')
           .eq('appointment_id', appointmentId)
           .eq('appointment_notif_type',
               notificationType) // Corrected column name
           .maybeSingle();
-
-      if (existingNotification != null) {
-        print('Notification already exists for appointment ID $appointmentId');
-        return;
-      }
 
       // Create a new notification in the 'notification' table
       await _client.from('notification').insert({
@@ -103,8 +98,8 @@ class RealtimeService {
         'appointment_channel',
         'Appointment Notifications',
         channelDescription: 'Notifications for appointment updates',
-        importance: Importance.high,
-        priority: Priority.high,
+        importance: Importance.max,
+        priority: Priority.max,
         icon: 'pamfurred',
       );
 

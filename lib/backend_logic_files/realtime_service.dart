@@ -16,7 +16,25 @@ class RealtimeService {
 
     final loggedInPetOwnerId = currentUser.id;
 
-    // Listen to real-time updates in the 'appointment' table
+    // Function to check if an appointment exists in the database
+    Future<bool> doesAppointmentExist(String appointmentId) async {
+      final response = await _client
+          .from('appointment')
+          .select()
+          .eq('appointment_id', appointmentId)
+          .single();
+      print("what's inside: $response");
+
+      if (response != null) {
+        // kung naa sa table
+        print("worked");
+        return true;
+      }
+      print("didn't work");
+      return response != null;
+    }
+
+// Listen to real-time updates in the 'appointment' table
     _client
         .from('appointment')
         .stream(primaryKey: ['appointment_id'])
@@ -29,14 +47,17 @@ class RealtimeService {
 
               if (appointmentId == null) continue;
 
-              // Process 'Done' status
-              if (appointmentStatus == 'Done') {
-                await _createNotification(appointmentId, 'Done');
-              }
+              // Check if the appointment ID exists in the database
+              bool exists = await doesAppointmentExist(appointmentId);
 
-              // Process 'Cancelled' status
-              if (appointmentStatus == 'Cancelled') {
-                await _createNotification(appointmentId, 'Cancelled');
+              if (exists) {
+                // This is an update
+                if (appointmentStatus == 'Done' ||
+                    appointmentStatus == 'Cancelled') {
+                  print(appointmentId);
+                  print(appointmentStatus);
+                  await _createNotification(appointmentId, appointmentStatus);
+                }
               }
             }
           },
@@ -50,19 +71,28 @@ class RealtimeService {
       String appointmentId, String notificationType) async {
     try {
       // Check if a notification already exists for this appointment and type
-      await _client
+      final existingNotification = await _client
           .from('notification')
           .select('notification_id')
           .eq('appointment_id', appointmentId)
-          .eq('appointment_notif_type',
-              notificationType) // Corrected column name
-          .maybeSingle();
+          .eq('appointment_notif_type', notificationType);
 
-      // Create a new notification in the 'notification' table
-      await _client.from('notification').insert({
+// Print the result for debugging
+      print("unsay naa ani: $existingNotification");
+
+// If a notification already exists, skip sending it
+      if (existingNotification.isNotEmpty) {
+        print(
+            'Notification already exists for appointment ID $appointmentId and type $notificationType');
+        return;
+      }
+
+      final supabase = Supabase.instance.client;
+
+      await supabase.from('notification').insert({
         'appointment_id': appointmentId,
-        'appointment_notif_type': notificationType, // Corrected column name
-        'created_at': DateTime.now().toIso8601String(),
+        'appointment_notif_type':
+            notificationType, // Or any type based on your logic
       });
 
       // Fetch related service provider details for notification content
@@ -92,33 +122,40 @@ class RealtimeService {
         body = 'Your appointment with $serviceProviderName has been cancelled.';
       }
 
-      // Display the notification
-      const AndroidNotificationDetails androidDetails =
+// Display the notification with expanded text support
+      final AndroidNotificationDetails androidDetails =
           AndroidNotificationDetails(
-        'appointment_channel',
-        'Appointment Notifications',
-        channelDescription: 'Notifications for appointment updates',
-        importance: Importance.max,
-        priority: Priority.max,
-        icon: 'pamfurred',
+        'appointment_channel', // Channel ID
+        'Appointment Notifications', // Channel Name
+        channelDescription:
+            'Notifications for appointment updates', // Channel Description
+        importance: Importance.max, // Max importance for prominent display
+        priority: Priority.max, // Max priority
+        styleInformation: BigTextStyleInformation(
+          body, // Full text for expanded view
+          contentTitle: title, // Title in expanded view
+        ),
+        icon: 'pamfurred', // Notification icon
       );
 
-      const NotificationDetails details =
+      final NotificationDetails details =
           NotificationDetails(android: androidDetails);
 
+// Generate a unique notification ID
       final uniqueNotificationId =
           (DateTime.now().millisecondsSinceEpoch % 2147483647).abs();
 
+// Show the notification
       await flutterLocalNotificationsPlugin.show(
-        uniqueNotificationId,
-        title,
-        body,
-        details,
+        uniqueNotificationId, // Unique notification ID
+        title, // Title for collapsed view
+        body, // Body for collapsed view
+        details, // Notification details
       );
 
       print('Notification sent for appointment ID $appointmentId');
     } catch (e) {
-      print('Error creating notification: $e');
+      print('Error sending notification: $e');
     }
   }
 }

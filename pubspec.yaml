@@ -62,8 +62,8 @@ dependencies:
   permission_handler: ^11.3.1
 
   # User geolocation
-  geolocator: ^12.0.0
-  flutter_map: ^7.0.2
+  geolocator: ^10.1.0
+  flutter_map: ^6.1.0
   latlong2: ^0.9.1
   url_launcher: ^6.3.0
 
@@ -75,7 +75,7 @@ dependencies:
   otp_text_field: ^1.1.3
   path_provider: ^2.1.3
 
-  flutter_map_cancellable_tile_provider: ^3.0.2
+  flutter_map_cancellable_tile_provider: 2.0.0
 
   intl: ^0.19.0
 
@@ -142,6 +142,8 @@ dependencies:
   philippines_rpcmb: ^0.0.3
 
   table_calendar: ^3.1.2
+
+  open_street_map_search_and_pick: ^0.1.1
 
 dev_dependencies:
   flutter_test:

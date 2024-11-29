@@ -77,12 +77,12 @@ class _AddNewAddressScreenState extends ConsumerState<AddNewAddressScreen> {
                 const SizedBox(height: tertiarySizedBox),
                 CustomDropdown<String>.search(
                   decoration: getDropdownDecoration(),
-                  hintText: 'Select Municipality', // Label as a hint
+                  hintText: 'Select Municipality',
                   initialItem: predefinedProvince.municipalities
                           .map((m) => m.name)
                           .contains(ref.watch(addedCityProvider))
                       ? ref.watch(addedCityProvider)
-                      : null, // Only set initialItem if it's in the list
+                      : null,
                   items: predefinedProvince.municipalities
                       .map((m) => m.name)
                       .toList(),
@@ -92,10 +92,8 @@ class _AddNewAddressScreenState extends ConsumerState<AddNewAddressScreen> {
                           predefinedProvince.municipalities.firstWhere(
                         (m) => m.name == name,
                       );
-                      barangay =
-                          null; // Reset barangay when municipality changes
-                      controllers['city']?.text =
-                          name ?? ''; // Update controller for city
+                      barangay = null;
+                      controllers['city']?.text = name ?? '';
                     });
                   },
                 ),
@@ -119,19 +117,17 @@ class _AddNewAddressScreenState extends ConsumerState<AddNewAddressScreen> {
                 const SizedBox(height: tertiarySizedBox),
                 CustomDropdown<String>.search(
                   decoration: getDropdownDecoration(),
-                  hintText: 'Select Barangay', // Label as a hint
+                  hintText: 'Select Barangay',
                   items: municipality?.barangays ?? [],
                   initialItem: municipality?.barangays
                               .contains(ref.watch(addedBarangayProvider)) ==
                           true
-                      ? ref.watch(
-                          addedBarangayProvider) // Set the initial item if it exists in the list
-                      : null, // Otherwise, leave it as null
+                      ? ref.watch(addedBarangayProvider)
+                      : null,
                   onChanged: (String? value) {
                     setState(() {
                       barangay = value;
-                      controllers['barangay']?.text =
-                          value ?? ''; // Update controller for barangay
+                      controllers['barangay']?.text = value ?? '';
                     });
                   },
                 ),
@@ -161,43 +157,39 @@ class _AddNewAddressScreenState extends ConsumerState<AddNewAddressScreen> {
                 ),
                 const SizedBox(height: quaternarySizedBox),
                 customPaddedTextButton(
-                    text: 'Add address',
-                    onPressed: () {
-                      ref.read(addedFloorUnitRoomProvider.notifier).state =
-                          controllers['floorUnitRoom']?.text;
-                      ref.read(addedStreetProvider.notifier).state =
-                          controllers['street']!.text;
-                      final barangay = ref
-                          .read(addedBarangayProvider.notifier)
-                          .state = controllers['barangay']!.text;
-                      final city = ref.read(addedCityProvider.notifier).state =
-                          controllers['city']!.text;
+                  text: 'Add address',
+                  onPressed: () {
+                    // Update individual providers
+                    ref.read(addedFloorUnitRoomProvider.notifier).state =
+                        controllers['floorUnitRoom']?.text ?? '';
+                    ref.read(addedStreetProvider.notifier).state =
+                        controllers['street']?.text ?? '';
+                    ref.read(addedBarangayProvider.notifier).state =
+                        controllers['barangay']?.text ?? '';
+                    ref.read(addedCityProvider.notifier).state =
+                        controllers['city']?.text ?? '';
 
-                      print('Barangay: $barangay');
-                      print('City: $city');
+                    // Combine the address into a single string
+                    final String address = [
+                      controllers['floorUnitRoom']?.text,
+                      controllers['street']?.text,
+                      controllers['barangay']?.text,
+                      controllers['city']?.text,
+                    ]
+                        .where(
+                            (element) => element != null && element.isNotEmpty)
+                        .join(', ');
 
-                      // Concatenate the values of the fields
-                      final String address = [
-                        controllers['floorUnitRoom']?.text,
-                        controllers['street']?.text,
-                        barangay,
-                        controllers['city']?.text,
-                      ]
-                          .where((element) =>
-                              element != null && element.isNotEmpty)
-                          .join(', ');
+                    // Update the full address provider
+                    ref.read(addedAppointmentAddressProvider.notifier).state =
+                        address;
 
-                      // Update the address in the state provider
-                      ref.read(addedAppointmentAddressProvider.notifier).state =
-                          address;
+                    print('Address: $address');
 
-                      print('Address: $address');
-
-                      // Optionally, navigate back
-                      Navigator.pop(context);
-
-                      return address;
-                    })
+                    // Navigate back with the address as the result
+                    Navigator.pop(context, address);
+                  },
+                ),
               ],
             ),
           ),

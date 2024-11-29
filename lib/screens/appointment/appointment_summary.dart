@@ -103,14 +103,6 @@ class AppointmentSummaryScreenState
       payload:
           appointmentId, //Include appointment_id to handle the notification click
     );
-    final supabase = Supabase.instance.client;
-
-    await supabase.from('notification').insert({
-      'appointment_id': appointmentId,
-      'appointment_notif_type': 'Upcoming', // Or any type based on your logic
-      'created_at':
-          DateTime.now().toUtc().toIso8601String(), // Current timestamp in UTC
-    });
   }
 
 // Function to fetch service provider name using the spId from the provider
@@ -290,6 +282,17 @@ class AppointmentSummaryScreenState
                                 // Insert appointment items into the table
                                 await insertAppointmentItems(
                                     newAppointment.toString());
+
+                                final supabase = Supabase.instance.client;
+
+                                await supabase.from('notification').insert({
+                                  'appointment_id': appointmentId,
+                                  'appointment_notif_type':
+                                      'Upcoming', // Or any type based on your logic
+                                  'created_at': DateTime.now()
+                                      .toUtc()
+                                      .toIso8601String(), // Current timestamp in UTC
+                                });
 
                                 if (context.mounted) {
                                   Navigator.push(

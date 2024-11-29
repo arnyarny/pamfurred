@@ -23,12 +23,14 @@ class RealtimeService {
           .select()
           .eq('appointment_id', appointmentId)
           .single();
+      print("what's inside: $response");
 
       if (response != null) {
         // kung naa sa table
+        print("worked");
         return true;
       }
-
+      print("didn't work");
       return response != null;
     }
 
@@ -73,11 +75,13 @@ class RealtimeService {
           .from('notification')
           .select('notification_id')
           .eq('appointment_id', appointmentId)
-          .eq('appointment_notif_type', notificationType)
-          .maybeSingle(); // maybeSingle returns null if no row is found
+          .eq('appointment_notif_type', notificationType);
 
-      // If a notification already exists, skip sending it
-      if (existingNotification != null) {
+// Print the result for debugging
+      print("unsay naa ani: $existingNotification");
+
+// If a notification already exists, skip sending it
+      if (existingNotification.isNotEmpty) {
         print(
             'Notification already exists for appointment ID $appointmentId and type $notificationType');
         return;
@@ -89,9 +93,6 @@ class RealtimeService {
         'appointment_id': appointmentId,
         'appointment_notif_type':
             notificationType, // Or any type based on your logic
-        'created_at': DateTime.now()
-            .toUtc()
-            .toIso8601String(), // Current timestamp in UTC
       });
 
       // Fetch related service provider details for notification content
@@ -154,7 +155,7 @@ class RealtimeService {
 
       print('Notification sent for appointment ID $appointmentId');
     } catch (e) {
-      print('Skipping notifications, already sent');
+      print('Error sending notification: $e');
     }
   }
 }

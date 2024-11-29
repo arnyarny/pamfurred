@@ -45,16 +45,6 @@ class CredentialsScreenState extends ConsumerState<CredentialsScreen> {
       final barangay = capitalizeFirstLetter(ref.watch(barangayProvider));
       final city = capitalizeFirstLetter(ref.watch(cityProvider));
 
-      print('Email: $email');
-      print('Password: $password');
-      print('First Name: $firstName');
-      print('Last Name: $lastName');
-      print('Phone Number: $phoneNumber');
-      print('Floor/Unit/Room: $floorUnitRoom');
-      print('Street: $street');
-      print('Barangay: $barangay');
-      print('City: $city');
-
       // Basic field validation
       if (email.isEmpty ||
           !RegExp(r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$")
@@ -63,7 +53,7 @@ class CredentialsScreenState extends ConsumerState<CredentialsScreen> {
         setState(() {
           _isLoading = false;
           _errorMessage =
-              "Invalid input: Ensure all fields are filled and valid. Password must be at least 6 characters.";
+              "Invalid input: Ensure all fields are filled and password must be secure.";
         });
         return;
       }

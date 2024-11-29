@@ -37,15 +37,10 @@ class AddressDetailsScreenState extends ConsumerState<AddressDetailsScreen> {
   String? barangay;
 
   bool _validateFields() {
-    final floorUnitRoom =
-        widget.controllers['floorUnitRoom']?.text.trim() ?? '';
     final street = widget.controllers['street']?.text.trim() ?? '';
     final barangay = widget.controllers['barangay']?.text.trim() ?? '';
     final city = widget.controllers['city']?.text.trim() ?? '';
-    return floorUnitRoom.isNotEmpty &&
-        street.isNotEmpty &&
-        barangay.isNotEmpty &&
-        city.isNotEmpty;
+    return street.isNotEmpty && barangay.isNotEmpty && city.isNotEmpty;
   }
 
   @override
@@ -58,10 +53,10 @@ class AddressDetailsScreenState extends ConsumerState<AddressDetailsScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            buildSectionHeader("Address Details"),
+            buildSectionHeader("Home Address Details"),
             const SizedBox(height: secondarySizedBox),
             formDescription(context,
-                "Please enter your address so that we can show you nearby service providers and services based on your location."),
+                "Please enter your home address, as these details will be used by service providers to locate you for your home service appointment."),
             const SizedBox(height: tertiarySizedBox),
             RichText(
               text: const TextSpan(
@@ -117,9 +112,11 @@ class AddressDetailsScreenState extends ConsumerState<AddressDetailsScreen> {
               children: [
                 Expanded(
                   child: CustomTextField(
-                      label: "Floor/Unit/Room",
-                      controllerKey: "floorUnitRoom",
-                      controllers: widget.controllers),
+                    label: "Floor/Unit/Room",
+                    controllerKey: "floorUnitRoom",
+                    controllers: widget.controllers,
+                    isRequired: false,
+                  ),
                 ),
                 const SizedBox(width: primarySizedBox),
                 Expanded(

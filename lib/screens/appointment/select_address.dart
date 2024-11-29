@@ -9,7 +9,7 @@ import 'package:pamfurred/providers/appointments_provider.dart';
 import 'package:pamfurred/providers/serviceprovider_provider.dart';
 import 'package:pamfurred/screens/appointment/add_new_address.dart';
 import 'package:pamfurred/screens/appointment/choose_date_and_time.dart';
-import 'package:pamfurred/screens/pin_location_new.dart';
+import 'package:pamfurred/screens/pin_location.dart';
 
 class SelectAppointmentAddressScreen extends ConsumerStatefulWidget {
   const SelectAppointmentAddressScreen({super.key});

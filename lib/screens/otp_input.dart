@@ -1,5 +1,6 @@
-import 'dart:async'; // Import this to use Timer
+import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:flutter_otp_text_field/flutter_otp_text_field.dart';
 import 'package:pamfurred/components/custom_appbar.dart';
 import 'package:pamfurred/components/custom_padded_button.dart';
 import 'package:pamfurred/components/globals.dart';
@@ -18,13 +19,12 @@ class OtpVerificationScreen extends StatefulWidget {
 
 class OtpVerificationScreenState extends State<OtpVerificationScreen>
     with TickerProviderStateMixin {
-  final TextEditingController _otpController = TextEditingController();
   bool _isLoading = false;
-  bool _isResending = false; // Track the state of resending OTP
-  bool _canResendOtp =
-      false; // Control the resend button state initially set to false
-  int _remainingTime = 60; // Countdown timer for resend
-  Timer? _timer; // Timer object
+  bool _isResending = false;
+  bool _canResendOtp = false;
+  int _remainingTime = 60;
+  Timer? _timer;
+  List<TextEditingController?> _otpControllers = [];
 
   late VideoPlayerController _controller;
   late AnimationController _fadeController;
@@ -33,30 +33,23 @@ class OtpVerificationScreenState extends State<OtpVerificationScreen>
   @override
   void initState() {
     super.initState();
-    // Start the countdown timer immediately when the screen is navigated to
     _startTimer();
 
-    // Initialize the video player controller with a network video URL
     _controller = VideoPlayerController.contentUri(
       Uri.parse('https://cdn-icons-mp4.flaticon.com/512/11237/11237480.mp4'),
     )..initialize().then((_) {
-        // Ensure the first frame is shown
         setState(() {
-          // Play the video and set it to loop
           _controller.setLooping(true);
           _controller.play();
         });
-        // Start fading in the video after initialization
         _fadeController.forward();
       });
 
-    // Initialize the fade animation controller
     _fadeController = AnimationController(
       duration: const Duration(milliseconds: 500),
       vsync: this,
     );
 
-    // Define the fade animation (fade in from 0 to 1)
     _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
       CurvedAnimation(parent: _fadeController, curve: Curves.easeIn),
     );
@@ -64,11 +57,11 @@ class OtpVerificationScreenState extends State<OtpVerificationScreen>
 
   @override
   void dispose() {
-    _timer?.cancel(); // Cancel the timer when the widget is disposed
+    _timer?.cancel();
     super.dispose();
 
-    _controller.dispose(); // Clean up the controller when done
-    _fadeController.dispose(); // Clean up the fade controller
+    _controller.dispose();
+    _fadeController.dispose();
   }
 
   Future<void> verifyOTP() async {
@@ -76,10 +69,10 @@ class OtpVerificationScreenState extends State<OtpVerificationScreen>
       _isLoading = true;
     });
 
-    final otp = _otpController.text.trim();
+    final otp =
+        _otpControllers.map((controller) => controller?.text.trim()).join();
 
     try {
-      // Call Supabase to verify the OTP
       final response = await Supabase.instance.client.auth.verifyOTP(
         email: widget.email,
         token: otp,
@@ -87,20 +80,11 @@ class OtpVerificationScreenState extends State<OtpVerificationScreen>
       );
 
       if (response.user != null) {
-        // Navigate to the home screen or any other screen
         if (mounted) {
           Navigator.pushReplacement(
             context,
             MaterialPageRoute(
                 builder: (context) => const SuccessfulRegistration()),
-          );
-        }
-      } else {
-        // Handle verification error
-        if (mounted) {
-          final error = response.error?.message ?? "Unknown error";
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text("OTP verification failed: $error")),
           );
         }
       }
@@ -118,32 +102,27 @@ class OtpVerificationScreenState extends State<OtpVerificationScreen>
   }
 
   Future<void> resendOTP() async {
-    if (!_canResendOtp) return; // Prevent resending if not allowed
+    if (!_canResendOtp) return;
 
     setState(() {
-      _isResending = true; // Set loading state for resending
-      _canResendOtp = false; // Disable resend button
-      _remainingTime = 60; // Reset timer
+      _isResending = true;
+      _canResendOtp = false;
+      _remainingTime = 60;
     });
 
     try {
-      // Call Supabase to resend the OTP
       await Supabase.instance.client.auth.signInWithOtp(
         email: widget.email,
-        // You can add a redirect URL or any other parameters here if needed
       );
 
-      // If the call is successful, show success message
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text("OTP has been resent to ${widget.email}")),
         );
       }
 
-      // Start the countdown timer
       _startTimer();
     } catch (e) {
-      // Handle any errors that occur during the resend request
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text("Error: $e")),
@@ -151,16 +130,15 @@ class OtpVerificationScreenState extends State<OtpVerificationScreen>
       }
     } finally {
       setState(() {
-        _isResending = false; // Reset loading state for resending
+        _isResending = false;
       });
     }
   }
 
   void _startTimer() {
-    // Disable the resend button initially and start the countdown
     setState(() {
-      _canResendOtp = false; // Ensure the button is initially disabled
-      _remainingTime = 60; // Set initial remaining time
+      _canResendOtp = false;
+      _remainingTime = 60;
     });
 
     _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
@@ -169,9 +147,9 @@ class OtpVerificationScreenState extends State<OtpVerificationScreen>
           _remainingTime--;
         });
       } else {
-        _timer?.cancel(); // Stop the timer when it reaches 0
+        _timer?.cancel();
         setState(() {
-          _canResendOtp = true; // Re-enable the resend button
+          _canResendOtp = true;
         });
       }
     });
@@ -189,7 +167,6 @@ class OtpVerificationScreenState extends State<OtpVerificationScreen>
           children: [
             Column(
               children: [
-                // Video Player with FadeTransition
                 _controller.value.isInitialized
                     ? FadeTransition(
                         opacity: _fadeAnimation,
@@ -201,10 +178,7 @@ class OtpVerificationScreenState extends State<OtpVerificationScreen>
                           ),
                         ),
                       )
-                    : const Center(
-                        child: SizedBox(
-                        height: 200,
-                      )),
+                    : const Center(child: SizedBox(height: 200)),
               ],
             ),
             const SizedBox(height: quaternarySizedBox),
@@ -216,13 +190,31 @@ class OtpVerificationScreenState extends State<OtpVerificationScreen>
               ),
             ),
             const SizedBox(height: 20),
-            TextField(
-              controller: _otpController,
-              decoration: const InputDecoration(
-                labelText: "OTP",
-                border: OutlineInputBorder(),
-              ),
-              keyboardType: TextInputType.number,
+            OtpTextField(
+              numberOfFields: 6, // Number of OTP fields
+              fieldWidth: 45.0,
+              fieldHeight: 50.0,
+              textStyle: const TextStyle(fontSize: 20),
+              onSubmit: (otp) {
+                // Handling OTP on submit
+                print("Submitted OTP: $otp");
+              },
+              onCodeChanged: (otp) {
+                // Optional: Handle OTP change
+              },
+              handleControllers: (controllers) {
+                _otpControllers = controllers;
+              },
+              showCursor: true,
+              borderColor: lightGreyColor,
+              enabledBorderColor: mediumGreyColor,
+              focusedBorderColor: primaryColor,
+              cursorColor: primaryColor,
+              obscureText: false,
+              showFieldAsBox: true,
+              filled: true,
+              fillColor: const Color(0xFFFFFFFF),
+              contentPadding: const EdgeInsets.all(4),
             ),
             const SizedBox(height: tertiarySizedBox),
             _isLoading
@@ -235,9 +227,7 @@ class OtpVerificationScreenState extends State<OtpVerificationScreen>
                 : Column(
                     children: [
                       TextButton(
-                        onPressed: _canResendOtp
-                            ? resendOTP
-                            : null, // Disable button if necessary
+                        onPressed: _canResendOtp ? resendOTP : null,
                         child: Text(
                           _canResendOtp
                               ? "Resend OTP"
@@ -252,8 +242,4 @@ class OtpVerificationScreenState extends State<OtpVerificationScreen>
       ),
     );
   }
-}
-
-extension on AuthResponse {
-  get error => null;
 }

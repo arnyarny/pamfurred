@@ -47,6 +47,13 @@ class PasswordTextFieldState extends State<PasswordTextField> {
     });
   }
 
+  // Check if password strength is sufficient (you can set a threshold value)
+  bool _isPasswordStrong() {
+    final strength = _passNotifier.value;
+    // Password should be "secure"
+    return strength != null && strength.widthPerc == 1.0;
+  }
+
   @override
   Widget build(BuildContext context) {
     return Column(
@@ -92,14 +99,16 @@ class PasswordTextFieldState extends State<PasswordTextField> {
             if (value == null || value.isEmpty) {
               return "${widget.label} is required";
             }
+            if (!_isPasswordStrong()) {
+              return "Password is not strong enough";
+            }
             return null;
           },
         ),
         const SizedBox(height: secondarySizedBox),
         // Only show PasswordStrengthChecker if there's text or if focused
         if (_isFocused ||
-            (widget.controllers[widget.controllerKey]?.text.isNotEmpty ??
-                false))
+            (widget.controllers[widget.controllerKey]?.text.isNotEmpty ?? false))
           PasswordStrengthChecker(
             strength: _passNotifier, // Use the existing ValueNotifier
           ),

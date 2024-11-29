@@ -67,12 +67,113 @@ class ChooseDateAndTimeScreen extends ConsumerWidget {
                     DateFormat('yyyy-MM-dd').format(day) == selectedDate;
               },
               onDaySelected: (selectedDay, focusedDay) {
-                ref.read(selectedDateProvider.notifier).state =
+                final formattedDate =
                     DateFormat('yyyy-MM-dd').format(selectedDay);
-                ref.read(selectedTimeslotProvider.notifier).state =
-                    null; // Clear timeslot when date changes
+
+                // Check if the date is available and not fully booked or has no timeslots
+                final availableDatesAsyncValue =
+                    ref.read(availableDatesProvider);
+                availableDatesAsyncValue.when(
+                  data: (availableDates) {
+                    final availability = availableDates.firstWhere(
+                      (availability) =>
+                          availability['availability_date'] == formattedDate,
+                      orElse: () => {'is_fully_booked': false},
+                    );
+
+                    if (availability['is_fully_booked'] == false) {
+                      ref.read(availableTimeslotsProvider(formattedDate)).when(
+                            data: (timeslotData) {
+                              if (timeslotData.isNotEmpty) {
+                                ref.read(selectedDateProvider.notifier).state =
+                                    formattedDate;
+                                ref
+                                    .read(selectedTimeslotProvider.notifier)
+                                    .state = null;
+                              }
+                            },
+                            loading: () {}, // Handle loading if needed
+                            error: (error,
+                                stackTrace) {}, // Handle error if needed
+                          );
+                    }
+                  },
+                  loading: () {}, // Handle loading if needed
+                  error: (error, stackTrace) {}, // Handle error if needed
+                );
               },
-              // Styling of the day cells
+              calendarBuilders: CalendarBuilders(
+                defaultBuilder: (context, date, _) {
+                  final formattedDate = DateFormat('yyyy-MM-dd').format(date);
+
+                  final availableDatesAsyncValue =
+                      ref.watch(availableDatesProvider);
+                  final availableTimeslotsAsyncValue =
+                      ref.watch(availableTimeslotsProvider(formattedDate));
+
+                  return availableDatesAsyncValue.when(
+                    data: (availableDates) {
+                      final availability = availableDates.firstWhere(
+                        (availability) =>
+                            availability['availability_date'] == formattedDate,
+                        orElse: () => {'is_fully_booked': false},
+                      );
+
+                      return availableTimeslotsAsyncValue.when(
+                        data: (timeslotData) {
+                          if (availability['is_fully_booked'] == true) {
+                            // Fully booked dates are red
+                            return Container(
+                              width: 40,
+                              alignment: Alignment.center,
+                              decoration: const BoxDecoration(
+                                color: Colors.red,
+                                shape: BoxShape.circle,
+                              ),
+                              child: Text(
+                                '${date.day}',
+                                style: const TextStyle(color: Colors.white),
+                              ),
+                            );
+                          } else if (timeslotData.isEmpty) {
+                            // Dates without timeslots are greyed out
+                            return Container(
+                              width: 40,
+                              alignment: Alignment.center,
+                              decoration: const BoxDecoration(
+                                color: Colors.grey,
+                                shape: BoxShape.circle,
+                              ),
+                              child: Text(
+                                '${date.day}',
+                                style: const TextStyle(color: Colors.white),
+                              ),
+                            );
+                          } else {
+                            // Available dates are green
+                            return Container(
+                              width: 40,
+                              alignment: Alignment.center,
+                              decoration: const BoxDecoration(
+                                color: Colors.green,
+                                shape: BoxShape.circle,
+                              ),
+                              child: Text(
+                                '${date.day}',
+                                style: const TextStyle(color: Colors.white),
+                              ),
+                            );
+                          }
+                        },
+                        loading: () => const CircularProgressIndicator(),
+                        error: (error, stackTrace) => const Text('Error'),
+                      );
+                    },
+                    loading: () => const CircularProgressIndicator(),
+                    error: (error, stackTrace) => const Text('Error'),
+                  );
+                },
+              ),
               calendarStyle: CalendarStyle(
                 todayDecoration: const BoxDecoration(
                   color: primaryColor,
@@ -102,6 +203,7 @@ class ChooseDateAndTimeScreen extends ConsumerWidget {
                 ),
               ),
             ),
+
             const SizedBox(height: 24),
 
             // Timeslot Selector Section

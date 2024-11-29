@@ -18,15 +18,19 @@ final availableTimeslotsProvider =
   return List<Map<String, dynamic>>.from(response);
 });
 
-final availableDatesProvider = FutureProvider<List<String>>((ref) async {
+final availableDatesProvider =
+    FutureProvider<List<Map<String, dynamic>>>((ref) async {
   final serviceProviderId = ref.watch(selectedSpIndexProvider);
 
   final supabase = Supabase.instance.client;
   final response = await supabase
       .from('service_provider_availability')
-      .select('availability_date')
+      .select('*')
       .eq('sp_id', serviceProviderId);
 
-  // Extract and return the list of dates
-  return List<String>.from(response.map((e) => e['availability_date']));
+  // Map the response to include the 'availability_date' and 'is_fully_booked' fields
+  return List<Map<String, dynamic>>.from(response.map((e) => {
+        'availability_date': e['availability_date'],
+        'is_fully_booked': e['is_fully_booked'],
+      }));
 });

@@ -141,7 +141,10 @@ class SuccessfulAppointmentState extends ConsumerState<SuccessfulAppointment> {
 
                         // Clear the true state of will book
                         ref.read(willBookProvider.notifier).state = false;
-                        Navigator.push(context, crossFadeRoute(MainScreen()));
+                        ref.read(bottomNavBarIndexProvider.notifier).state =
+                            0; // Switch to Home page
+                        Navigator.push(
+                            context, crossFadeRoute(const MainScreen()));
                       }),
                 )
               ],

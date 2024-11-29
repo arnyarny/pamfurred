@@ -1,18 +1,22 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pamfurred/components/confetti.dart';
 import 'package:pamfurred/components/screen_transitions.dart';
+import 'package:pamfurred/providers/global_providers.dart';
 import 'package:pamfurred/screens/main_screen.dart';
 
-import '../components/globals.dart';
+import '../../components/globals.dart';
 
-class SuccessfulRegistration extends StatefulWidget {
+class SuccessfulRegistration extends ConsumerStatefulWidget {
   const SuccessfulRegistration({super.key});
 
   @override
-  State<SuccessfulRegistration> createState() => _SuccessfulRegistrationState();
+  ConsumerState<SuccessfulRegistration> createState() =>
+      _SuccessfulRegistrationState();
 }
 
-class _SuccessfulRegistrationState extends State<SuccessfulRegistration> {
+class _SuccessfulRegistrationState
+    extends ConsumerState<SuccessfulRegistration> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -73,7 +77,10 @@ class _SuccessfulRegistrationState extends State<SuccessfulRegistration> {
                   height: primaryTextFieldHeight,
                   child: TextButton(
                     onPressed: () {
-                      Navigator.push(context, crossFadeRoute(MainScreen()));
+                      ref.read(bottomNavBarIndexProvider.notifier).state =
+                          0; // Switch to Home page
+                      Navigator.push(
+                          context, crossFadeRoute(const MainScreen()));
                     },
                     style: ButtonStyle(
                       shape: WidgetStateProperty.all<RoundedRectangleBorder>(

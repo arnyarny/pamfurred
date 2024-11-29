@@ -141,6 +141,8 @@ dependencies:
 
   philippines_rpcmb: ^0.0.3
 
+  flutter_hooks: ^0.20.5
+
 dev_dependencies:
   flutter_test:
     sdk: flutter

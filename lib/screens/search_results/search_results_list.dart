@@ -43,10 +43,10 @@ class ResultsListWidget extends ConsumerWidget {
     final selectedCategory = checkSelectedServiceCategory(selectedIndex);
 
     // Use combined provider based on sorting option
-    final providerDataAsync = checkResultsSorter == 'All' ||
+    final providerDataAsync = checkResultsSorter == 'None' ||
             checkResultsSorter == ''
         ? ref.watch(combinedSearchResultsProvider(selectedCategory))
-        : checkResultsSorter == 'Distance'
+        : checkResultsSorter == 'Nearest'
             ? ref.watch(sortSearchResultsByLocation(selectedCategory))
             : checkResultsSorter == 'Price'
                 ? ref.watch(sortSearchResultsByPrice(selectedCategory))

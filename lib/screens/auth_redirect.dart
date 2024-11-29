@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:pamfurred/components/screen_transitions.dart';
 import 'package:pamfurred/providers/appointments_provider.dart';
 import 'package:pamfurred/providers/available_timeslots_provider.dart';
+import 'package:pamfurred/providers/global_providers.dart';
 import 'package:pamfurred/providers/notifications_provider.dart';
 import 'package:pamfurred/providers/pet_profile_provider.dart';
 import 'package:pamfurred/screens/login.dart';
@@ -85,8 +86,9 @@ class AuthRedirectState extends ConsumerState<AuthRedirect> {
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (session != null) {
-        // User is logged in, navigate to Home Screen
-        Navigator.push(context, slideUpRoute(MainScreen()));
+        ref.read(bottomNavBarIndexProvider.notifier).state =
+            0; // Switch to Home page
+        Navigator.push(context, slideUpRoute(const MainScreen()));
       } else {
         // User is not logged in, navigate to Login Screen
         Navigator.push(context, slideUpRoute(const LoginScreen()));

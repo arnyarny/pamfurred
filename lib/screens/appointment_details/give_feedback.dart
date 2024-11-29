@@ -5,6 +5,8 @@ import 'package:pamfurred/components/custom_padded_button.dart';
 import 'package:pamfurred/components/globals.dart';
 import 'package:pamfurred/providers/appointments_provider.dart';
 import 'package:pamfurred/providers/user_id.dart';
+import 'package:quickalert/models/quickalert_type.dart';
+import 'package:quickalert/widgets/quickalert_dialog.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class GiveFeedbackBottomSheet extends ConsumerStatefulWidget {
@@ -19,6 +21,71 @@ class GiveFeedbackBottomSheetState
   int _rating = 0;
   final TextEditingController _reviewController = TextEditingController();
   String? _errorMessage;
+  bool _isSubmitting = false; // To track submission state
+
+  Future<void> submitFeedback() async {
+    if (_rating == 0) {
+      setState(() {
+        _errorMessage = 'Please provide a star rating.';
+      });
+      return;
+    }
+
+    setState(() {
+      _isSubmitting = true;
+      _errorMessage = null;
+    });
+
+    try {
+      final petOwnerId = ref.read(userIdProvider);
+      final spAppointmentId = ref.read(tappedSpAppointmentIdProvider);
+
+      // Variable to get the selected appointment ID
+      final appointmentId = ref.read(selectedAppointmentIdProvider);
+
+      DateTime dateNow = DateTime.now();
+      String formattedDate = DateFormat('yyyy-MM-dd').format(dateNow);
+
+      final supabase = Supabase.instance.client;
+
+      // Insert the feedback into the database
+      await supabase.from('feedback').insert({
+        'pet_owner_id': petOwnerId,
+        'sp_id': spAppointmentId,
+        'review': _reviewController.text,
+        'review_date': formattedDate,
+        'compound_score': null,
+        'rating': _rating,
+        'appointment_id': appointmentId // Assign the selected appointment ID
+      });
+
+      // Update the is_reviewed field to true in the appointment table
+      await supabase
+          .from('appointment')
+          .update({'is_reviewed': true}).eq('appointment_id', appointmentId);
+
+      if (!mounted) return;
+
+      Navigator.of(context).pop();
+
+      QuickAlert.show(
+        context: context,
+        type: QuickAlertType.success,
+        title: 'Feedback Submitted!',
+        text: 'Thank you for your feedback.',
+      );
+    } catch (e) {
+      setState(() {
+        _errorMessage = 'Failed to submit feedback. Please try again.';
+      });
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isSubmitting = false;
+        });
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -52,7 +119,7 @@ class GiveFeedbackBottomSheetState
             ),
             const SizedBox(height: tertiarySizedBox),
             Text(
-              'Rate $spName',
+              'Rate ${spName ?? 'the establishment'}',
               style: const TextStyle(fontSize: titleFont),
             ),
             const SizedBox(height: secondarySizedBox),
@@ -70,7 +137,6 @@ class GiveFeedbackBottomSheetState
                     index < _rating ? Icons.star : Icons.star_border,
                     color: secondaryColor,
                     size: 40.0,
-                    weight: .15,
                   ),
                 );
               }),
@@ -84,7 +150,7 @@ class GiveFeedbackBottomSheetState
             TextField(
               controller: _reviewController,
               maxLines: 4,
-              textCapitalization: TextCapitalization.sentences, // Add this line
+              textCapitalization: TextCapitalization.sentences,
               decoration: const InputDecoration(
                 hintText: 'Tell us about your experience',
                 hintStyle: TextStyle(fontSize: regularText, color: greyColor),
@@ -101,49 +167,26 @@ class GiveFeedbackBottomSheetState
             const SizedBox(height: quaternarySizedBox),
             Align(
               alignment: Alignment.centerRight,
-              child: customPaddedTextButton(
-                text: 'Submit feedback',
-                onPressed: () async {
-                  if (_rating == 0) {
-                    setState(() {
-                      _errorMessage = 'Please provide a star rating.';
-                    });
-                    return;
-                  }
-
-                  try {
-                    final petOwnerId = ref.watch(userIdProvider);
-                    final spAppointmentId =
-                        ref.watch(tappedSpAppointmentIdProvider);
-
-                    DateTime dateNow = DateTime.now();
-                    String formattedDate =
-                        DateFormat('yyyy-MM-dd').format(dateNow);
-
-                    final supabase = Supabase.instance.client;
-
-                    final response = await supabase.from('feedback').insert({
-                      'pet_owner_id': petOwnerId,
-                      'sp_id': spAppointmentId,
-                      'review': _reviewController.text,
-                      'review_date': formattedDate,
-                      'compound_score': null,
-                      'rating': _rating,
-                    });
-
-                    if (context.mounted) {
-                      Navigator.of(context).pop();
-                    }
-
-                    return response;
-                  } catch (e) {
-                    setState(() {
-                      _errorMessage =
-                          'Failed to submit feedback. Please try again.';
-                    });
-                    print('Error inserting feedback: $e');
-                  }
-                },
+              child: SizedBox(
+                width: 175,
+                height: 50,
+                child: customPaddedTextButton(
+                  text: _isSubmitting
+                      ? const SizedBox(
+                          width: 27,
+                          height: 30,
+                          child: CircularProgressIndicator(
+                            color: Colors.white,
+                            strokeWidth: 2.5,
+                          ),
+                        )
+                      : 'Submit feedback',
+                  onPressed: _isSubmitting
+                      ? null
+                      : () async {
+                          await submitFeedback();
+                        },
+                ),
               ),
             ),
             const SizedBox(height: tertiarySizedBox),

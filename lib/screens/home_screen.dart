@@ -26,7 +26,6 @@ import 'package:pamfurred/providers/sp_profile_provider_services.dart';
 import 'package:pamfurred/backend_logic_files/store_location.dart';
 import 'package:pamfurred/providers/user_id.dart';
 import 'package:pamfurred/screens/location_permission.dart';
-import 'package:pamfurred/screens/main_screen.dart';
 import 'package:pamfurred/screens/search_results/search_results.dart';
 import 'package:pamfurred/screens/appointment/serviceprovider_profile.dart';
 import 'package:pamfurred/screens/service_providers.dart';
@@ -205,7 +204,8 @@ class HomeScreenState extends ConsumerState<HomeScreen> {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       SizedBox(height: secondarySizedBox),
-                      Icon(Icons.event_busy, size: 40, color: secondaryGreyColor),
+                      Icon(Icons.event_busy,
+                          size: 40, color: secondaryGreyColor),
                       SizedBox(height: secondarySizedBox),
                       Text(
                         "No upcoming appointments yet!",
@@ -215,7 +215,8 @@ class HomeScreenState extends ConsumerState<HomeScreen> {
                       SizedBox(height: primarySizedBox),
                       Text(
                         "Browse service providers to book an appointment.",
-                        style: TextStyle(fontSize: smallText, color: secondaryGreyColor),
+                        style: TextStyle(
+                            fontSize: smallText, color: secondaryGreyColor),
                       ),
                       SizedBox(height: primarySizedBox),
                     ],
@@ -359,8 +360,8 @@ class HomeScreenState extends ConsumerState<HomeScreen> {
               : customPaddedTextButton(
                   text: "View appointments",
                   onPressed: () {
-                    mainScreenKey.currentState
-                        ?.switchToPage(1); // Switch to Appointments page
+                    ref.read(bottomNavBarIndexProvider.notifier).state =
+                        1; // Switch to Appointments page
                   },
                 );
         },
@@ -687,8 +688,10 @@ class ServiceProvidersWidget extends ConsumerWidget {
                 final imageUrl = sp['service_provider_image'] ??
                     'https://tinyurl.com/3tnt6yyy'; // Default image if null
                 final name = capitalizeFirstLetter(sp['service_provider_name']);
-                final rating =
-                    (sp['average_rating'] as double).toStringAsFixed(1);
+                final rating = (sp['average_rating'] is int
+                        ? (sp['average_rating'] as int).toDouble()
+                        : sp['average_rating'] as double)
+                    .toStringAsFixed(1);
 
                 final spLatitude = sp['latitude'];
                 final spLongitude = sp['longitude'];

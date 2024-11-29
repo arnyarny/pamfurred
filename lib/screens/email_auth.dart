@@ -2,7 +2,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:pamfurred/components/custom_appbar.dart';
 import 'package:pamfurred/components/screen_transitions.dart';
-import 'package:pamfurred/screens/successful_registration.dart';
+import 'package:pamfurred/screens/register/successful_registration.dart';
 import 'package:supabase_flutter/supabase_flutter.dart'; // Supabase import
 import '../components/globals.dart';
 

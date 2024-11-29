@@ -10,6 +10,7 @@ final sortResultsProvider = StateProvider<String>((ref) => 'All');
 
 // Address providers
 final hasDetectedAddressProvider = StateProvider<bool>((ref) => false);
+final floorUnitRoomProvider = StateProvider<String?>((ref) => '');
 final streetProvider = StateProvider<String>((ref) => '');
 final barangayProvider = StateProvider<String>((ref) => '');
 final cityProvider = StateProvider<String>((ref) => '');

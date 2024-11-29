@@ -383,7 +383,10 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                     context: context,
                     title: "Address",
                     details:
-                        "${mapUserAddress?['floor_unit_room'] ?? ''}, ${mapUserAddress?['street'] ?? ''}, ${mapUserAddress?['barangay'] ?? ''}, ${mapUserAddress?['city'] ?? ''}",
+                        "${mapUserAddress?['floor_unit_room'] != null ? '${mapUserAddress?['floor_unit_room']}, ' : ''}"
+                        "${mapUserAddress?['street'] != null ? '${mapUserAddress?['street']}, ' : ''}"
+                        "${mapUserAddress?['barangay'] != null ? '${mapUserAddress?['barangay']}, ' : ''}"
+                        "${mapUserAddress?['city'] ?? ''}",
                   ),
                 ],
               ),

@@ -2,37 +2,25 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pamfurred/providers/global_providers.dart';
 import 'package:pamfurred/screens/home_screen.dart';
-import 'package:pamfurred/screens/appointments.dart';
+import 'package:pamfurred/screens/appointment_details/appointments.dart';
 import 'package:pamfurred/screens/notifications.dart';
 import 'package:pamfurred/screens/profile.dart';
 import '../components/bottom_navbar.dart';
 
-// Declare the GlobalKey once, outside of any widget tree
-final GlobalKey<MainScreenState> mainScreenKey = GlobalKey<MainScreenState>();
-
 class MainScreen extends ConsumerStatefulWidget {
-  MainScreen({Key? key})
-      : super(key: mainScreenKey); // Use global key for MainScreen
+  const MainScreen({super.key});
 
   @override
   MainScreenState createState() => MainScreenState();
 }
 
 class MainScreenState extends ConsumerState<MainScreen> {
-  final PageController _pageController = PageController();
-  final double bottomNavHeight = 60.0;
+  late PageController _pageController;
 
-  // Current index is managed by Riverpod provider
-  int get currentIndex => ref.watch(bottomNavBarIndexProvider);
-
-  // Method to switch pages
-  void switchToPage(int index) {
-    ref.read(bottomNavBarIndexProvider.notifier).state = index;
-    _pageController.animateToPage(
-      index,
-      duration: const Duration(milliseconds: 300),
-      curve: Curves.easeInOut,
-    );
+  @override
+  void initState() {
+    super.initState();
+    _pageController = PageController();
   }
 
   @override
@@ -44,6 +32,18 @@ class MainScreenState extends ConsumerState<MainScreen> {
   @override
   Widget build(BuildContext context) {
     final isVisible = ref.watch(visibilityProvider);
+    final currentIndex = ref.watch(bottomNavBarIndexProvider);
+
+    // Sync the PageController with the current index whenever it changes
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (_pageController.hasClients) {
+        _pageController.animateToPage(
+          currentIndex, // Animate to the correct page
+          duration: const Duration(milliseconds: 300),
+          curve: Curves.easeInOut, // Add a smooth animation curve
+        );
+      }
+    });
 
     final List<Widget> screens = [
       const HomeScreen(),
@@ -55,7 +55,6 @@ class MainScreenState extends ConsumerState<MainScreen> {
     return Scaffold(
       body: PageView(
         controller: _pageController,
-        physics: const NeverScrollableScrollPhysics(),
         onPageChanged: (index) {
           ref.read(bottomNavBarIndexProvider.notifier).state = index;
         },
@@ -63,12 +62,14 @@ class MainScreenState extends ConsumerState<MainScreen> {
       ),
       bottomNavigationBar: AnimatedContainer(
         duration: const Duration(milliseconds: 300),
-        height: isVisible ? bottomNavHeight : 0,
+        height: isVisible ? 60.0 : 0,
         curve: Curves.easeInOut,
         child: isVisible
             ? CustomBottomNavBar(
                 currentIndex: currentIndex,
-                onTap: (index) => switchToPage(index),
+                onTap: (index) {
+                  ref.read(bottomNavBarIndexProvider.notifier).state = index;
+                },
               )
             : null,
       ),

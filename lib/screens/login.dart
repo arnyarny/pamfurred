@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:email_validator/email_validator.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pamfurred/components/screen_transitions.dart';
+import 'package:pamfurred/providers/global_providers.dart';
 import 'package:pamfurred/screens/main_screen.dart';
 import 'package:pamfurred/screens/register/intro_to_app.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -53,8 +54,10 @@ class LoginScreenState extends ConsumerState<LoginScreen> {
     final session = Supabase.instance.client.auth.currentSession;
 
     if (session != null) {
+      ref.read(bottomNavBarIndexProvider.notifier).state =
+          0; // Switch to Home page
       // User is already logged in
-      Navigator.push(context, slideUpRoute(MainScreen()));
+      Navigator.push(context, slideUpRoute(const MainScreen()));
     } else {
       // If there's no session, stay on the login screen and display a message or widget
       setState(() {
@@ -83,12 +86,13 @@ class LoginScreenState extends ConsumerState<LoginScreen> {
 
         if (isEmailVerified) {
           // Navigate to MainScreen if authentication is successful
-          mainScreenKey.currentState
-              ?.switchToPage(0); // Make sure the user goes to the home screen
+          ref.read(bottomNavBarIndexProvider.notifier).state =
+              0; // Switch to the Home screen (index 0)
+
           if (mounted) {
             Navigator.pushReplacement(
               context,
-              crossFadeRoute(MainScreen()),
+              crossFadeRoute(const MainScreen()), // Navigate to MainScreen
             );
           }
         } else {

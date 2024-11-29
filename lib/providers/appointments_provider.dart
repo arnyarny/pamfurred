@@ -40,3 +40,14 @@ final appointmentSpIndexProvider = Provider<Map<String, dynamic>?>((ref) {
 });
 
 final tappedSpAppointmentIdProvider = StateProvider<String>((ref) => '');
+
+final selectedAppointmentIdProvider = StateProvider<String>((ref) => '');
+
+
+// Address providers for add new address
+final addedFloorUnitRoomProvider = StateProvider<String?>((ref) => '');
+final addedStreetProvider = StateProvider<String>((ref) => '');
+final addedBarangayProvider = StateProvider<String>((ref) => '');
+final addedCityProvider = StateProvider<String>((ref) => '');
+final addedProvinceProvider = StateProvider<String>((ref) => '');
+final addedAppointmentAddressProvider = StateProvider<String>((ref) => '');

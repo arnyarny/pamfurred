@@ -17,7 +17,7 @@ class SearchResultsScreen extends ConsumerStatefulWidget {
 class SearchResultsScreenState extends ConsumerState<SearchResultsScreen> {
   final GlobalKey<ScaffoldState> scaffoldKey = GlobalKey<ScaffoldState>();
 
-  String selectedFilter = 'All';
+  String selectedFilter = 'None';
 
   final TextEditingController minRangeController = TextEditingController();
   final TextEditingController maxRangeController = TextEditingController();
@@ -107,18 +107,18 @@ class SearchResultsScreenState extends ConsumerState<SearchResultsScreen> {
                   child: Row(
                     children: [
                       Radio<String>(
-                        value: 'All',
+                        value: 'None',
                         groupValue: selectedFilter,
                         onChanged: (String? value) {
                           setState(() {
                             selectedFilter = value!;
                             ref.read(sortResultsProvider.notifier).state =
-                                'All';
+                                'None';
                           });
                         },
                       ),
                       const Text(
-                        'All',
+                        'None',
                         style: TextStyle(fontSize: regularText),
                       ),
                     ],
@@ -129,18 +129,18 @@ class SearchResultsScreenState extends ConsumerState<SearchResultsScreen> {
                   child: Row(
                     children: [
                       Radio<String>(
-                        value: 'Distance',
+                        value: 'Nearest',
                         groupValue: selectedFilter,
                         onChanged: (String? value) {
                           setState(() {
                             selectedFilter = value!;
                             ref.read(sortResultsProvider.notifier).state =
-                                'Distance';
+                                'Nearest';
                           });
                         },
                       ),
                       const Text(
-                        'Distance',
+                        'Nearest',
                         style: TextStyle(fontSize: regularText),
                       ),
                     ],

@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:pamfurred/backend_logic_files/realtime_service.dart';
 import 'package:pamfurred/components/globals.dart';
+import 'package:pamfurred/screens/appointment_details/appointment_details.dart';
 import 'package:pamfurred/screens/auth_redirect.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
@@ -12,7 +13,7 @@ import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
     FlutterLocalNotificationsPlugin();
 
-Future<void> initializeNotifications() async {
+Future<void> initializeNotifications(context) async {
   const AndroidInitializationSettings androidInitializationSettings =
       AndroidInitializationSettings('pamfurred');
 
@@ -24,7 +25,14 @@ Future<void> initializeNotifications() async {
   await flutterLocalNotificationsPlugin.initialize(
     initializationSettings,
     onDidReceiveNotificationResponse: (NotificationResponse response) {
-      // Handle notification tap here
+      if (response.payload != null) {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => const AppointmentDetailsScreen(),
+          ),
+        );
+      }
       print('Notification tapped with payload: ${response.payload}');
     },
   );
@@ -45,7 +53,7 @@ void main() async {
     return;
   }
 
-  await initializeNotifications(); // Initialize local notifications
+  await initializeNotifications(BuildContext); // Initialize local notifications
 
   final realtimeService = RealtimeService();
 

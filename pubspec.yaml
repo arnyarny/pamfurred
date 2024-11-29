@@ -141,7 +141,7 @@ dependencies:
 
   philippines_rpcmb: ^0.0.3
 
-  flutter_hooks: ^0.20.5
+  table_calendar: ^3.1.2
 
 dev_dependencies:
   flutter_test:

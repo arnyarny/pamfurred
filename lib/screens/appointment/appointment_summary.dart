@@ -283,17 +283,6 @@ class AppointmentSummaryScreenState
                                 await insertAppointmentItems(
                                     newAppointment.toString());
 
-                                final supabase = Supabase.instance.client;
-
-                                await supabase.from('notification').insert({
-                                  'appointment_id': appointmentId,
-                                  'appointment_notif_type':
-                                      'Upcoming', // Or any type based on your logic
-                                  'created_at': DateTime.now()
-                                      .toUtc()
-                                      .toIso8601String(), // Current timestamp in UTC
-                                });
-
                                 if (context.mounted) {
                                   Navigator.push(
                                     context,

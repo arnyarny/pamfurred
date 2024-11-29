@@ -80,7 +80,11 @@ class AppointmentSummaryScreenState
 
   Future<void> showAppointmentNotification(
       String serviceProviderName, String appointmentId) async {
-    const AndroidNotificationDetails androidDetails =
+    // Prepare the full message body for expanded view
+    String expandedBody = 'You have an appointment with $serviceProviderName.';
+
+    // Android notification details with expandable text
+    final AndroidNotificationDetails androidDetails =
         AndroidNotificationDetails(
       'pamfurred_appointment_channel', // Channel ID
       'Pamfurred Appointment Notifications', // Channel Name
@@ -89,19 +93,24 @@ class AppointmentSummaryScreenState
       priority: Priority.high,
       icon: 'pamfurred',
       showWhen: true,
+      styleInformation: BigTextStyleInformation(
+        expandedBody, // Full text for expanded view
+        contentTitle: 'Appointment Confirmed!', // Title in expanded view
+      ),
     );
 
-    const NotificationDetails notificationDetails = NotificationDetails(
+    NotificationDetails notificationDetails = NotificationDetails(
       android: androidDetails,
     );
 
+    // Show the notification
     await flutterLocalNotificationsPlugin.show(
       0, // Notification ID
       'Appointment Confirmed!', // Notification Title
       'You have an appointment with $serviceProviderName.', // Notification Body
       notificationDetails,
       payload:
-          appointmentId, //Include appointment_id to handle the notification click
+          appointmentId, // Include appointment_id to handle the notification click
     );
   }
 

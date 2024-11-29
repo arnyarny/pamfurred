@@ -70,28 +70,32 @@ Widget customPaddedTextButtonWIthSecondaryColor({
 Widget customSmallPaddedTextButton({
   required String text,
   required VoidCallback onPressed,
+  bool isEnabled = true, // Add this optional parameter
 }) {
   return TextButton(
-      onPressed: onPressed,
-      style: ButtonStyle(
-          shape: WidgetStateProperty.all<RoundedRectangleBorder>(
-            RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(secondaryBorderRadius),
-            ),
-          ),
-          backgroundColor: WidgetStateProperty.all<Color>(
-            primaryColor,
-          )),
-      child: Padding(
-        padding: const EdgeInsets.all(2),
-        child: Text(
-          text,
-          style: const TextStyle(
-              color: Colors.white,
-              fontSize: smallText,
-              fontWeight: FontWeight.normal),
+    onPressed: isEnabled ? onPressed : null, // Disable if isEnabled is false
+    style: ButtonStyle(
+      shape: WidgetStateProperty.all<RoundedRectangleBorder>(
+        RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(secondaryBorderRadius),
         ),
-      ));
+      ),
+      backgroundColor: WidgetStateProperty.all<Color>(
+        isEnabled ? primaryColor : lightGreyColor,
+      ),
+    ),
+    child: Padding(
+      padding: const EdgeInsets.all(2),
+      child: Text(
+        text,
+        style: const TextStyle(
+          color: Colors.white, // Optionally change text color when disabled
+          fontSize: smallText,
+          fontWeight: FontWeight.normal,
+        ),
+      ),
+    ),
+  );
 }
 
 Widget customPaddedOutlinedTextButton({

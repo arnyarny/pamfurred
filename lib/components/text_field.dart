@@ -8,6 +8,8 @@ class CustomTextField extends StatefulWidget {
   final String controllerKey;
   final Map<String, TextEditingController> controllers;
   final bool isEmail;
+  final bool isRequired;
+  final String? defaultValue; // Optional default value
 
   const CustomTextField({
     super.key,
@@ -15,6 +17,9 @@ class CustomTextField extends StatefulWidget {
     required this.controllerKey,
     required this.controllers,
     this.isEmail = false,
+    this.isRequired =
+        true, // Default is true, making the field required by default
+    this.defaultValue, // Default value is optional
   });
 
   @override
@@ -29,6 +34,11 @@ class CustomTextFieldState extends State<CustomTextField> {
   void initState() {
     super.initState();
     _focusNode.addListener(_handleFocusChange);
+
+    // If a defaultValue is provided, set it in the controller
+    if (widget.defaultValue != null) {
+      widget.controllers[widget.controllerKey]?.text = widget.defaultValue!;
+    }
   }
 
   @override
@@ -48,10 +58,14 @@ class CustomTextFieldState extends State<CustomTextField> {
   }
 
   String? _validateInput(String? value) {
-    if (value == null || value.isEmpty) {
+    // Check if the field is required and if the value is empty
+    if (widget.isRequired && (value == null || value.isEmpty)) {
       return "${widget.label} is required";
     }
-    if (widget.isEmail && !RegExp(r'^[^@]+@[^@]+\.[^@]+').hasMatch(value)) {
+    // Validate email if the field is marked as email
+    if (widget.isEmail &&
+        value != null &&
+        !RegExp(r'^[^@]+@[^@]+\.[^@]+').hasMatch(value)) {
       return "Enter a valid email address";
     }
     return null;
@@ -66,8 +80,10 @@ class CustomTextFieldState extends State<CustomTextField> {
           text: TextSpan(
             text: "${widget.label} ",
             style: const TextStyle(color: Colors.black, fontSize: regularText),
-            children: const [
-              TextSpan(text: "*", style: TextStyle(color: primaryColor)),
+            children: [
+              if (widget.isRequired) // Show asterisk only if required
+                const TextSpan(
+                    text: "*", style: TextStyle(color: primaryColor)),
             ],
           ),
         ),

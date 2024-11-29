@@ -35,13 +35,47 @@ Future<Map<String, dynamic>?> retrieveLocation(String userId) async {
 }
 
 // Provider to fetch address details based on location coordinates
-final addressProvider = FutureProvider<Map<String, String>>((ref) async {
-  final userId = ref.read(userIdProvider);
-  final location = await retrieveLocation(userId!);
-  if (location != null) {
-    return await fetchAddress(location['latitude'], location['longitude']);
+// final addressProvider = FutureProvider<Map<String, String>>((ref) async {
+//   final userId = ref.read(userIdProvider);
+//   final location = await retrieveLocation(userId!);
+//   if (location != null) {
+//     return await fetchAddress(location['latitude'], location['longitude']);
+//   }
+//   return {};
+// });
+
+// Provider to fetch user and address details
+final userAddressProvider = FutureProvider<Map<String, dynamic>>((ref) async {
+  // Extract user ID from the session (assuming userIdProvider provides the user ID)
+  final userId = ref.watch(userIdProvider);
+
+  // Fetch user details from the `user` table
+  final userResponse = await Supabase.instance.client
+      .from('user')
+      .select()
+      .eq('user_id', userId)
+      .single();
+
+  final userDetails = userResponse as Map<String, dynamic>;
+
+  // Extract the address ID from user details
+  final String? addressId = userDetails['address_id'];
+
+  if (addressId == null) {
+    throw Exception('No address ID found for the user.');
   }
-  return {};
+
+  // Fetch address details from the `address` table
+  final addressResponse = await Supabase.instance.client
+      .from('address')
+      .select()
+      .eq('address_id', addressId)
+      .single();
+
+  final addressDetails = addressResponse as Map<String, dynamic>;
+
+  // Return just the address details for easy access
+  return addressDetails;
 });
 
 // Fetch longlat from the stored riverpod state without backend

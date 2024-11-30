@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:pamfurred/components/globals.dart';
 import 'package:pamfurred/models/cart_item.dart';
 import 'package:pamfurred/models/services.dart';
 import 'package:pamfurred/models/packages.dart';
@@ -8,11 +7,9 @@ import 'package:pamfurred/providers/user_id.dart';
 import 'package:quickalert/models/quickalert_type.dart';
 import 'package:quickalert/widgets/quickalert_dialog.dart';
 
-// CartNotifier now requires the userId as a parameter
 class CartNotifier extends StateNotifier<Set<CartItem>> {
-  CartNotifier(this.context, this.userId) : super({});
+  CartNotifier(this.userId) : super({});
 
-  final BuildContext context;
   final String? userId; // Store the userId for further use
 
   // Helper to get a unique set of provider IDs in the cart
@@ -49,9 +46,9 @@ class CartNotifier extends StateNotifier<Set<CartItem>> {
     return false; // No conflict found
   }
 
-  void addService(Service service) {
+  void addService(Service service, BuildContext context) {
     if (_isConflict(service)) {
-      _showProviderConflictDialog();
+      _showProviderConflictDialog(context);
       return;
     }
     if (!state.any((item) => item.id == service.id)) {
@@ -59,9 +56,9 @@ class CartNotifier extends StateNotifier<Set<CartItem>> {
     }
   }
 
-  void addPackage(Package package) {
+  void addPackage(Package package, BuildContext context) {
     if (_isPackageConflict(package)) {
-      _showProviderConflictDialog();
+      _showProviderConflictDialog(context);
       return;
     }
     if (!state.any((item) => item.id == package.id)) {
@@ -69,7 +66,7 @@ class CartNotifier extends StateNotifier<Set<CartItem>> {
     }
   }
 
-  void _showProviderConflictDialog() {
+  void _showProviderConflictDialog(BuildContext context) {
     QuickAlert.show(
       context: context,
       type: QuickAlertType.error,
@@ -94,9 +91,8 @@ class CartNotifier extends StateNotifier<Set<CartItem>> {
 // Create a provider for CartNotifier that also listens for the userIdProvider
 final cartNotifierProvider =
     StateNotifierProvider<CartNotifier, Set<CartItem>>((ref) {
-  final context = ref.watch(appContextProvider);
   final userId = ref.watch(userIdProvider); // Watch the current user ID
-  return CartNotifier(context, userId);
+  return CartNotifier(userId);
 });
 
 // Provider to calculate the total price of all items in the cart

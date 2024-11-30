@@ -716,7 +716,8 @@ final servicesTabProvider = FutureProvider<List<Widget>>((ref) async {
                                                                       service)
                                                               : cartNotifier
                                                                   .addService(
-                                                                      service);
+                                                                      service,
+                                                                      context);
                                                         },
                                                       ),
                                                     ),
@@ -897,7 +898,8 @@ final packagesTabProvider = FutureProvider<List<Widget>>((ref) async {
                                                                       package)
                                                               : cartNotifier
                                                                   .addPackage(
-                                                                      package);
+                                                                      package,
+                                                                      context);
                                                         },
                                                       ),
                                                     ),

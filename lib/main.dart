@@ -1,19 +1,25 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:pamfurred/backend_logic_files/realtime_service.dart';
 import 'package:pamfurred/components/globals.dart';
-import 'package:pamfurred/screens/appointment_details/appointment_details.dart';
-import 'package:pamfurred/screens/auth_redirect.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 
+import 'package:pamfurred/screens/auth_redirect.dart';
+import 'package:pamfurred/screens/main_screen.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
+
+// Create a navigator key for global navigation
+final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
+
+// Initialize the local notifications plugin
 final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
     FlutterLocalNotificationsPlugin();
 
-Future<void> initializeNotifications(context) async {
+/// Function to initialize notifications
+Future<void> initializeNotifications() async {
   const AndroidInitializationSettings androidInitializationSettings =
       AndroidInitializationSettings('pamfurred');
 
@@ -25,15 +31,13 @@ Future<void> initializeNotifications(context) async {
   await flutterLocalNotificationsPlugin.initialize(
     initializationSettings,
     onDidReceiveNotificationResponse: (NotificationResponse response) {
-      if (response.payload != null) {
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => const AppointmentDetailsScreen(),
-          ),
-        );
-      }
-      print('Notification tapped with payload: ${response.payload}');
+      // Navigate to AppointmentsScreen directly when a notification is tapped
+      navigatorKey.currentState?.push(
+        MaterialPageRoute(
+          builder: (context) => const MainScreen(initialPage: 1),
+        ),
+      );
+      print('Notification tapped.');
     },
   );
 }
@@ -53,20 +57,20 @@ void main() async {
     return;
   }
 
-  await initializeNotifications(BuildContext); // Initialize local notifications
+  // Initialize local notifications
+  await initializeNotifications();
 
   final realtimeService = RealtimeService();
 
   // Start listening to appointments
   realtimeService.listenToAppointments();
 
-  SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp])
-      .then((_) {
-    runApp(const MaterialApp(
-      home: MyApp(),
-      debugShowCheckedModeBanner: false,
-    ));
-  });
+  // Lock device orientation to portrait
+  SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]).then(
+    (_) {
+      runApp(const MyApp());
+    },
+  );
 }
 
 class MyApp extends StatelessWidget {
@@ -79,6 +83,8 @@ class MyApp extends StatelessWidget {
         appContextProvider.overrideWithValue(context),
       ],
       child: MaterialApp(
+        navigatorKey:
+            navigatorKey, // Attach navigator key for global navigation
         localizationsDelegates: const [
           GlobalMaterialLocalizations.delegate,
           GlobalWidgetsLocalizations.delegate,
@@ -99,7 +105,7 @@ class MyApp extends StatelessWidget {
               Theme.of(context).colorScheme.copyWith(primary: primaryColor),
           splashFactory: NoSplash.splashFactory, // Disable splash colors
         ),
-        home: const AuthRedirect(),
+        home: const AuthRedirect(), // Initial screen
       ),
     );
   }

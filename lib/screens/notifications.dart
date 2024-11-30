@@ -104,29 +104,32 @@ class NotificationsScreenState extends ConsumerState<NotificationsScreen> {
     // Separate notifications into "Today," "Yesterday," and "Older"
     List todayNotifications = notifications.where((notification) {
       final createdAt = notification['created_at'];
-      if (createdAt != null) {
+      final appointmentType = notification['appointment_notif_type'];
+      if (createdAt != null && appointmentType != "Upcoming") {
         final parsedDate = DateTime.parse(createdAt);
         return isToday(parsedDate);
       }
-      return false; // Return false if created_at is null
+      return false; // Return false if created_at is null or type is "Upcoming"
     }).toList();
 
     List yesterdayNotifications = notifications.where((notification) {
       final createdAt = notification['created_at'];
-      if (createdAt != null) {
+      final appointmentType = notification['appointment_notif_type'];
+      if (createdAt != null && appointmentType != "Upcoming") {
         final parsedDate = DateTime.parse(createdAt);
         return isYesterday(parsedDate);
       }
-      return false; // Return false if created_at is null
+      return false; // Return false if created_at is null or type is "Upcoming"
     }).toList();
 
     List olderNotifications = notifications.where((notification) {
       final createdAt = notification['created_at'];
-      if (createdAt != null) {
+      final appointmentType = notification['appointment_notif_type'];
+      if (createdAt != null && appointmentType != "Upcoming") {
         final parsedDate = DateTime.parse(createdAt);
         return !isToday(parsedDate) && !isYesterday(parsedDate);
       }
-      return false; // Return false if created_at is null
+      return false; // Return false if created_at is null or type is "Upcoming"
     }).toList();
 
     return SafeArea(

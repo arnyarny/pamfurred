@@ -1,12 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pamfurred/components/custom_appbar.dart';
 import 'package:pamfurred/components/regular_text.dart';
 import 'package:pamfurred/components/screen_transitions.dart';
 import 'package:pamfurred/components/time_and_date_formatter.dart';
 import 'package:pamfurred/components/title_text.dart';
-import 'package:pamfurred/main.dart';
 import 'package:pamfurred/models/packages.dart';
 import 'package:pamfurred/models/services.dart';
 import 'package:pamfurred/providers/cart_provider.dart';
@@ -76,42 +74,6 @@ class AppointmentSummaryScreenState
     ref.read(appointmentIdProvider.notifier).state = appointmentId.toString();
 
     return appointmentId;
-  }
-
-  Future<void> showAppointmentNotification(
-      String serviceProviderName, String appointmentId) async {
-    // Prepare the full message body for expanded view
-    String expandedBody = 'You have an appointment with $serviceProviderName.';
-
-    // Android notification details with expandable text
-    final AndroidNotificationDetails androidDetails =
-        AndroidNotificationDetails(
-      'pamfurred_appointment_channel', // Channel ID
-      'Pamfurred Appointment Notifications', // Channel Name
-      channelDescription: 'Notifications for confirmed Pamfurred appointments',
-      importance: Importance.max,
-      priority: Priority.high,
-      icon: 'pamfurred',
-      showWhen: true,
-      styleInformation: BigTextStyleInformation(
-        expandedBody, // Full text for expanded view
-        contentTitle: 'Appointment Confirmed!', // Title in expanded view
-      ),
-    );
-
-    NotificationDetails notificationDetails = NotificationDetails(
-      android: androidDetails,
-    );
-
-    // Show the notification
-    await flutterLocalNotificationsPlugin.show(
-      0, // Notification ID
-      'Appointment Confirmed!', // Notification Title
-      'You have an appointment with $serviceProviderName.', // Notification Body
-      notificationDetails,
-      payload:
-          appointmentId, // Include appointment_id to handle the notification click
-    );
   }
 
 // Function to fetch service provider name using the spId from the provider
@@ -275,19 +237,6 @@ class AppointmentSummaryScreenState
                               );
 
                               if (newAppointment != null) {
-                                // Fetch the service provider name using Riverpod's ref
-                                final serviceProviderName =
-                                    await fetchServiceProviderName(ref);
-
-                                final appointmentId =
-                                    ref.read(appointmentIdProvider);
-
-                                if (serviceProviderName != null) {
-                                  // Show the notification with the service provider name
-                                  await showAppointmentNotification(
-                                      serviceProviderName, appointmentId);
-                                }
-
                                 // Insert appointment items into the table
                                 await insertAppointmentItems(
                                     newAppointment.toString());

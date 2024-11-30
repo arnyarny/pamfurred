@@ -36,13 +36,14 @@ class MainScreenState extends ConsumerState<MainScreen> {
     final isVisible = ref.watch(visibilityProvider);
     final currentIndex = ref.watch(bottomNavBarIndexProvider);
 
-    // Sync the PageController with the current index whenever it changes
+    // Ensure animations don't conflict
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (_pageController.hasClients) {
+      if (_pageController.hasClients &&
+          _pageController.page?.round() != currentIndex) {
         _pageController.animateToPage(
-          currentIndex, // Animate to the correct page
+          currentIndex,
           duration: const Duration(milliseconds: 300),
-          curve: Curves.easeInOut, // Add a smooth animation curve
+          curve: Curves.easeInOut,
         );
       }
     });
@@ -56,6 +57,7 @@ class MainScreenState extends ConsumerState<MainScreen> {
 
     return Scaffold(
       body: PageView(
+        physics: const NeverScrollableScrollPhysics(),
         controller: _pageController,
         onPageChanged: (index) {
           ref.read(bottomNavBarIndexProvider.notifier).state = index;

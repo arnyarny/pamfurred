@@ -30,14 +30,16 @@ Future<void> initializeNotifications() async {
 
   await flutterLocalNotificationsPlugin.initialize(
     initializationSettings,
-    onDidReceiveNotificationResponse: (NotificationResponse response) {
-      // Navigate to AppointmentsScreen directly when a notification is tapped
-      navigatorKey.currentState?.push(
-        MaterialPageRoute(
-          builder: (context) => const MainScreen(initialPage: 1),
-        ),
-      );
-      print('Notification tapped.');
+    onDidReceiveNotificationResponse: (response) {
+      try {
+        navigatorKey.currentState?.push(
+          MaterialPageRoute(
+            builder: (context) => const MainScreen(initialPage: 1),
+          ),
+        );
+      } catch (e) {
+        print("Error navigating on notification tap: $e");
+      }
     },
   );
 }

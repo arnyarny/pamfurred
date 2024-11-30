@@ -94,7 +94,7 @@ class CartNotifier extends StateNotifier<Set<CartItem>> {
 // Create a provider for CartNotifier that also listens for the userIdProvider
 final cartNotifierProvider =
     StateNotifierProvider<CartNotifier, Set<CartItem>>((ref) {
-  final context = ref.read(appContextProvider);
+  final context = ref.watch(appContextProvider);
   final userId = ref.watch(userIdProvider); // Watch the current user ID
   return CartNotifier(context, userId);
 });

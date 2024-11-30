@@ -8,7 +8,9 @@ import 'package:pamfurred/screens/profile.dart';
 import '../components/bottom_navbar.dart';
 
 class MainScreen extends ConsumerStatefulWidget {
-  const MainScreen({super.key});
+  final int initialPage;
+
+  const MainScreen({super.key, this.initialPage = 0});
 
   @override
   MainScreenState createState() => MainScreenState();
@@ -20,7 +22,7 @@ class MainScreenState extends ConsumerState<MainScreen> {
   @override
   void initState() {
     super.initState();
-    _pageController = PageController();
+    _pageController = PageController(initialPage: widget.initialPage);
   }
 
   @override

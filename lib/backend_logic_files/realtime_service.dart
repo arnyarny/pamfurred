@@ -93,6 +93,7 @@ class RealtimeService {
         'appointment_id': appointmentId,
         'appointment_notif_type':
             notificationType, // Or any type based on your logic
+        'created_at': DateTime.now().toUtc().toIso8601String(),
       });
 
       // Fetch related service provider details for notification content

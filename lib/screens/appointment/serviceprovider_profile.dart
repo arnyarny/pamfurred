@@ -93,6 +93,12 @@ class ServiceproviderProfileScreenState
     // Access the list of pet profiles
     final petProfileData = ref.watch(petProfileProvider(userId!));
 
+    final spIndexData = ref.watch(spIndexProvider);
+
+    // Get the JSONB data
+    final petTypeOptions =
+        (spIndexData?['unique_pet_types'] as List<dynamic>).cast<String>();
+
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
@@ -236,6 +242,11 @@ class ServiceproviderProfileScreenState
                 onPressed: () {
                   petProfileData.when(
                     data: (data) {
+                      final pet = data
+                          .where((pet) => petTypeOptions
+                              .contains(pet['pet_type'].toString()))
+                          .toList();
+
                       if (data.isEmpty) {
                         QuickAlert.show(
                           context: context,
@@ -244,6 +255,7 @@ class ServiceproviderProfileScreenState
                           text:
                               "You don't have any pet profile yet. Please add a pet profile first.",
                           confirmBtnText: 'Add now',
+                          showConfirmBtn: true,
                           onConfirmBtnTap: () {
                             // Find the context for the dialog and close it without affecting the screen
                             Navigator.of(context, rootNavigator: true)
@@ -255,6 +267,16 @@ class ServiceproviderProfileScreenState
                               slideUpRoute(const AddPetProfileScreen()),
                             );
                           },
+                          showCancelBtn: true,
+                        );
+                      } else if (pet.isEmpty) {
+                        QuickAlert.show(
+                          context: context,
+                          type: QuickAlertType.error,
+                          title: 'Oops!',
+                          text:
+                              "Your pets' type doesn't match the services or packages offered by this service provider.",
+                          confirmBtnText: 'Add pet',
                           showCancelBtn: true,
                         );
                       } else {

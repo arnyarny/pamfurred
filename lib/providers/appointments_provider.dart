@@ -43,6 +43,8 @@ final tappedSpAppointmentIdProvider = StateProvider<String>((ref) => '');
 
 final selectedAppointmentIdProvider = StateProvider<String>((ref) => '');
 
+// Handler to check if pet matches the pet type offered by service provider
+final matchesPetType = StateProvider<bool>((ref) => true);
 
 // Address providers for add new address
 final addedFloorUnitRoomProvider = StateProvider<String?>((ref) => '');

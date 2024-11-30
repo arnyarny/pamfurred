@@ -143,6 +143,11 @@ class SuccessfulAppointmentState extends ConsumerState<SuccessfulAppointment> {
                         ref.read(willBookProvider.notifier).state = false;
                         ref.read(bottomNavBarIndexProvider.notifier).state =
                             0; // Switch to Home page
+
+                        // Reset date and time providers
+                        ref.read(selectedTimeslotProvider.notifier).state = null;
+                        ref.read(selectedDateProvider.notifier).state = null;
+
                         Navigator.push(
                             context, crossFadeRoute(const MainScreen()));
                       }),

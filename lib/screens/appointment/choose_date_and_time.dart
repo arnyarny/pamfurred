@@ -8,6 +8,7 @@ import 'package:pamfurred/components/time_and_date_formatter.dart';
 import 'package:pamfurred/providers/available_timeslots_provider.dart';
 import 'package:pamfurred/providers/serviceprovider_provider.dart';
 import 'package:pamfurred/screens/appointment/appointment_summary.dart';
+import 'package:shimmer/shimmer.dart';
 import 'package:table_calendar/table_calendar.dart';
 
 class ChooseDateAndTimeScreen extends ConsumerWidget {
@@ -67,6 +68,7 @@ class ChooseDateAndTimeScreen extends ConsumerWidget {
             ),
             const SizedBox(height: 8),
             TableCalendar(
+              pageAnimationEnabled: false,
               focusedDay: selectedDate != null
                   ? DateTime.parse(selectedDate)
                   : DateTime.now(),
@@ -175,11 +177,33 @@ class ChooseDateAndTimeScreen extends ConsumerWidget {
                             );
                           }
                         },
-                        loading: () => const CircularProgressIndicator(),
+                        loading: () => Shimmer.fromColors(
+                          baseColor: Colors.grey[300]!,
+                          highlightColor: Colors.grey[100]!,
+                          child: Container(
+                            width: 40,
+                            height: 40,
+                            decoration: const BoxDecoration(
+                              color: Colors.grey,
+                              shape: BoxShape.circle,
+                            ),
+                          ),
+                        ),
                         error: (error, stackTrace) => const Text('Error'),
                       );
                     },
-                    loading: () => const CircularProgressIndicator(),
+                    loading: () => Shimmer.fromColors(
+                      baseColor: Colors.grey[300]!,
+                      highlightColor: Colors.grey[100]!,
+                      child: Container(
+                        width: 40,
+                        height: 40,
+                        decoration: const BoxDecoration(
+                          color: Colors.grey,
+                          shape: BoxShape.circle,
+                        ),
+                      ),
+                    ),
                     error: (error, stackTrace) => const Text('Error'),
                   );
                 },

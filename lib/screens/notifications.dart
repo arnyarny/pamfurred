@@ -229,10 +229,6 @@ class NotificationsScreenState extends ConsumerState<NotificationsScreen> {
             children: [
               Row(
                 children: [
-                  if (notification['appointment_notif_type'] == 'Upcoming') ...[
-                    customTitleText(context, 'Upcoming '),
-                    customTitleText(context, "appointment"),
-                  ],
                   if (notification['appointment_notif_type'] != 'Upcoming') ...[
                     customTitleText(context, "Appointment"),
                     customTitleText(

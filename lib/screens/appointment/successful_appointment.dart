@@ -145,8 +145,38 @@ class SuccessfulAppointmentState extends ConsumerState<SuccessfulAppointment> {
                             0; // Switch to Home page
 
                         // Reset date and time providers
-                        ref.read(selectedTimeslotProvider.notifier).state = null;
+                        ref.read(selectedTimeslotProvider.notifier).state =
+                            null;
                         ref.read(selectedDateProvider.notifier).state = null;
+
+                        // Reset the selected pet ID in the provider
+                        ref.read(selectedPetProfileIdProvider.notifier).state =
+                            null;
+                        ref
+                            .read(selectedAppointmentPetTypeIndexProvider
+                                .notifier)
+                            .state = '';
+                        ref
+                            .read(selectedAppointmentPetTypeProvider.notifier)
+                            .state = '';
+                        // Reset selected pet weight
+                        ref
+                            .read(selectedAppointmentPetWeightProvider.notifier)
+                            .state = null;
+
+                        // Reset package service type
+                        ref
+                            .read(selectedAppointmentPackageServiceTypeProvider
+                                .notifier)
+                            .state = '';
+
+                        // Reset service package category
+                        ref
+                            .read(selectedAppointmentCategoryProvider.notifier)
+                            .state = '';
+
+                        // Reset sp profile tab index
+                        ref.read(selectedTabProvider.notifier).state = 0;
 
                         Navigator.push(
                             context, crossFadeRoute(const MainScreen()));

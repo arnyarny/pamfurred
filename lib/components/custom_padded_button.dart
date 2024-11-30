@@ -81,7 +81,7 @@ Widget customSmallPaddedTextButton({
         ),
       ),
       backgroundColor: WidgetStateProperty.all<Color>(
-        isEnabled ? primaryColor : lightGreyColor,
+        isEnabled ? primaryColor : disabledButtonTextColor,
       ),
     ),
     child: Padding(

@@ -266,6 +266,7 @@ class ServiceproviderProfileScreenState
                         );
                         setState(() {
                           ref.read(willBookProvider.notifier).state = true;
+                          ref.read(selectedTabProvider.notifier).state = 1;
                         });
                       }
                     },

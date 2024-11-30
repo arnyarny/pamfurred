@@ -9,13 +9,15 @@ class ServicePackageDetails extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final servicePackageId = ref.watch(selectedServicePackageIdProvider);
+    final servicePackageId = ref.watch(selectedServicePackageIdProvider).toString();
     final details = ref.watch(servicePackageDetailsProvider(servicePackageId));
 
     return Scaffold(
       appBar: AppBar(title: const Text('Details')),
       body: details.when(
         data: (item) {
+          print('Image URL: ${item.imageUrl}');
+          print('Sp Name: ${item.spName}');
           return Padding(
             padding: const EdgeInsets.all(16.0),
             child: Column(
@@ -25,11 +27,13 @@ class ServicePackageDetails extends ConsumerWidget {
                     style: const TextStyle(
                         fontSize: 24, fontWeight: FontWeight.bold)),
                 const SizedBox(height: 8),
-                CachedNetworkImage(
-                    imageUrl: item.imageUrl,
-                    width: double.infinity,
-                    height: 200,
-                    fit: BoxFit.cover),
+                if (item.imageUrl != '' || item.imageUrl.isNotEmpty) ...[
+                  CachedNetworkImage(
+                      imageUrl: item.imageUrl,
+                      width: double.infinity,
+                      height: 200,
+                      fit: BoxFit.cover),
+                ],
                 const SizedBox(height: 16),
                 Text('Provider: ${item.spName}',
                     style: const TextStyle(fontSize: 18)),

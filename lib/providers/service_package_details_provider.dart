@@ -61,7 +61,7 @@ final servicePackageDetailsProvider =
 });
 
 // Helper function to fetch metadata for a given ID
-Future<Map<String, String>> fetchMetadataForId(String servicePackageId) async {
+Future<Map<String, dynamic>> fetchMetadataForId(String servicePackageId) async {
   // Replace this with your actual logic for fetching metadata
   // For example, querying the database or using an API endpoint
   
@@ -72,5 +72,5 @@ Future<Map<String, String>> fetchMetadataForId(String servicePackageId) async {
       .eq('id', servicePackageId)
       .single();
 
-  return response as Map<String, String>;
+  return response as Map<String, dynamic>;
 }

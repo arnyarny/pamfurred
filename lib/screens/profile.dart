@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pamfurred/components/custom_padded_button.dart';
 import 'package:pamfurred/components/globals.dart';
-import 'package:pamfurred/components/header.dart';
 import 'package:pamfurred/components/pull_to_refresh.dart';
 import 'package:pamfurred/components/screen_transitions.dart';
 import 'package:pamfurred/components/title_text.dart';
@@ -156,7 +155,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            buildSectionHeader(
+                            buildProfileSectionHeader(
                               '${mapUserDetails?['first_name'] ?? ''} ${mapUserDetails?['last_name'] ?? ''}'
                                   .trim(),
                             ),
@@ -421,33 +420,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                     title: "Email address",
                     details: mapPetOwnerDetails?['email'] ?? '',
                   ),
-                  const InkWell(
-                    child: Card(
-                      color: lightGreyColor,
-                      elevation: 0,
-                      child: Padding(
-                        padding:
-                            EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          children: [
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text('Change password',
-                                      style: TextStyle(fontSize: 16)),
-                                ],
-                              ),
-                            ),
-                            Icon(Icons.arrow_forward_ios_outlined,
-                                color: greyColor),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
+                  buildChangePasswordCard(),
                 ],
               ),
             ),
@@ -463,7 +436,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     required String? details,
   }) {
     return InkWell(
-      onTap: details != null && details.isNotEmpty
+      onTap: !isLoading && details != null && details.isNotEmpty
           ? () => _editDetails(context, title, details)
           : null,
       hoverColor: Colors.transparent,
@@ -480,15 +453,50 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    customRegularWeightTitleText(context, title),
+                    isLoading
+                        ? Shimmer.fromColors(
+                            baseColor: Colors.grey[300]!,
+                            highlightColor: Colors.grey[100]!,
+                            child: Container(
+                              width: 100,
+                              height: 20,
+                              color: Colors.grey,
+                            ),
+                          )
+                        : customRegularWeightTitleText(context, title),
                     const SizedBox(height: 8),
-                    Text(details ?? '',
-                        style: const TextStyle(
-                            color: greyColor, overflow: TextOverflow.ellipsis)),
+                    isLoading
+                        ? Shimmer.fromColors(
+                            baseColor: Colors.grey[300]!,
+                            highlightColor: Colors.grey[100]!,
+                            child: Container(
+                              width: double.infinity,
+                              height: 16,
+                              color: Colors.grey,
+                            ),
+                          )
+                        : Text(
+                            details ?? '',
+                            style: const TextStyle(
+                              color: greyColor,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
                   ],
                 ),
               ),
-              const Icon(Icons.arrow_forward_ios_outlined, color: greyColor),
+              isLoading
+                  ? Shimmer.fromColors(
+                      baseColor: Colors.grey[300]!,
+                      highlightColor: Colors.grey[100]!,
+                      child: Container(
+                        width: 16,
+                        height: 16,
+                        color: Colors.grey,
+                      ),
+                    )
+                  : const Icon(Icons.arrow_forward_ios_outlined,
+                      color: greyColor),
             ],
           ),
         ),
@@ -675,6 +683,85 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
           ],
         );
       },
+    );
+  }
+
+  Widget buildChangePasswordCard() {
+    return InkWell(
+      onTap: isLoading ? null : () => (),
+      child: Card(
+        color: lightGreyColor,
+        elevation: 0,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    isLoading
+                        ? Shimmer.fromColors(
+                            baseColor: Colors.grey[300]!,
+                            highlightColor: Colors.grey[100]!,
+                            child: Container(
+                              width: 150,
+                              height: 20,
+                              color: Colors.grey,
+                            ),
+                          )
+                        : const Text(
+                            'Change password',
+                            style: TextStyle(fontSize: 16),
+                          ),
+                  ],
+                ),
+              ),
+              isLoading
+                  ? Shimmer.fromColors(
+                      baseColor: Colors.grey[300]!,
+                      highlightColor: Colors.grey[100]!,
+                      child: Container(
+                        width: 16,
+                        height: 16,
+                        color: Colors.grey,
+                      ),
+                    )
+                  : const Icon(Icons.arrow_forward_ios_outlined,
+                      color: greyColor),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget buildProfileSectionHeader(String title) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const SizedBox(height: secondarySizedBox),
+        isLoading
+            ? Shimmer.fromColors(
+                baseColor: Colors.grey[300]!,
+                highlightColor: Colors.grey[100]!,
+                child: Container(
+                  width: 200, // Adjust width as needed
+                  height: 24, // Matches the approximate height of the text
+                  color: Colors.grey,
+                ),
+              )
+            : Text(
+                title,
+                style: const TextStyle(
+                  fontSize: headerText,
+                  fontWeight: mediumWeight,
+                  color: primaryColor,
+                ),
+              ),
+      ],
     );
   }
 }

@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:pamfurred/components/globals.dart';
 
-Widget regularTextWidget(String text) {
+Widget regularTextWidget(String text, {bool isPhoneNumber = false}) {
   return Flexible(
     child: Text(
-      maxLines: 2,
       text,
-      style: const TextStyle(
-        color: Colors.black,
+      maxLines: 2,
+      style: TextStyle(
+        color: isPhoneNumber ? Colors.blue : Colors.black,
         fontSize: regularText,
         fontWeight: regularWeight,
       ),
@@ -28,7 +28,6 @@ Widget regularBoldTextWidget(String text) {
     ),
   );
 }
-
 
 Widget regularGreyTextWidget(String text) {
   return Flexible(

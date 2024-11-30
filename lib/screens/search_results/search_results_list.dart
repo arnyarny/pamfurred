@@ -86,9 +86,11 @@ class ResultsListWidget extends ConsumerWidget {
                           final spId = ref
                               .read(selectedServicePackageIdProvider.notifier)
                               .state = provider.servicePackageId;
-                          print('Service Provider ID: $spId');
+                          print('selectedServicePackageIdProvider ID: $spId');
                           ref.read(selectedSpIndexProvider.notifier).state =
                               provider.spId;
+                          print(
+                              'selectedSpIndexProvider ID: ${ref.read(selectedSpIndexProvider)}');
                           Navigator.push(context,
                               slideUpRoute(const ServicePackageDetails()));
                         },

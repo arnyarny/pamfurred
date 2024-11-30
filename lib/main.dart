@@ -81,6 +81,9 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ProviderScope(
+      overrides: [
+        appContextProvider.overrideWithValue(context),
+      ],
       child: MaterialApp(
         navigatorKey:
             navigatorKey, // Attach navigator key for global navigation

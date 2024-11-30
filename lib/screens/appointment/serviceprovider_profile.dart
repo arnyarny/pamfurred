@@ -30,6 +30,7 @@ import 'package:pamfurred/screens/pet_profile/add_pet_profile.dart';
 import 'package:quickalert/models/quickalert_type.dart';
 import 'package:quickalert/widgets/quickalert_dialog.dart';
 import 'package:shimmer/shimmer.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 // Function to reset providers to null/blank when willBookProvider is false
 void resetProviders(WidgetRef ref) {
@@ -115,6 +116,9 @@ class ServiceproviderProfileScreenState
             onPressed: () {
               // Custom action on back button press
               Navigator.pop(context);
+
+              // Reset tab index
+              ref.read(selectedTabProvider.notifier).state = 0;
             },
           ),
         ),
@@ -518,7 +522,8 @@ final aboutTabProvider = FutureProvider<List<Widget>>((ref) async {
                               const SizedBox(height: secondarySizedBox),
 
                               spDetailsHeader(Icons.call_outlined,
-                                  sp['phone_number'] ?? 'N/A'),
+                                  sp['phone_number'] ?? 'N/A',
+                                  isPhoneNumber: true),
                               const SizedBox(height: secondarySizedBox),
 
                               spDetailsHeader(CupertinoIcons.heart,
@@ -942,7 +947,17 @@ TextStyle _getTabTextStyle(bool isSelected) {
   );
 }
 
-Widget spDetailsHeader(IconData icon, String detail) {
+Widget spDetailsHeader(IconData icon, String detail,
+    {bool isPhoneNumber = false}) {
+  Future<void> launchPhone(String number) async {
+    try {
+      final Uri phoneUri = Uri.parse('tel:$number');
+      await launchUrl(phoneUri, mode: LaunchMode.externalApplication);
+    } catch (e) {
+      debugPrint('Error launching phone number: $e');
+    }
+  }
+
   return Column(
     mainAxisAlignment: MainAxisAlignment.center,
     children: [
@@ -950,11 +965,18 @@ Widget spDetailsHeader(IconData icon, String detail) {
         mainAxisAlignment: MainAxisAlignment.start,
         children: [
           Icon(icon, size: 20, color: const Color.fromARGB(255, 26, 10, 10)),
-          const SizedBox(width: secondarySizedBox),
-          regularTextWidget(detail),
+          const SizedBox(width: 8.0),
+          isPhoneNumber
+              ? GestureDetector(
+                  onTap: () => launchPhone(detail),
+                  child: isPhoneNumber
+                      ? regularTextWidget(detail, isPhoneNumber: true)
+                      : regularTextWidget(detail),
+                )
+              : regularTextWidget(detail),
         ],
       ),
-      const SizedBox(height: secondarySizedBox),
+      const SizedBox(height: 8.0),
     ],
   );
 }

@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:pamfurred/components/custom_appbar.dart';
 import 'package:pamfurred/components/globals.dart';
+import 'package:pamfurred/components/pull_to_refresh.dart';
 import 'package:pamfurred/components/screen_transitions.dart';
 import 'package:pamfurred/components/time_and_date_formatter.dart';
 import 'package:pamfurred/providers/available_timeslots_provider.dart';
@@ -49,133 +50,162 @@ class ChooseDateAndTimeScreen extends ConsumerWidget {
         ),
       ]),
       backgroundColor: Colors.white,
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Date Picker Section
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      body: PullToRefresh(
+        providersToRefresh: [
+          availableDatesProvider,
+        ],
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: SizedBox(
+            width: getScreenWidth(context),
+            height: getScreenHeight(context),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text('Select a date:',
-                    style: TextStyle(fontSize: titleFont)),
-                IconButton(
-                  icon: const Icon(Icons.help_outline_outlined, size: 25),
-                  onPressed: () => _showColorLegend(context),
+                // Date Picker Section
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Text('Select a date:',
+                        style: TextStyle(fontSize: titleFont)),
+                    IconButton(
+                      icon: const Icon(Icons.help_outline_outlined, size: 25),
+                      onPressed: () => _showColorLegend(context),
+                    ),
+                  ],
                 ),
-              ],
-            ),
-            const SizedBox(height: 8),
-            TableCalendar(
-              pageAnimationEnabled: false,
-              focusedDay: selectedDate != null
-                  ? DateTime.parse(selectedDate)
-                  : DateTime.now(),
-              firstDay: DateTime.now(),
-              lastDay: DateTime.now().add(const Duration(days: 30)),
-              selectedDayPredicate: (day) {
-                return selectedDate != null &&
-                    DateFormat('yyyy-MM-dd').format(day) == selectedDate;
-              },
-              onDaySelected: (selectedDay, focusedDay) {
-                final formattedDate =
-                    DateFormat('yyyy-MM-dd').format(selectedDay);
-
-                // Check if the date is available and not fully booked or has no timeslots
-                final availableDatesAsyncValue =
-                    ref.read(availableDatesProvider);
-                availableDatesAsyncValue.when(
-                  data: (availableDates) {
-                    final availability = availableDates.firstWhere(
-                      (availability) =>
-                          availability['availability_date'] == formattedDate,
-                      orElse: () => {'is_fully_booked': false},
+                const SizedBox(height: 8),
+                TableCalendar(
+                  pageAnimationCurve:
+                      Curves.bounceOut, // Bouncy effect for page animations
+                  formatAnimationCurve:
+                      Curves.bounceOut,
+                  pageAnimationDuration:
+                      const Duration(milliseconds: 500), // Slightly longer for emphasis
+                  formatAnimationDuration: const Duration(milliseconds: 500), // Same here
+                  pageAnimationEnabled: false,
+                  focusedDay: selectedDate != null
+                      ? DateTime.parse(selectedDate)
+                      : DateTime.now(),
+                  firstDay: DateTime.now(),
+                  lastDay: DateTime.now().add(const Duration(days: 30)),
+                  selectedDayPredicate: (day) {
+                    return selectedDate != null &&
+                        DateFormat('yyyy-MM-dd').format(day) == selectedDate;
+                  },
+                  onDaySelected: (selectedDay, focusedDay) {
+                    final formattedDate =
+                        DateFormat('yyyy-MM-dd').format(selectedDay);
+                    
+                    // Check if the date is available and not fully booked or has no timeslots
+                    final availableDatesAsyncValue =
+                        ref.read(availableDatesProvider);
+                    availableDatesAsyncValue.when(
+                      data: (availableDates) {
+                        final availability = availableDates.firstWhere(
+                          (availability) =>
+                              availability['availability_date'] == formattedDate,
+                          orElse: () => {'is_fully_booked': false},
+                        );
+                    
+                        if (availability['is_fully_booked'] == false) {
+                          ref.read(availableTimeslotsProvider(formattedDate)).when(
+                                data: (timeslotData) {
+                                  if (timeslotData.isNotEmpty) {
+                                    ref.read(selectedDateProvider.notifier).state =
+                                        formattedDate;
+                                    ref
+                                        .read(selectedTimeslotProvider.notifier)
+                                        .state = null;
+                                  }
+                                },
+                                loading: () {}, // Handle loading if needed
+                                error: (error,
+                                    stackTrace) {}, // Handle error if needed
+                              );
+                        }
+                      },
+                      loading: () {}, // Handle loading if needed
+                      error: (error, stackTrace) {}, // Handle error if needed
                     );
-
-                    if (availability['is_fully_booked'] == false) {
-                      ref.read(availableTimeslotsProvider(formattedDate)).when(
+                  },
+                  calendarBuilders: CalendarBuilders(
+                    defaultBuilder: (context, date, _) {
+                      final formattedDate = DateFormat('yyyy-MM-dd').format(date);
+                    
+                      final availableDatesAsyncValue =
+                          ref.watch(availableDatesProvider);
+                      final availableTimeslotsAsyncValue =
+                          ref.watch(availableTimeslotsProvider(formattedDate));
+                    
+                      return availableDatesAsyncValue.when(
+                        data: (availableDates) {
+                          final availability = availableDates.firstWhere(
+                            (availability) =>
+                                availability['availability_date'] == formattedDate,
+                            orElse: () => {'is_fully_booked': false},
+                          );
+                    
+                          return availableTimeslotsAsyncValue.when(
                             data: (timeslotData) {
-                              if (timeslotData.isNotEmpty) {
-                                ref.read(selectedDateProvider.notifier).state =
-                                    formattedDate;
-                                ref
-                                    .read(selectedTimeslotProvider.notifier)
-                                    .state = null;
+                              if (availability['is_fully_booked'] == true) {
+                                // Fully booked dates are red
+                                return Container(
+                                  width: 40,
+                                  alignment: Alignment.center,
+                                  decoration: const BoxDecoration(
+                                    color: Colors.red,
+                                    shape: BoxShape.circle,
+                                  ),
+                                  child: Text(
+                                    '${date.day}',
+                                    style: const TextStyle(color: Colors.white),
+                                  ),
+                                );
+                              } else if (timeslotData.isEmpty) {
+                                // Dates without timeslots are greyed out
+                                return Container(
+                                  width: 40,
+                                  alignment: Alignment.center,
+                                  decoration: const BoxDecoration(
+                                    color: Colors.grey,
+                                    shape: BoxShape.circle,
+                                  ),
+                                  child: Text(
+                                    '${date.day}',
+                                    style: const TextStyle(color: Colors.white),
+                                  ),
+                                );
+                              } else {
+                                // Available dates are green
+                                return Container(
+                                  width: 40,
+                                  alignment: Alignment.center,
+                                  decoration: const BoxDecoration(
+                                    color: Colors.green,
+                                    shape: BoxShape.circle,
+                                  ),
+                                  child: Text(
+                                    '${date.day}',
+                                    style: const TextStyle(color: Colors.white),
+                                  ),
+                                );
                               }
                             },
-                            loading: () {}, // Handle loading if needed
-                            error: (error,
-                                stackTrace) {}, // Handle error if needed
+                            loading: () => Shimmer.fromColors(
+                              baseColor: Colors.grey[300]!,
+                              highlightColor: Colors.grey[100]!,
+                              child: Container(
+                                width: 40,
+                                height: 40,
+                                decoration: const BoxDecoration(
+                                  color: Colors.grey,
+                                  shape: BoxShape.circle,
+                                ),
+                              ),
+                            ),
+                            error: (error, stackTrace) => const Text('Error'),
                           );
-                    }
-                  },
-                  loading: () {}, // Handle loading if needed
-                  error: (error, stackTrace) {}, // Handle error if needed
-                );
-              },
-              calendarBuilders: CalendarBuilders(
-                defaultBuilder: (context, date, _) {
-                  final formattedDate = DateFormat('yyyy-MM-dd').format(date);
-
-                  final availableDatesAsyncValue =
-                      ref.watch(availableDatesProvider);
-                  final availableTimeslotsAsyncValue =
-                      ref.watch(availableTimeslotsProvider(formattedDate));
-
-                  return availableDatesAsyncValue.when(
-                    data: (availableDates) {
-                      final availability = availableDates.firstWhere(
-                        (availability) =>
-                            availability['availability_date'] == formattedDate,
-                        orElse: () => {'is_fully_booked': false},
-                      );
-
-                      return availableTimeslotsAsyncValue.when(
-                        data: (timeslotData) {
-                          if (availability['is_fully_booked'] == true) {
-                            // Fully booked dates are red
-                            return Container(
-                              width: 40,
-                              alignment: Alignment.center,
-                              decoration: const BoxDecoration(
-                                color: Colors.red,
-                                shape: BoxShape.circle,
-                              ),
-                              child: Text(
-                                '${date.day}',
-                                style: const TextStyle(color: Colors.white),
-                              ),
-                            );
-                          } else if (timeslotData.isEmpty) {
-                            // Dates without timeslots are greyed out
-                            return Container(
-                              width: 40,
-                              alignment: Alignment.center,
-                              decoration: const BoxDecoration(
-                                color: Colors.grey,
-                                shape: BoxShape.circle,
-                              ),
-                              child: Text(
-                                '${date.day}',
-                                style: const TextStyle(color: Colors.white),
-                              ),
-                            );
-                          } else {
-                            // Available dates are green
-                            return Container(
-                              width: 40,
-                              alignment: Alignment.center,
-                              decoration: const BoxDecoration(
-                                color: Colors.green,
-                                shape: BoxShape.circle,
-                              ),
-                              child: Text(
-                                '${date.day}',
-                                style: const TextStyle(color: Colors.white),
-                              ),
-                            );
-                          }
                         },
                         loading: () => Shimmer.fromColors(
                           baseColor: Colors.grey[300]!,
@@ -192,104 +222,91 @@ class ChooseDateAndTimeScreen extends ConsumerWidget {
                         error: (error, stackTrace) => const Text('Error'),
                       );
                     },
-                    loading: () => Shimmer.fromColors(
-                      baseColor: Colors.grey[300]!,
-                      highlightColor: Colors.grey[100]!,
-                      child: Container(
-                        width: 40,
-                        height: 40,
-                        decoration: const BoxDecoration(
-                          color: Colors.grey,
-                          shape: BoxShape.circle,
-                        ),
+                  ),
+                  calendarStyle: CalendarStyle(
+                    todayDecoration: const BoxDecoration(
+                      color: primaryColor,
+                      shape: BoxShape.circle,
+                    ),
+                    selectedDecoration: const BoxDecoration(
+                      color: secondaryColor,
+                      shape: BoxShape.circle,
+                    ),
+                    defaultDecoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      border: Border.all(
+                        color: Colors.black.withOpacity(0.1),
                       ),
                     ),
-                    error: (error, stackTrace) => const Text('Error'),
-                  );
-                },
-              ),
-              calendarStyle: CalendarStyle(
-                todayDecoration: const BoxDecoration(
-                  color: primaryColor,
-                  shape: BoxShape.circle,
-                ),
-                selectedDecoration: const BoxDecoration(
-                  color: secondaryColor,
-                  shape: BoxShape.circle,
-                ),
-                defaultDecoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  border: Border.all(
-                    color: Colors.black.withOpacity(0.1),
+                  ),
+                  headerStyle: const HeaderStyle(
+                    titleCentered: true,
+                    formatButtonVisible: false,
+                    leftChevronIcon: Icon(
+                      Icons.arrow_left,
+                      color: Colors.black,
+                    ),
+                    rightChevronIcon: Icon(
+                      Icons.arrow_right,
+                      color: Colors.black,
+                    ),
                   ),
                 ),
-              ),
-              headerStyle: const HeaderStyle(
-                titleCentered: true,
-                formatButtonVisible: false,
-                leftChevronIcon: Icon(
-                  Icons.arrow_left,
-                  color: Colors.black,
-                ),
-                rightChevronIcon: Icon(
-                  Icons.arrow_right,
-                  color: Colors.black,
-                ),
-              ),
-            ),
-
-            const SizedBox(height: quaternarySizedBox),
-
-            // Timeslot Selector Section
-            const Text('Select time:', style: TextStyle(fontSize: titleFont)),
-            const SizedBox(height: 8),
-            if (selectedDate == null)
-              const Text('Please select a date to see available timeslots.')
-            else
-              ref.watch(availableTimeslotsProvider(selectedDate)).when(
-                  data: (timeslotData) {
-                    final timeslotMap = <String, List<String>>{};
-                    for (var slot in timeslotData) {
-                      final date = slot['availability_date'];
-                      final timeslots = List<String>.from(slot['timeslots']);
-                      timeslotMap[date] = timeslots;
-                    }
-
-                    if (timeslotMap.containsKey(selectedDate)) {
-                      final timeslots = timeslotMap[selectedDate]!;
-                      return Wrap(
-                        spacing: 8.0, // Space between chips
-                        runSpacing: 8.0, // Space between rows of chips
-                        children: timeslots.map((timeslot) {
-                          return ChoiceChip(
-                            label: Text(formatTime(timeslot)),
-                            selected: selectedTimeslot == timeslot,
-                            onSelected: (selected) {
-                              ref
-                                  .read(selectedTimeslotProvider.notifier)
-                                  .state = selected ? timeslot : null;
-                            },
-                            selectedColor: secondaryColor,
-                            checkmarkColor: lighterGreyColor,
-                            backgroundColor: Colors.transparent,
-                            labelStyle: TextStyle(
-                                color: selectedTimeslot == timeslot
-                                    ? lighterGreyColor
-                                    : Colors.black,
-                                fontSize: regularText),
+                    
+                const SizedBox(height: quaternarySizedBox),
+                    
+                // Timeslot Selector Section
+                const Text('Select time:', style: TextStyle(fontSize: titleFont)),
+                const SizedBox(height: 8),
+                if (selectedDate == null)
+                  const Text('Please select a date to see available timeslots.')
+                else
+                  ref.watch(availableTimeslotsProvider(selectedDate)).when(
+                      data: (timeslotData) {
+                        final timeslotMap = <String, List<String>>{};
+                        for (var slot in timeslotData) {
+                          final date = slot['availability_date'];
+                          final timeslots = List<String>.from(slot['timeslots']);
+                          timeslotMap[date] = timeslots;
+                        }
+                    
+                        if (timeslotMap.containsKey(selectedDate)) {
+                          final timeslots = timeslotMap[selectedDate]!;
+                          return Wrap(
+                            spacing: 8.0, // Space between chips
+                            runSpacing: 8.0, // Space between rows of chips
+                            children: timeslots.map((timeslot) {
+                              return ChoiceChip(
+                                label: Text(formatTime(timeslot)),
+                                selected: selectedTimeslot == timeslot,
+                                onSelected: (selected) {
+                                  ref
+                                      .read(selectedTimeslotProvider.notifier)
+                                      .state = selected ? timeslot : null;
+                                },
+                                selectedColor: secondaryColor,
+                                checkmarkColor: lighterGreyColor,
+                                backgroundColor: Colors.transparent,
+                                labelStyle: TextStyle(
+                                    color: selectedTimeslot == timeslot
+                                        ? lighterGreyColor
+                                        : Colors.black,
+                                    fontSize: regularText),
+                              );
+                            }).toList(),
                           );
-                        }).toList(),
-                      );
-                    } else {
-                      return const Center(
-                          child: Text('No available timeslots for this date.'));
-                    }
-                  },
-                  loading: () =>
-                      const Center(child: CircularProgressIndicator()),
-                  error: (error, stackTrace) =>
-                      Center(child: Text('Error: $error'))),
-          ],
+                        } else {
+                          return const Center(
+                              child: Text('No available timeslots for this date.'));
+                        }
+                      },
+                      loading: () =>
+                          const Center(child: CircularProgressIndicator()),
+                      error: (error, stackTrace) =>
+                          Center(child: Text('Error: $error'))),
+              ],
+            ),
+          ),
         ),
       ),
     );

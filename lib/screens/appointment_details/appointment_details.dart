@@ -11,6 +11,7 @@ class AppointmentDetailsScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: customAppBarWithTitle(context, 'Appointment Details'),
+      backgroundColor: Colors.white,
       body: Consumer(
         builder: (context, ref, child) {
           final appointmentId = ref.watch(tappedSpAppointmentIdProvider);
@@ -21,6 +22,8 @@ class AppointmentDetailsScreen extends StatelessWidget {
 
           final specificAppointmentDetails =
               ref.watch(specificAppointmentDetailsProvider(appointmentId));
+
+          print(specificAppointmentDetails);
 
           return specificAppointmentDetails.when(
             data: (data) {
@@ -38,7 +41,15 @@ class AppointmentDetailsScreen extends StatelessWidget {
                   children: [
                     Text('Appointment ID: $appointmentId'),
                     const SizedBox(height: 10),
-                    Text('Appointment Date: ${secondaryFormatDate(appointmentDate)}'),
+                    Text(
+                        'Appointment Date: ${secondaryFormatDate(appointmentDate)}'),
+                    const SizedBox(height: 10),
+                    Text(
+                        'Appointment Time: ${formatTime(data['appointment_time'])}'),
+                    const SizedBox(height: 10),
+                    Text('Service provider: ${data['establishment_name']}'),
+                    const SizedBox(height: 10),
+                    Text('Pet name: ${data['pet_name']}'),
                     const SizedBox(height: 10),
                   ],
                 ),

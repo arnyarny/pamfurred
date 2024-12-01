@@ -4,11 +4,9 @@ import 'package:pamfurred/components/empty_list_widget.dart';
 import 'package:pamfurred/components/globals.dart';
 import 'package:pamfurred/components/header.dart';
 import 'package:pamfurred/components/pull_to_refresh.dart';
-import 'package:pamfurred/components/screen_transitions.dart';
 import 'package:pamfurred/components/title_text.dart';
 import 'package:pamfurred/providers/notifications_provider.dart';
 import 'package:pamfurred/providers/user_id.dart';
-import 'package:pamfurred/screens/appointment_details/appointment_details.dart';
 
 class NotificationsScreen extends ConsumerStatefulWidget {
   const NotificationsScreen({super.key});
@@ -19,12 +17,12 @@ class NotificationsScreen extends ConsumerStatefulWidget {
 }
 
 class NotificationsScreenState extends ConsumerState<NotificationsScreen> {
-  late List<bool> isTapped;
+  // late List<bool> isTapped;
 
   @override
   void initState() {
     super.initState();
-    isTapped = [];
+    // isTapped = [];
   }
 
   bool isToday(DateTime date) {
@@ -56,9 +54,9 @@ class NotificationsScreenState extends ConsumerState<NotificationsScreen> {
             .where((notification) =>
                 notification['appointment_notif_type'] != "Upcoming")
             .toList();
-        if (isTapped.length != filteredNotifications.length) {
-          isTapped = List<bool>.filled(filteredNotifications.length, false);
-        }
+        // if (isTapped.length != filteredNotifications.length) {
+        //   isTapped = List<bool>.filled(filteredNotifications.length, false);
+        // }
         return filteredNotifications;
       },
       loading: () => [],
@@ -170,13 +168,15 @@ class NotificationsScreenState extends ConsumerState<NotificationsScreen> {
         setState(() {
           ref.read(selectedNotificationIdProvider.notifier).state =
               notification['notification_id'];
-          Navigator.push(
-              context, slideUpRoute(const AppointmentDetailsScreen()));
-          isTapped[index] = !isTapped[index];
+          // Navigator.push(
+          //     context, slideUpRoute(const AppointmentDetailsScreen()));
+          // isTapped[index] = !isTapped[index];
         });
       },
       child: Card(
-        color: isTapped[index] ? Colors.white : lighterGreyColor,
+        color:
+            // isTapped[index] ? Colors.white :
+            lighterGreyColor,
         child: Padding(
           padding: const EdgeInsets.all(16.0),
           child: Column(

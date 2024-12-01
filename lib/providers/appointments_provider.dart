@@ -10,9 +10,22 @@ Future<Map<String, dynamic>> fetchAppointmentDetails(String petOwnerId) async {
     'pet_owner_id_param': petOwnerId, // Pass petOwnerId as a parameter
   });
 
+  // Convert the response to a list of maps
   final dataList = List<Map<String, dynamic>>.from(response);
 
-  return {'appointments': dataList};
+  // Use a Set to keep track of unique appointment IDs
+  final seenAppointmentIds = <dynamic>{};
+  final uniqueAppointments = dataList.where((appointment) {
+    final appointmentId = appointment['appointment_id'];
+    if (seenAppointmentIds.contains(appointmentId)) {
+      return false; // Skip duplicates
+    } else {
+      seenAppointmentIds.add(appointmentId);
+      return true; // Keep unique appointment
+    }
+  }).toList();
+
+  return {'appointments': uniqueAppointments};
 }
 
 // Function to fetch specific appointment details by appointment_id from the fetched list
@@ -39,6 +52,17 @@ final specificAppointmentDetailsProvider =
   final appointmentData = await ref.watch(appointmentDetailsProvider.future);
   return getAppointmentDetailsById(appointmentId, appointmentData);
 });
+
+// Packages in the appointment
+Map<String, dynamic> processAppointmentDetails(
+    Map<String, dynamic> appointment) {
+  // Process inclusions to join them into a readable string, if required.
+  final inclusions = List<String>.from(appointment['package_inclusions'] ?? []);
+  return {
+    ...appointment,
+    'formatted_inclusions': inclusions.join(', '),
+  };
+}
 
 final appointmentSpIndexProvider = Provider<Map<String, dynamic>?>((ref) {
   final allItems = ref.watch(appointmentDetailsProvider);

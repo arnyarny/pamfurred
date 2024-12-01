@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:pamfurred/providers/notifications_provider.dart';
-// import 'package:pamfurred/components/custom_appbar.dart';
+import 'package:pamfurred/components/custom_appbar.dart';
+import 'package:pamfurred/components/time_and_date_formatter.dart';
+import 'package:pamfurred/providers/appointments_provider.dart';
 
 class AppointmentDetailsScreen extends StatelessWidget {
   const AppointmentDetailsScreen({super.key});
@@ -9,27 +10,53 @@ class AppointmentDetailsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Notification Details')),
+      appBar: customAppBarWithTitle(context, 'Appointment Details'),
       body: Consumer(
         builder: (context, ref, child) {
-          final notificationDetails = ref.watch(selectedNotificationIdProvider);
+          final appointmentId = ref.watch(tappedSpAppointmentIdProvider);
 
-          return Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Text(
-                //   'Title: ${notificationDetails['title']}',
-                //   style: const TextStyle(
-                //       fontSize: 20, fontWeight: FontWeight.bold),
-                // ),
-                const SizedBox(height: 10),
-                Text('Notification ID: $notificationDetails'),
-                const SizedBox(height: 10),
-                // Text('Created At: ${notificationDetails['created_at']}'),
-              ],
-            ),
+          if (appointmentId == '' || appointmentId.isEmpty) {
+            return const Center(child: Text('No appointment selected.'));
+          }
+
+          final specificAppointmentDetails =
+              ref.watch(specificAppointmentDetailsProvider(appointmentId));
+
+          return specificAppointmentDetails.when(
+            data: (data) {
+              if (data == null) {
+                return const Center(child: Text('No details available.'));
+              }
+
+              final appointmentDate =
+                  data['appointment_date'] ?? 'Not available';
+
+              return Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text('Appointment ID: $appointmentId'),
+                    const SizedBox(height: 10),
+                    Text('Appointment Date: ${secondaryFormatDate(appointmentDate)}'),
+                    const SizedBox(height: 10),
+                  ],
+                ),
+              );
+            },
+            error: (error, stackTrace) {
+              return Center(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Icon(Icons.error, color: Colors.red),
+                    const SizedBox(height: 8),
+                    Text('Error: $error'),
+                  ],
+                ),
+              );
+            },
+            loading: () => const Center(child: CircularProgressIndicator()),
           );
         },
       ),

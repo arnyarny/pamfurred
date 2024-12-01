@@ -15,10 +15,29 @@ Future<Map<String, dynamic>> fetchAppointmentDetails(String petOwnerId) async {
   return {'appointments': dataList};
 }
 
+// Function to fetch specific appointment details by appointment_id from the fetched list
+Map<String, dynamic>? getAppointmentDetailsById(
+    String appointmentId, Map<String, dynamic> appointmentsData) {
+  final appointments =
+      List<Map<String, dynamic>>.from(appointmentsData['appointments'] ?? []);
+  return appointments.firstWhere(
+    (appointment) => appointment['appointment_id'] == appointmentId,
+    orElse: () => {},
+  );
+}
+
 // Create a provider for fetching appointment details
 final appointmentDetailsProvider =
     FutureProvider<Map<String, dynamic>>((ref) async {
   return await fetchAppointmentDetails(ref.watch(userIdProvider).toString());
+});
+
+// Provider for fetching specific appointment details by appointment ID
+final specificAppointmentDetailsProvider =
+    FutureProvider.family<Map<String, dynamic>?, String>(
+        (ref, appointmentId) async {
+  final appointmentData = await ref.watch(appointmentDetailsProvider.future);
+  return getAppointmentDetailsById(appointmentId, appointmentData);
 });
 
 final appointmentSpIndexProvider = Provider<Map<String, dynamic>?>((ref) {

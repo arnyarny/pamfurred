@@ -143,16 +143,18 @@ class AppointmentsScreenState extends ConsumerState<AppointmentsScreen>
       itemBuilder: (context, index) {
         final appointment = filteredAppointments[index];
 
-        return Card(
-          color: Colors.white,
-          elevation: 1.5,
-          child: Column(mainAxisSize: MainAxisSize.min, children: <Widget>[
-            GestureDetector(
-              onTap: () {
-                Navigator.push(
-                    context, slideUpRoute(const AppointmentDetailsScreen()));
-              },
-              child: ListTile(
+        return GestureDetector(
+          onTap: () {
+            ref.read(tappedSpAppointmentIdProvider.notifier).state =
+                appointment['appointment_id'];
+            Navigator.push(
+                context, slideUpRoute(const AppointmentDetailsScreen()));
+          },
+          child: Card(
+            color: Colors.white,
+            elevation: 1.5,
+            child: Column(mainAxisSize: MainAxisSize.min, children: <Widget>[
+              ListTile(
                 title: customBoldWeightRegularText(
                     context, '${appointment['establishment_name'] ?? 'N/A'}'),
                 subtitle: Column(
@@ -176,55 +178,58 @@ class AppointmentsScreenState extends ConsumerState<AppointmentsScreen>
                   ],
                 ),
               ),
-            ),
-            Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.end,
-                children: <Widget>[
-                  GestureDetector(
-                    onTap: () {
-                      ref.read(tappedSpAppointmentIdProvider.notifier).state =
-                          appointment['sp_id'];
-                      ref.read(selectedAppointmentIdProvider.notifier).state =
-                          appointment['appointment_id'];
-                      showModalBottomSheet(
-                        context: context,
-                        builder: (BuildContext context) {
-                          return const GiveFeedbackBottomSheet();
-                        },
-                      );
-                    },
-                    child: appointment['appointment_status'] == 'Done' &&
-                            appointment['is_reviewed'] == false
-                        ? const Text(
-                            'Give feedback',
-                            style: TextStyle(
-                              color: secondaryColor,
-                              shadows: <Shadow>[
-                                Shadow(
-                                  offset: Offset(1.0, 1.0), // Smaller offset
-                                  blurRadius: 2.0, // Reduced blur
-                                  color: lightGreyColor, // Softer color
-                                ),
-                              ],
-                            ),
-                          )
-                        : const SizedBox
-                            .shrink(), // Show nothing if conditions are not met
-                  ),
-                  const SizedBox(width: quaternarySizedBox),
-                  Text(
-                    appointment['appointment_status'] ?? 'Unknown',
-                    style: TextStyle(
-                      color: statusColors[appointment['appointment_status']] ??
-                          Colors.black87,
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: <Widget>[
+                    GestureDetector(
+                      onTap: () {
+                        ref.read(tappedSpAppointmentIdProvider.notifier).state =
+                            appointment['sp_id'];
+                        ref.read(selectedAppointmentIdProvider.notifier).state =
+                            appointment['appointment_id'];
+                        showModalBottomSheet(
+                          context: context,
+                          builder: (BuildContext context) {
+                            return const GiveFeedbackBottomSheet();
+                          },
+                        );
+                      },
+                      child: appointment['appointment_status'] == 'Done' &&
+                              appointment['is_reviewed'] == false
+                          ? const Text(
+                              'Give feedback',
+                              style: TextStyle(
+                                  color: secondaryColor,
+                                  shadows: <Shadow>[
+                                    Shadow(
+                                      offset:
+                                          Offset(1.0, 1.0), // Smaller offset
+                                      blurRadius: 2.0, // Reduced blur
+                                      color: lightGreyColor, // Softer color
+                                    ),
+                                  ],
+                                  decoration: TextDecoration.underline,
+                                  decorationColor: secondaryColor),
+                            )
+                          : const SizedBox
+                              .shrink(), // Show nothing if conditions are not met
                     ),
-                  ),
-                ],
+                    const SizedBox(width: quaternarySizedBox),
+                    Text(
+                      appointment['appointment_status'] ?? 'Unknown',
+                      style: TextStyle(
+                        color:
+                            statusColors[appointment['appointment_status']] ??
+                                Colors.black87,
+                      ),
+                    ),
+                  ],
+                ),
               ),
-            ),
-          ]),
+            ]),
+          ),
         );
       },
     );

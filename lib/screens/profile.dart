@@ -156,7 +156,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
                             buildProfileSectionHeader(
-                              '${mapUserDetails?['first_name'] ?? ''} ${mapUserDetails?['last_name'] ?? ''}'
+                              '${mapPetOwnerDetails?['first_name'] ?? ''} ${mapPetOwnerDetails?['last_name'] ?? ''}'
                                   .trim(),
                             ),
                             IconButton(
@@ -371,7 +371,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                     context: context,
                     title: "Name",
                     details:
-                        "${mapUserDetails?['first_name'] ?? ''} ${mapUserDetails?['last_name'] ?? ''}",
+                        "${mapPetOwnerDetails?['first_name'] ?? ''} ${mapPetOwnerDetails?['last_name'] ?? ''}",
                   ),
                   _detailsCard(
                     context: context,
@@ -418,7 +418,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                   _detailsCard(
                     context: context,
                     title: "Email address",
-                    details: mapPetOwnerDetails?['email'] ?? '',
+                    details: mapUserDetails?['email'] ?? '',
                   ),
                   buildChangePasswordCard(),
                 ],
@@ -516,10 +516,10 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     if (field == "Name") {
       final newValues = await _showEditNameDialog(context, details);
       if (newValues != null) {
-        await Supabase.instance.client.from('user').update({
+        await Supabase.instance.client.from('pet_owner').update({
           'first_name': newValues[0],
           'last_name': newValues[1],
-        }).eq('user_id', userSession.user.id); // Use the session user ID
+        }).eq('pet_owner_id', userSession.user.id); // Use the session user ID
         _fetchUserData(); // Refresh user data
       }
     } else if (field == "Phone number") {
@@ -537,7 +537,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
           await _showEditSingleFieldDialog(context, details, "Email Address");
       if (newEmail != null) {
         await Supabase.instance.client
-            .from('pet_owner')
+            .from('user')
             .update({'email': newEmail}).eq(
                 'user_id', userSession.user.id); // Use the session user ID
         _fetchUserData(); // Refresh user data

@@ -23,8 +23,6 @@ class AppointmentDetailsScreen extends StatelessWidget {
           final specificAppointmentDetails =
               ref.watch(specificAppointmentDetailsProvider(appointmentId));
 
-          print(specificAppointmentDetails);
-
           return specificAppointmentDetails.when(
             data: (data) {
               if (data == null) {
@@ -34,23 +32,24 @@ class AppointmentDetailsScreen extends StatelessWidget {
               final appointmentDate =
                   data['appointment_date'] ?? 'Not available';
 
-              return Padding(
+              return SingleChildScrollView(
+                // Wrap the body in a SingleChildScrollView to avoid overflow
                 padding: const EdgeInsets.all(16.0),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('Appointment ID: $appointmentId'),
-                    const SizedBox(height: 10),
-                    Text(
-                        'Appointment Date: ${secondaryFormatDate(appointmentDate)}'),
-                    const SizedBox(height: 10),
-                    Text(
-                        'Appointment Time: ${formatTime(data['appointment_time'])}'),
-                    const SizedBox(height: 10),
-                    Text('Service provider: ${data['establishment_name']}'),
-                    const SizedBox(height: 10),
-                    Text('Pet name: ${data['pet_name']}'),
-                    const SizedBox(height: 10),
+                    _buildDetailCard('Appointment ID', appointmentId),
+                    const SizedBox(height: 12),
+                    _buildDetailCard('Appointment Date',
+                        secondaryFormatDate(appointmentDate)),
+                    const SizedBox(height: 12),
+                    _buildDetailCard('Appointment Time',
+                        formatTime(data['appointment_time'])),
+                    const SizedBox(height: 12),
+                    _buildDetailCard(
+                        'Service Provider', data['establishment_name']),
+                    const SizedBox(height: 12),
+                    _buildDetailCard('Pet Name', data['pet_name']),
                   ],
                 ),
               );
@@ -70,6 +69,49 @@ class AppointmentDetailsScreen extends StatelessWidget {
             loading: () => const Center(child: CircularProgressIndicator()),
           );
         },
+      ),
+    );
+  }
+
+  Widget _buildDetailCard(String label, String value) {
+    return Card(
+      elevation: 0,
+      color: Colors.grey[50],
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Expanded(
+              // Use Expanded to prevent overflow when text is too long
+              child: Text(
+                label,
+                style: const TextStyle(
+                  fontWeight: FontWeight.w500,
+                  fontSize: 16,
+                  color: Colors.black87,
+                ),
+                overflow:
+                    TextOverflow.ellipsis, // Ensure the label does not overflow
+              ),
+            ),
+            Expanded(
+              // Use Expanded to prevent overflow for value
+              child: Text(
+                value,
+                style: const TextStyle(
+                  fontSize: 16,
+                  color: Colors.black54,
+                ),
+                overflow:
+                    TextOverflow.ellipsis, // Ensure the value does not overflow
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

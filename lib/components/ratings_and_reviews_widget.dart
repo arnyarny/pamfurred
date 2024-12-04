@@ -82,9 +82,9 @@ class RatingsAndReviewsWidget extends ConsumerWidget {
                         children: [
                           // Reviewer's name
                           Text(
-                            (review['first_name'] ?? '') +
+                            (review['pet_owner_first_name'] ?? '') +
                                 ' ' +
-                                (review['last_name'] ?? ''),
+                                (review['pet_owner_last_name'] ?? ''),
                             style: const TextStyle(
                               fontWeight: FontWeight.bold,
                               fontSize: 16,

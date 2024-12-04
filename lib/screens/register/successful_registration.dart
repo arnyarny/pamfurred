@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pamfurred/components/confetti.dart';
 import 'package:pamfurred/components/screen_transitions.dart';
 import 'package:pamfurred/providers/global_providers.dart';
+import 'package:pamfurred/screens/login.dart';
 import 'package:pamfurred/screens/main_screen.dart';
 
 import '../../components/globals.dart';
@@ -77,10 +78,8 @@ class _SuccessfulRegistrationState
                   height: primaryTextFieldHeight,
                   child: TextButton(
                     onPressed: () {
-                      ref.read(bottomNavBarIndexProvider.notifier).state =
-                          0; // Switch to Home page
                       Navigator.push(
-                          context, crossFadeRoute(const MainScreen()));
+                          context, crossFadeRoute(const LoginScreen()));
                     },
                     style: ButtonStyle(
                       shape: WidgetStateProperty.all<RoundedRectangleBorder>(

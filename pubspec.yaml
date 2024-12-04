@@ -145,6 +145,7 @@ dependencies:
 
   open_street_map_search_and_pick: ^0.1.1
   logger: ^2.5.0
+  fancy_password_field: ^2.0.8
 
 dev_dependencies:
   flutter_test:

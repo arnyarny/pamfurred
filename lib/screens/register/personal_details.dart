@@ -49,9 +49,10 @@ class PersonalInformationScreenState
               children: [
                 Expanded(
                   child: CustomTextField(
-                      label: "First name",
-                      controllerKey: "firstName",
-                      controllers: widget.controllers),
+                    label: "First name",
+                    controllerKey: "firstName",
+                    controllers: widget.controllers
+                  ),
                 ),
                 const SizedBox(width: primarySizedBox),
                 Expanded(

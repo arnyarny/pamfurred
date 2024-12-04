@@ -96,15 +96,14 @@ class CredentialsScreenState extends ConsumerState<CredentialsScreen> {
               'user_id': userId,
               'phone_number': phoneNumber,
               'user_type': 'pet_owner',
-              'first_name': firstName,
-              'last_name': lastName,
               'address_id': addressId,
               'created_at': timestamp.toString(),
             });
 
             // Insert pet owner details
             await Supabase.instance.client.from('pet_owner').insert({
-              'email': email,
+              'first_name': firstName,
+              'last_name': lastName,
               'pet_owner_id': userId,
             });
 

@@ -1,6 +1,6 @@
+import 'package:fancy_password_field/fancy_password_field.dart';
 import 'package:flutter/material.dart';
 import 'package:pamfurred/components/globals.dart';
-import 'package:password_strength_checker/password_strength_checker.dart';
 
 class PasswordTextField extends StatefulWidget {
   final String label;
@@ -19,13 +19,8 @@ class PasswordTextField extends StatefulWidget {
 }
 
 class PasswordTextFieldState extends State<PasswordTextField> {
-  bool _obscurePassword = true;
   final FocusNode _focusNode = FocusNode();
-  bool _isFocused = false;
-
-  // Persist ValueNotifier to track password strength
-  final ValueNotifier<PasswordStrength?> _passNotifier =
-      ValueNotifier<PasswordStrength?>(null);
+  bool isFocused = false;
 
   @override
   void initState() {
@@ -37,21 +32,13 @@ class PasswordTextFieldState extends State<PasswordTextField> {
   void dispose() {
     _focusNode.removeListener(_handleFocusChange);
     _focusNode.dispose();
-    _passNotifier.dispose(); // Dispose the notifier when the widget is disposed
     super.dispose();
   }
 
   void _handleFocusChange() {
     setState(() {
-      _isFocused = _focusNode.hasFocus;
+      isFocused = _focusNode.hasFocus;
     });
-  }
-
-  // Check if password strength is sufficient (you can set a threshold value)
-  bool _isPasswordStrong() {
-    final strength = _passNotifier.value;
-    // Password should be "secure"
-    return strength != null && strength.widthPerc == 1.0;
   }
 
   @override
@@ -69,49 +56,69 @@ class PasswordTextFieldState extends State<PasswordTextField> {
           ),
         ),
         const SizedBox(height: secondarySizedBox),
-        TextFormField(
+        FancyPasswordField(
           controller: widget.controllers[widget.controllerKey],
-          obscureText: _obscurePassword,
           focusNode: _focusNode,
-          keyboardType: TextInputType.text,
-          textCapitalization: TextCapitalization.none,
+          validationRules: {
+            DigitValidationRule(),
+            UppercaseValidationRule(),
+            LowercaseValidationRule(),
+            SpecialCharacterValidationRule(),
+            MinCharactersValidationRule(8),
+            
+          },
+          validationRuleBuilder: (rules, value) {
+            if (value.isEmpty) {
+              return const SizedBox.shrink();
+            }
+            return ListView(
+              shrinkWrap: true,
+              children: rules
+                  .map(
+                    (rule) => rule.validate(value)
+                        ? Row(
+                            children: [
+                              const Icon(
+                                Icons.check,
+                                color: Colors.green,
+                              ),
+                              const SizedBox(width: 12),
+                              Text(
+                                rule.name,
+                                style: const TextStyle(color: Colors.green),
+                              ),
+                            ],
+                          )
+                        : Row(
+                            children: [
+                              const Icon(
+                                Icons.close,
+                                color: Colors.red,
+                              ),
+                              const SizedBox(width: 12),
+                              Text(
+                                rule.name,
+                                style: const TextStyle(color: Colors.red),
+                              ),
+                            ],
+                          ),
+                  )
+                  .toList(),
+            );
+          },
           decoration: InputDecoration(
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(secondaryBorderRadius),
-            ),
-            hintText: "Enter your password",
-            suffixIcon: IconButton(
-              icon: Icon(
-                _obscurePassword ? Icons.visibility_off : Icons.visibility,
+              hintText: "Enter your password",
+              contentPadding: const EdgeInsets.all(8.0),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(
+                  secondaryBorderRadius,
+                ),
               ),
-              onPressed: () {
-                setState(() {
-                  _obscurePassword = !_obscurePassword;
-                });
-              },
-            ),
-          ),
-          onChanged: (value) {
-            // Update the password strength whenever the password is typed
-            _passNotifier.value = PasswordStrength.calculate(text: value);
-          },
-          validator: (value) {
-            if (value == null || value.isEmpty) {
-              return "${widget.label} is required";
-            }
-            if (!_isPasswordStrong()) {
-              return "Password is not strong enough";
-            }
-            return null;
-          },
+              focusedBorder: OutlineInputBorder(
+                  borderSide: const BorderSide(color: secondaryColor),
+                  borderRadius: BorderRadius.circular(secondaryBorderRadius))),
         ),
         const SizedBox(height: secondarySizedBox),
-        // Only show PasswordStrengthChecker if there's text or if focused
-        if (_isFocused ||
-            (widget.controllers[widget.controllerKey]?.text.isNotEmpty ?? false))
-          PasswordStrengthChecker(
-            strength: _passNotifier, // Use the existing ValueNotifier
-          ),
       ],
     );
   }

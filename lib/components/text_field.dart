@@ -58,10 +58,6 @@ class CustomTextFieldState extends State<CustomTextField> {
   }
 
   String? _validateInput(String? value) {
-    // Check if the field is required and if the value is empty
-    if (widget.isRequired && (value == null || value.isEmpty)) {
-      return "${widget.label} is required";
-    }
     // Validate email if the field is marked as email
     if (widget.isEmail &&
         value != null &&

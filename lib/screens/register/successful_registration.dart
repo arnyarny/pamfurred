@@ -2,9 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pamfurred/components/confetti.dart';
 import 'package:pamfurred/components/screen_transitions.dart';
-import 'package:pamfurred/providers/global_providers.dart';
 import 'package:pamfurred/screens/login.dart';
-import 'package:pamfurred/screens/main_screen.dart';
 
 import '../../components/globals.dart';
 

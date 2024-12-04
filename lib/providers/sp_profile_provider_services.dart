@@ -9,7 +9,7 @@ final allServicesProvider =
     FutureProvider.family<List<Service>, ServiceFilterCriteria>(
         (ref, filterCriteria) async {
   final response = await supabase.rpc('get_service_provider_services',
-      params: {'spid': filterCriteria.spId});
+      params: {'sp_id_param': filterCriteria.spId});
 
   List<dynamic> services = response as List<dynamic>;
 

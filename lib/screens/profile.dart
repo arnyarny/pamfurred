@@ -70,7 +70,6 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
       // Use your session data to get user info (modify as needed based on how you manage user info)
       final userId = userSession.user.id; // Get user ID from session
 
-      // TODO: Change database to use "user" table and store both the service_provider's and pet owner's table
       final petOwnerDetails = await Supabase.instance.client
           .from('pet_owner')
           .select()

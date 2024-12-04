@@ -292,54 +292,39 @@ class HomeScreenState extends ConsumerState<HomeScreen> {
         loading: () => Shimmer.fromColors(
               baseColor: Colors.grey[300]!,
               highlightColor: Colors.grey[100]!,
-              child: Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Column(
-                  children: List.generate(1, (index) => shimmerPlaceholder())
-                      .toList(),
-                ),
+              child: Column(
+                children: [
+                  Card(
+                    shape: RoundedRectangleBorder(
+                      borderRadius:
+                          BorderRadius.circular(secondaryBorderRadius),
+                    ),
+                    child: Container(
+                      width: double.infinity,
+                      height: 115,
+                      padding: const EdgeInsets.fromLTRB(tertiarySizedBox,
+                          tertiarySizedBox, tertiarySizedBox, 0),
+                    ),
+                  ),
+                  Card(
+                    shape: RoundedRectangleBorder(
+                      borderRadius:
+                          BorderRadius.circular(secondaryBorderRadius),
+                    ),
+                    child: Container(
+                      width: 170,
+                      height: 50,
+                      padding: const EdgeInsets.fromLTRB(tertiarySizedBox,
+                          tertiarySizedBox, tertiarySizedBox, 0),
+                    ),
+                  ),
+                ],
               ),
             ),
         error: (error, _) {
           print(error);
           return const ErrorMessage();
         });
-  }
-
-  Widget shimmerPlaceholder() {
-    return Card(
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(secondaryBorderRadius),
-      ),
-      child: Container(
-        width: double.infinity,
-        height: 115,
-        padding: const EdgeInsets.fromLTRB(
-            tertiarySizedBox, tertiarySizedBox, tertiarySizedBox, 0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Container(
-              width: 150,
-              height: 15,
-              color: Colors.white,
-            ),
-            const SizedBox(height: secondarySizedBox),
-            Container(
-              width: 100,
-              height: 15,
-              color: Colors.white,
-            ),
-            const SizedBox(height: secondarySizedBox),
-            Container(
-              width: 70,
-              height: 15,
-              color: Colors.white,
-            ),
-          ],
-        ),
-      ),
-    );
   }
 
   Widget _viewAppointmentsButton() {
@@ -365,7 +350,7 @@ class HomeScreenState extends ConsumerState<HomeScreen> {
                   },
                 );
         },
-        loading: () => const Center(child: SizedBox()),
+        loading: () => const Center(child: SizedBox.shrink()),
         error: (error, _) {
           print(error);
           return const ErrorMessage();

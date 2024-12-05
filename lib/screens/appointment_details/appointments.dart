@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
+import 'package:pamfurred/backend_logic_files/cancel_appointment.dart';
+import 'package:pamfurred/components/connectivity_wrapper.dart';
 import 'package:pamfurred/components/custom_padded_button.dart';
 import 'package:pamfurred/components/error_widget.dart';
 import 'package:pamfurred/components/screen_transitions.dart';
@@ -9,7 +11,11 @@ import 'package:pamfurred/components/title_text.dart';
 import 'package:pamfurred/providers/appointments_provider.dart';
 import 'package:pamfurred/screens/appointment_details/appointment_details.dart';
 import 'package:pamfurred/screens/appointment_details/give_feedback.dart';
-import 'package:pamfurred/components/connectivity_wrapper.dart';
+import 'package:quickalert/models/quickalert_animtype.dart';
+import 'package:quickalert/models/quickalert_type.dart';
+import 'package:quickalert/widgets/quickalert_dialog.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
+
 import '../../components/globals.dart';
 
 class AppointmentsScreen extends ConsumerStatefulWidget {
@@ -23,6 +29,11 @@ class AppointmentsScreenState extends ConsumerState<AppointmentsScreen>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
 
+  bool isLoading = false;
+
+  final SupabaseClient supabaseClient = Supabase.instance.client;
+  late AppointmentService appointmentService;
+
   final Map<String, Color> statusColors = {
     'Upcoming': const Color.fromRGBO(255, 143, 0, 1),
     'Done': Colors.green,
@@ -33,6 +44,26 @@ class AppointmentsScreenState extends ConsumerState<AppointmentsScreen>
   void initState() {
     super.initState();
     _tabController = TabController(length: 6, vsync: this);
+    appointmentService = AppointmentService(supabaseClient);
+  }
+
+  Future<void> cancelAppointment(String appointmentId) async {
+    setState(() {
+      isLoading = true;
+    });
+
+    final result = await appointmentService.cancelAppointment(
+        appointmentId: appointmentId);
+
+    if (result != null) {
+      print('Appointment cancelled with ID: $result');
+    } else {
+      print('Failed to cancel appointment');
+    }
+
+    setState(() {
+      isLoading = false;
+    });
   }
 
   @override
@@ -211,13 +242,74 @@ class AppointmentsScreenState extends ConsumerState<AppointmentsScreen>
                       child: Row(
                         children: [
                           customSmallPaddedTextButton(
-                              text: 'Cancel', onPressed: () {}),
+                              text: 'Cancel',
+                              onPressed: () {
+                                QuickAlert.show(
+                                  context: context,
+                                  type: QuickAlertType.warning,
+                                  animType: QuickAlertAnimType.slideInUp,
+                                  title: 'Cancel Appointment',
+                                  text:
+                                      'Are you sure you want to cancel this appointment?',
+                                  confirmBtnColor: Colors.red,
+                                  confirmBtnText: 'Yes',
+                                  showCancelBtn: true,
+                                  cancelBtnText: 'No',
+                                  onConfirmBtnTap: () async {
+                                    setState(() {
+                                      isLoading =
+                                          true; // Set isLoading to true when confirming cancellation
+                                    });
+
+                                    final toBeCancelledAppointId = ref
+                                        .read(tappedSpAppointmentIdProvider
+                                            .notifier)
+                                        .state = appointment['appointment_id'];
+
+                                    // Call the cancelAppointment function and await the result
+                                    await cancelAppointment(
+                                        toBeCancelledAppointId);
+                                    if (context.mounted) {
+                                      Navigator.pop(
+                                          context); // Close the QuickAlert dialog after the action is completed
+                                    }
+
+                                    setState(() {
+                                      isLoading =
+                                          false; // Set isLoading to false once the cancellation is complete
+                                    });
+
+                                    if (context.mounted) {
+                                      QuickAlert.show(
+                                        context: context,
+                                        type: QuickAlertType.success,
+                                        title: 'Appointment Cancelled',
+                                        text:
+                                            'Your appointment has been cancelled',
+                                      );
+                                    }
+                                  },
+                                );
+                              }),
                           const SizedBox(
                             width: secondarySizedBox,
                           ),
                           customSmallPaddedTextButton(
                               text: 'Reschedule',
-                              onPressed: () {},
+                              onPressed: () {
+                                QuickAlert.show(
+                                    context: context,
+                                    type: QuickAlertType.warning,
+                                    animType: QuickAlertAnimType.slideInUp,
+                                    title: 'Reschedule Appointment',
+                                    text:
+                                        'Are you sure you want to reschedule this appointment?',
+                                    confirmBtnColor: Colors.red,
+                                    confirmBtnText: 'Yes',
+                                    showCancelBtn: true,
+                                    cancelBtnText: 'No',
+                                    onConfirmBtnTap: () {});
+                              },
                               backgroundColor: Colors.green,
                               textColor: Colors.white),
                         ],
@@ -273,26 +365,26 @@ class AppointmentsScreenState extends ConsumerState<AppointmentsScreen>
       },
     );
   }
-}
 
-bool isOneDayBeforeOrEarlier(String? dateStr) {
-  if (dateStr == null) return false;
+  bool isOneDayBeforeOrEarlier(String? dateStr) {
+    if (dateStr == null) return false;
 
-  try {
-    // Parse the given date string
-    final DateTime givenDate = DateTime.parse(dateStr);
+    try {
+      // Parse the given date string
+      final DateTime givenDate = DateTime.parse(dateStr);
 
-    // Get the current date (ignoring time by setting it to midnight)
-    final DateTime today = DateTime.now();
-    final DateTime currentDate = DateTime(today.year, today.month, today.day);
+      // Get the current date (ignoring time by setting it to midnight)
+      final DateTime today = DateTime.now();
+      final DateTime currentDate = DateTime(today.year, today.month, today.day);
 
-    // Calculate the difference in days
-    final int difference = givenDate.difference(currentDate).inDays;
+      // Calculate the difference in days
+      final int difference = givenDate.difference(currentDate).inDays;
 
-    // Check if the given date is 1 day before or earlier
-    return difference <= -1;
-  } catch (e) {
-    // Return false if there's an error in parsing the date
-    return false;
+      // Check if the given date is 1 day before or earlier
+      return difference <= -1;
+    } catch (e) {
+      // Return false if there's an error in parsing the date
+      return false;
+    }
   }
 }

@@ -4,6 +4,7 @@ import 'package:pamfurred/models/cart_item.dart';
 import 'package:pamfurred/models/services.dart';
 import 'package:pamfurred/models/packages.dart';
 import 'package:pamfurred/providers/user_id.dart';
+import 'package:quickalert/models/quickalert_animtype.dart';
 import 'package:quickalert/models/quickalert_type.dart';
 import 'package:quickalert/widgets/quickalert_dialog.dart';
 
@@ -70,6 +71,7 @@ class CartNotifier extends StateNotifier<Set<CartItem>> {
     QuickAlert.show(
       context: context,
       type: QuickAlertType.error,
+      animType: QuickAlertAnimType.slideInUp,
       title: 'Oops...',
       text: 'You can only book services or packages from the same provider.',
     );

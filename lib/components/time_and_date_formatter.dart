@@ -45,3 +45,10 @@ String formatDateToShort(String date) {
 
   return formattedDate;
 }
+
+// Get date now
+String getFormattedDate() {
+  DateTime dateNow = DateTime.now();
+  String formattedDate = DateFormat('yyyy-MM-dd').format(dateNow);
+  return formattedDate;
+}

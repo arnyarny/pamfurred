@@ -27,6 +27,7 @@ import 'package:pamfurred/screens/appointment/choose_appointment_pref.dart';
 import 'package:pamfurred/components/ratings_and_reviews_widget.dart';
 import 'package:pamfurred/screens/appointment/ratings_and_reviews_screen.dart';
 import 'package:pamfurred/screens/pet_profile/add_pet_profile.dart';
+import 'package:quickalert/models/quickalert_animtype.dart';
 import 'package:quickalert/models/quickalert_type.dart';
 import 'package:quickalert/widgets/quickalert_dialog.dart';
 import 'package:shimmer/shimmer.dart';
@@ -255,6 +256,7 @@ class ServiceproviderProfileScreenState
                         QuickAlert.show(
                           context: context,
                           type: QuickAlertType.error,
+                          animType: QuickAlertAnimType.slideInUp,
                           title: 'Oops!',
                           text:
                               "You don't have any pet profile yet. Please add a pet profile first.",
@@ -277,6 +279,7 @@ class ServiceproviderProfileScreenState
                         QuickAlert.show(
                           context: context,
                           type: QuickAlertType.error,
+                          animType: QuickAlertAnimType.slideInUp,
                           title: 'Oops!',
                           text:
                               "Your pets' type doesn't match the services or packages offered by this service provider.",

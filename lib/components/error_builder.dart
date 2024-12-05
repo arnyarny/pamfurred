@@ -8,7 +8,7 @@ class ErrorMessage extends StatelessWidget {
 
   const ErrorMessage({
     super.key,
-    this.message = "⚠️ An unexpected error occurred.\nPlease try again later.",
+    this.message = "⚠️",
     this.textAlign = TextAlign.center,
     this.style,
   });

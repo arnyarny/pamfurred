@@ -25,6 +25,7 @@ import 'package:pamfurred/providers/sp_profile_provider_packages.dart';
 import 'package:pamfurred/providers/sp_profile_provider_services.dart';
 import 'package:pamfurred/backend_logic_files/store_location.dart';
 import 'package:pamfurred/providers/user_id.dart';
+import 'package:pamfurred/components/connectivity_wrapper.dart';
 import 'package:pamfurred/screens/location_permission.dart';
 import 'package:pamfurred/screens/search_results/search_results.dart';
 import 'package:pamfurred/screens/appointment/serviceprovider_profile.dart';
@@ -98,75 +99,77 @@ class HomeScreenState extends ConsumerState<HomeScreen> {
     return PopScope(
       canPop: false,
       child: SafeArea(
-        child: Scaffold(
-          backgroundColor: Colors.white,
-
-          // Smooth height animation for AppBar visibility
-          appBar: PreferredSize(
-            preferredSize: const Size.fromHeight(appBarHeight),
-            child: AnimatedContainer(
-              duration: const Duration(milliseconds: 300),
-              height: isVisible ? appBarHeight : 0,
-              curve: Curves.easeInOut,
-              child: isVisible ? appBar(context) : null,
+        child: ConnectivityWrapper(
+          child: Scaffold(
+            backgroundColor: Colors.white,
+          
+            // Smooth height animation for AppBar visibility
+            appBar: PreferredSize(
+              preferredSize: const Size.fromHeight(appBarHeight),
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 300),
+                height: isVisible ? appBarHeight : 0,
+                curve: Curves.easeInOut,
+                child: isVisible ? appBar(context) : null,
+              ),
             ),
-          ),
-
-          // Body with scroll controller for detecting scroll direction
-          body: NotificationListener<ScrollNotification>(
-            onNotification: (scrollNotification) {
-              if (scrollNotification is UserScrollNotification) {
-                // Show or hide based on scroll direction
-                if (scrollNotification.direction == ScrollDirection.reverse) {
-                  ref.read(visibilityProvider.notifier).setVisible(false);
-                } else if (scrollNotification.direction ==
-                    ScrollDirection.forward) {
-                  ref.read(visibilityProvider.notifier).setVisible(true);
+          
+            // Body with scroll controller for detecting scroll direction
+            body: NotificationListener<ScrollNotification>(
+              onNotification: (scrollNotification) {
+                if (scrollNotification is UserScrollNotification) {
+                  // Show or hide based on scroll direction
+                  if (scrollNotification.direction == ScrollDirection.reverse) {
+                    ref.read(visibilityProvider.notifier).setVisible(false);
+                  } else if (scrollNotification.direction ==
+                      ScrollDirection.forward) {
+                    ref.read(visibilityProvider.notifier).setVisible(true);
+                  }
                 }
-              }
-              return true;
-            },
-            child: PullToRefresh(
-              providersToRefresh: [
-                appointmentDetailsProvider,
-                selectedCategoryIndexProvider,
-                serviceProviderFutureProvider('pet grooming'),
-                serviceProviderFutureProvider('pet boarding'),
-                serviceProviderFutureProvider('veterinary service'),
-              ],
-              child: ListView(
-                controller: _scrollController,
-                physics: const BouncingScrollPhysics(),
-                children: [
-                  Align(
-                    alignment: Alignment.center,
-                    child: Column(
-                      children: [
-                        const SizedBox(height: secondarySizedBox),
-                        SizedBox(
-                            width: screenPadding(context),
-                            child: _sectionHeader(
-                                context, "Upcoming appointments")),
-                        const SizedBox(height: primarySizedBox),
-                        SizedBox(
-                            width: screenPadding(context),
-                            child: _upcomingAppointmentCard()),
-                        const SizedBox(height: primarySizedBox),
-                        _viewAppointmentsButton(),
-                        const SizedBox(height: primarySizedBox),
-                        SizedBox(
-                            width: screenPadding(context),
-                            child: _sectionHeader(context, "I'm looking for")),
-                        const SizedBox(height: primarySizedBox),
-                        _serviceSelection(context),
-                        const SizedBox(height: primarySizedBox),
-                        _submitButton(),
-                        const SizedBox(height: primarySizedBox),
-                        _getRecos(),
-                      ],
-                    ),
-                  ),
+                return true;
+              },
+              child: PullToRefresh(
+                providersToRefresh: [
+                  appointmentDetailsProvider,
+                  selectedCategoryIndexProvider,
+                  serviceProviderFutureProvider('pet grooming'),
+                  serviceProviderFutureProvider('pet boarding'),
+                  serviceProviderFutureProvider('veterinary service'),
                 ],
+                child: ListView(
+                  controller: _scrollController,
+                  physics: const BouncingScrollPhysics(),
+                  children: [
+                    Align(
+                      alignment: Alignment.center,
+                      child: Column(
+                        children: [
+                          const SizedBox(height: secondarySizedBox),
+                          SizedBox(
+                              width: screenPadding(context),
+                              child: _sectionHeader(
+                                  context, "Upcoming appointments")),
+                          const SizedBox(height: primarySizedBox),
+                          SizedBox(
+                              width: screenPadding(context),
+                              child: _upcomingAppointmentCard()),
+                          const SizedBox(height: primarySizedBox),
+                          _viewAppointmentsButton(),
+                          const SizedBox(height: primarySizedBox),
+                          SizedBox(
+                              width: screenPadding(context),
+                              child: _sectionHeader(context, "I'm looking for")),
+                          const SizedBox(height: primarySizedBox),
+                          _serviceSelection(context),
+                          const SizedBox(height: primarySizedBox),
+                          _submitButton(),
+                          const SizedBox(height: primarySizedBox),
+                          _getRecos(),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
           ),

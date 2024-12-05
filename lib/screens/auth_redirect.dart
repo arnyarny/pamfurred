@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:pamfurred/components/connectivity_wrapper.dart';
 import 'package:pamfurred/components/screen_transitions.dart';
 import 'package:pamfurred/providers/appointments_provider.dart';
 import 'package:pamfurred/providers/available_timeslots_provider.dart';
@@ -120,9 +121,11 @@ class AuthRedirectState extends ConsumerState<AuthRedirect> {
 
   @override
   Widget build(BuildContext context) {
-    return const Scaffold(
-      body:
-          Center(child: CircularProgressIndicator()), // While checking session
+    return const ConnectivityWrapper(
+      child: Scaffold(
+        body: Center(
+            child: CircularProgressIndicator()), // While checking session
+      ),
     );
   }
 }

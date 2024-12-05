@@ -1,12 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
+import 'package:pamfurred/components/custom_padded_button.dart';
+import 'package:pamfurred/components/error_widget.dart';
 import 'package:pamfurred/components/screen_transitions.dart';
 import 'package:pamfurred/components/time_and_date_formatter.dart';
 import 'package:pamfurred/components/title_text.dart';
 import 'package:pamfurred/providers/appointments_provider.dart';
 import 'package:pamfurred/screens/appointment_details/appointment_details.dart';
 import 'package:pamfurred/screens/appointment_details/give_feedback.dart';
+import 'package:pamfurred/components/connectivity_wrapper.dart';
 import '../../components/globals.dart';
 
 class AppointmentsScreen extends ConsumerStatefulWidget {
@@ -29,7 +32,7 @@ class AppointmentsScreenState extends ConsumerState<AppointmentsScreen>
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 5, vsync: this);
+    _tabController = TabController(length: 6, vsync: this);
   }
 
   @override
@@ -42,43 +45,46 @@ class AppointmentsScreenState extends ConsumerState<AppointmentsScreen>
   Widget build(BuildContext context) {
     final appointmentAsyncValue = ref.watch(appointmentDetailsProvider);
 
-    return Scaffold(
-      backgroundColor: Colors.white,
-      appBar: AppBar(
+    return ConnectivityWrapper(
+      child: Scaffold(
         backgroundColor: Colors.white,
-        automaticallyImplyLeading: false,
-        toolbarHeight: 20,
-        elevation: 0,
-        bottom: TabBar(
-          controller: _tabController,
-          tabs: [
-            _buildTab('Today'),
-            _buildTab('Upcoming'),
-            _buildTab('All'),
-            _buildTab('Done'),
-            _buildTab('Cancelled'),
-          ],
-          labelColor: tangerine,
-          indicatorColor: tangerine,
-          labelPadding: const EdgeInsets.symmetric(horizontal: 2),
+        appBar: AppBar(
+          backgroundColor: Colors.white,
+          automaticallyImplyLeading: false,
+          toolbarHeight: 20,
+          elevation: 0,
+          bottom: TabBar(
+            isScrollable: true,
+            controller: _tabController,
+            tabs: [
+              _buildTab('Today'),
+              _buildTab('Pending'),
+              _buildTab('Upcoming'),
+              _buildTab('Done'),
+              _buildTab('Cancelled'),
+              _buildTab('All'),
+            ],
+            labelColor: tangerine,
+            indicatorColor: tangerine,
+          ),
         ),
-      ),
-      body: Center(
-        child: appointmentAsyncValue.when(
-          data: (appointmentData) {
-            final appointmentList =
-                appointmentData['appointments'] as List<Map<String, dynamic>>;
+        body: Center(
+          child: appointmentAsyncValue.when(
+            data: (appointmentData) {
+              final appointmentList =
+                  appointmentData['appointments'] as List<Map<String, dynamic>>;
 
-            return TabBarView(
-              controller: _tabController,
-              physics: const BouncingScrollPhysics(),
-              children: List.generate(5, (index) {
-                return _buildAppointmentList(index, appointmentList);
-              }),
-            );
-          },
-          loading: () => const Center(child: CircularProgressIndicator()),
-          error: (error, stackTrace) => Center(child: Text('Error: $error')),
+              return TabBarView(
+                controller: _tabController,
+                physics: const BouncingScrollPhysics(),
+                children: List.generate(6, (index) {
+                  return _buildAppointmentList(index, appointmentList);
+                }),
+              );
+            },
+            loading: () => const Center(child: CircularProgressIndicator()),
+            error: (error, stackTrace) => Center(child: somethingWentWrong()),
+          ),
         ),
       ),
     );
@@ -111,14 +117,16 @@ class AppointmentsScreenState extends ConsumerState<AppointmentsScreen>
               appointmentDate.month == today.month &&
               appointmentDate.day == today.day &&
               appointment['appointment_status'] == 'Today';
-        case 1: // Upcoming
+        case 1:
+          return appointment['appointment_status'] == 'Pending';
+        case 2: // Upcoming
           return appointment['appointment_status'] == 'Upcoming';
-        case 2: // All
-          return true; // No filter for "All"
         case 3: // Done
           return appointment['appointment_status'] == 'Done';
         case 4: // Cancelled
           return appointment['appointment_status'] == 'Cancelled';
+        case 5: // All
+          return true; // No filter for "All"
         default:
           return false;
       }
@@ -153,10 +161,25 @@ class AppointmentsScreenState extends ConsumerState<AppointmentsScreen>
           child: Card(
             color: Colors.white,
             elevation: 1.5,
+            shape: const LinearBorder(
+                side: BorderSide(width: 1.0, color: lighterGreyColor)),
             child: Column(mainAxisSize: MainAxisSize.min, children: <Widget>[
               ListTile(
-                title: customBoldWeightRegularText(
-                    context, '${appointment['establishment_name'] ?? 'N/A'}'),
+                title: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    customBoldWeightRegularText(context,
+                        '${appointment['establishment_name'] ?? 'N/A'}'),
+                    Text(
+                      appointment['appointment_status'] ?? 'Unknown',
+                      style: TextStyle(
+                          color:
+                              statusColors[appointment['appointment_status']] ??
+                                  Colors.black87,
+                          fontSize: regularText),
+                    ),
+                  ],
+                ),
                 subtitle: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: <Widget>[
@@ -178,6 +201,30 @@ class AppointmentsScreenState extends ConsumerState<AppointmentsScreen>
                   ],
                 ),
               ),
+              // Cancel and Reschedule buttons
+              (appointment['appointment_status'] == 'Upcoming' ||
+                          appointment['appointment_status'] == 'Pending') &&
+                      isOneDayBeforeOrEarlier(appointment[
+                          'appointment_date']) // If it's 1 day before the appointment_date
+                  ? Padding(
+                      padding: const EdgeInsets.only(left: tertiarySizedBox),
+                      child: Row(
+                        children: [
+                          customSmallPaddedTextButton(
+                              text: 'Cancel', onPressed: () {}),
+                          const SizedBox(
+                            width: secondarySizedBox,
+                          ),
+                          customSmallPaddedTextButton(
+                              text: 'Reschedule',
+                              onPressed: () {},
+                              backgroundColor: Colors.green,
+                              textColor: Colors.white),
+                        ],
+                      ),
+                    )
+                  : const SizedBox.shrink(),
+              // Give feedback button
               Padding(
                 padding: const EdgeInsets.all(8.0),
                 child: Row(
@@ -217,14 +264,6 @@ class AppointmentsScreenState extends ConsumerState<AppointmentsScreen>
                               .shrink(), // Show nothing if conditions are not met
                     ),
                     const SizedBox(width: quaternarySizedBox),
-                    Text(
-                      appointment['appointment_status'] ?? 'Unknown',
-                      style: TextStyle(
-                        color:
-                            statusColors[appointment['appointment_status']] ??
-                                Colors.black87,
-                      ),
-                    ),
                   ],
                 ),
               ),
@@ -233,5 +272,27 @@ class AppointmentsScreenState extends ConsumerState<AppointmentsScreen>
         );
       },
     );
+  }
+}
+
+bool isOneDayBeforeOrEarlier(String? dateStr) {
+  if (dateStr == null) return false;
+
+  try {
+    // Parse the given date string
+    final DateTime givenDate = DateTime.parse(dateStr);
+
+    // Get the current date (ignoring time by setting it to midnight)
+    final DateTime today = DateTime.now();
+    final DateTime currentDate = DateTime(today.year, today.month, today.day);
+
+    // Calculate the difference in days
+    final int difference = givenDate.difference(currentDate).inDays;
+
+    // Check if the given date is 1 day before or earlier
+    return difference <= -1;
+  } catch (e) {
+    // Return false if there's an error in parsing the date
+    return false;
   }
 }

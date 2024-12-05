@@ -71,6 +71,8 @@ Widget customSmallPaddedTextButton({
   required String text,
   required VoidCallback onPressed,
   bool isEnabled = true, // Add this optional parameter
+  Color? backgroundColor, // Optional background color
+  Color? textColor, // Optional text color
 }) {
   return TextButton(
     onPressed: isEnabled ? onPressed : null, // Disable if isEnabled is false
@@ -81,15 +83,16 @@ Widget customSmallPaddedTextButton({
         ),
       ),
       backgroundColor: WidgetStateProperty.all<Color>(
-        isEnabled ? primaryColor : disabledButtonTextColor,
+        backgroundColor ?? (isEnabled ? primaryColor : lightGreyColor),
       ),
     ),
     child: Padding(
       padding: const EdgeInsets.all(2),
       child: Text(
         text,
-        style: const TextStyle(
-          color: Colors.white, // Optionally change text color when disabled
+        style: TextStyle(
+          color:
+              textColor ?? (isEnabled ? Colors.white : disabledButtonTextColor),
           fontSize: smallText,
           fontWeight: FontWeight.normal,
         ),

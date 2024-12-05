@@ -5,6 +5,7 @@ import 'package:pamfurred/providers/available_timeslots_provider.dart';
 import 'package:pamfurred/providers/global_providers.dart';
 import 'package:pamfurred/providers/notifications_provider.dart';
 import 'package:pamfurred/providers/pet_profile_provider.dart';
+import 'package:pamfurred/providers/serviceprovider_provider.dart';
 import 'package:pamfurred/screens/login.dart';
 import 'package:pamfurred/screens/main_screen.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -26,6 +27,11 @@ class AuthRedirectState extends ConsumerState<AuthRedirect> {
     _listenToSpAvailability(); // Listen to service provider availability changes after initState
     _listenToPetProfiles();
     _listenToNotifications();
+
+    // Ensure these functions are called after the widget is built
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _listenToAVailableTimes(ref);
+    });
   }
 
   // Listen for changes in the `appointments` table
@@ -76,6 +82,22 @@ class AuthRedirectState extends ConsumerState<AuthRedirect> {
       // Invalidate the provider when the data changes
       ref.invalidate(notificationDetailsProvider);
     });
+  }
+
+  void _listenToAVailableTimes(WidgetRef ref) {
+    final supabase = Supabase.instance.client;
+    final selectedDate = ref.watch(selectedDateProvider);
+
+    // Stream listens for changes in the appointment table related to the selected date and service provider
+    supabase
+        .from('appointment')
+        .stream(primaryKey: ['appointment_id'])
+        .eq('appointment_date', selectedDate) // Filter by selected date
+        .eq('sp_id', ref.watch(selectedSpIndexProvider)) // Filter by sp_id
+        .listen((event) {
+          // Invalidate the provider to refetch the data when changes occur
+          ref.invalidate(fetchAppointmentsPerDateProvider(selectedDate!));
+        });
   }
 
   Future<void> _checkSession() async {

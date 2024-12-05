@@ -84,8 +84,8 @@ class SearchResultsScreenState extends ConsumerState<SearchResultsScreen> {
       child: Container(
         padding: const EdgeInsets.all(secondarySizedBox),
         margin: const EdgeInsets.only(top: quaternarySizedBox),
-        decoration: BoxDecoration(
-          color: Colors.grey[200],
+        decoration: const BoxDecoration(
+          color: Colors.white,
         ),
         child: ListView(
           padding: const EdgeInsets.all(tertiarySizedBox),

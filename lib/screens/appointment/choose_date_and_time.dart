@@ -6,6 +6,7 @@ import 'package:pamfurred/components/globals.dart';
 import 'package:pamfurred/components/pull_to_refresh.dart';
 import 'package:pamfurred/components/screen_transitions.dart';
 import 'package:pamfurred/components/time_and_date_formatter.dart';
+import 'package:pamfurred/providers/appointments_provider.dart';
 import 'package:pamfurred/providers/available_timeslots_provider.dart';
 import 'package:pamfurred/providers/serviceprovider_provider.dart';
 import 'package:pamfurred/screens/appointment/appointment_summary.dart';
@@ -78,11 +79,11 @@ class ChooseDateAndTimeScreen extends ConsumerWidget {
                 TableCalendar(
                   pageAnimationCurve:
                       Curves.bounceOut, // Bouncy effect for page animations
-                  formatAnimationCurve:
-                      Curves.bounceOut,
-                  pageAnimationDuration:
-                      const Duration(milliseconds: 500), // Slightly longer for emphasis
-                  formatAnimationDuration: const Duration(milliseconds: 500), // Same here
+                  formatAnimationCurve: Curves.bounceOut,
+                  pageAnimationDuration: const Duration(
+                      milliseconds: 500), // Slightly longer for emphasis
+                  formatAnimationDuration:
+                      const Duration(milliseconds: 500), // Same here
                   pageAnimationEnabled: false,
                   focusedDay: selectedDate != null
                       ? DateTime.parse(selectedDate)
@@ -96,7 +97,7 @@ class ChooseDateAndTimeScreen extends ConsumerWidget {
                   onDaySelected: (selectedDay, focusedDay) {
                     final formattedDate =
                         DateFormat('yyyy-MM-dd').format(selectedDay);
-                    
+
                     // Check if the date is available and not fully booked or has no timeslots
                     final availableDatesAsyncValue =
                         ref.read(availableDatesProvider);
@@ -104,16 +105,20 @@ class ChooseDateAndTimeScreen extends ConsumerWidget {
                       data: (availableDates) {
                         final availability = availableDates.firstWhere(
                           (availability) =>
-                              availability['availability_date'] == formattedDate,
+                              availability['availability_date'] ==
+                              formattedDate,
                           orElse: () => {'is_fully_booked': false},
                         );
-                    
+
                         if (availability['is_fully_booked'] == false) {
-                          ref.read(availableTimeslotsProvider(formattedDate)).when(
+                          ref
+                              .read(availableTimeslotsProvider(formattedDate))
+                              .when(
                                 data: (timeslotData) {
                                   if (timeslotData.isNotEmpty) {
-                                    ref.read(selectedDateProvider.notifier).state =
-                                        formattedDate;
+                                    ref
+                                        .read(selectedDateProvider.notifier)
+                                        .state = formattedDate;
                                     ref
                                         .read(selectedTimeslotProvider.notifier)
                                         .state = null;
@@ -131,21 +136,23 @@ class ChooseDateAndTimeScreen extends ConsumerWidget {
                   },
                   calendarBuilders: CalendarBuilders(
                     defaultBuilder: (context, date, _) {
-                      final formattedDate = DateFormat('yyyy-MM-dd').format(date);
-                    
+                      final formattedDate =
+                          DateFormat('yyyy-MM-dd').format(date);
+
                       final availableDatesAsyncValue =
                           ref.watch(availableDatesProvider);
                       final availableTimeslotsAsyncValue =
                           ref.watch(availableTimeslotsProvider(formattedDate));
-                    
+
                       return availableDatesAsyncValue.when(
                         data: (availableDates) {
                           final availability = availableDates.firstWhere(
                             (availability) =>
-                                availability['availability_date'] == formattedDate,
+                                availability['availability_date'] ==
+                                formattedDate,
                             orElse: () => {'is_fully_booked': false},
                           );
-                    
+
                           return availableTimeslotsAsyncValue.when(
                             data: (timeslotData) {
                               if (availability['is_fully_booked'] == true) {
@@ -204,7 +211,14 @@ class ChooseDateAndTimeScreen extends ConsumerWidget {
                                 ),
                               ),
                             ),
-                            error: (error, stackTrace) => const Text('Error'),
+                            error: (error, stackTrace) => Container(
+                                width: 40,
+                                alignment: Alignment.center,
+                                child: const Icon(
+                                  Icons.error_outline,
+                                  size: 40,
+                                  color: Colors.grey,
+                                )),
                           );
                         },
                         loading: () => Shimmer.fromColors(
@@ -252,58 +266,123 @@ class ChooseDateAndTimeScreen extends ConsumerWidget {
                     ),
                   ),
                 ),
-                    
+
                 const SizedBox(height: quaternarySizedBox),
-                    
+
                 // Timeslot Selector Section
-                const Text('Select time:', style: TextStyle(fontSize: titleFont)),
+                const Text('Select time:',
+                    style: TextStyle(fontSize: titleFont)),
                 const SizedBox(height: 8),
                 if (selectedDate == null)
                   const Text('Please select a date to see available timeslots.')
                 else
                   ref.watch(availableTimeslotsProvider(selectedDate)).when(
-                      data: (timeslotData) {
-                        final timeslotMap = <String, List<String>>{};
-                        for (var slot in timeslotData) {
-                          final date = slot['availability_date'];
-                          final timeslots = List<String>.from(slot['timeslots']);
-                          timeslotMap[date] = timeslots;
-                        }
-                    
-                        if (timeslotMap.containsKey(selectedDate)) {
-                          final timeslots = timeslotMap[selectedDate]!;
-                          return Wrap(
-                            spacing: 8.0, // Space between chips
-                            runSpacing: 8.0, // Space between rows of chips
-                            children: timeslots.map((timeslot) {
-                              return ChoiceChip(
-                                label: Text(formatTime(timeslot)),
-                                selected: selectedTimeslot == timeslot,
-                                onSelected: (selected) {
-                                  ref
-                                      .read(selectedTimeslotProvider.notifier)
-                                      .state = selected ? timeslot : null;
-                                },
-                                selectedColor: secondaryColor,
-                                checkmarkColor: lighterGreyColor,
-                                backgroundColor: Colors.transparent,
-                                labelStyle: TextStyle(
-                                    color: selectedTimeslot == timeslot
-                                        ? lighterGreyColor
-                                        : Colors.black,
-                                    fontSize: regularText),
-                              );
-                            }).toList(),
+                        data: (timeslotData) {
+                          // Watch appointments for the selected date
+                          final appointmentsAsyncValue = ref.watch(
+                              fetchAppointmentsPerDateProvider(selectedDate));
+
+                          return appointmentsAsyncValue.when(
+                            data: (appointments) {
+                              final bookedTimeslots = appointments
+                                  .where((appointment) =>
+                                      appointment['appointment_status'] !=
+                                      'Cancelled')
+                                  .map((appointment) =>
+                                      appointment['appointment_time'])
+                                  .toSet();
+
+                              final timeslotMap = <String, List<String>>{};
+                              for (var slot in timeslotData) {
+                                final date = slot['availability_date'];
+                                final timeslots =
+                                    List<String>.from(slot['timeslots']);
+                                timeslotMap[date] = timeslots;
+                              }
+
+                              if (timeslotMap.containsKey(selectedDate)) {
+                                final timeslots = timeslotMap[selectedDate]!;
+
+                                return Column(
+                                  children: [
+                                    Wrap(
+                                      spacing: 8.0,
+                                      runSpacing: 8.0,
+                                      children: timeslots.map((timeslot) {
+                                        final isBooked =
+                                            bookedTimeslots.contains(timeslot);
+                                        return ChoiceChip(
+                                          label: Text(formatTime(timeslot)),
+                                          selected:
+                                              selectedTimeslot == timeslot,
+                                          onSelected: isBooked
+                                              ? null // Disable selection for booked slots
+                                              : (selected) {
+                                                  ref
+                                                          .read(
+                                                              selectedTimeslotProvider
+                                                                  .notifier)
+                                                          .state =
+                                                      selected
+                                                          ? timeslot
+                                                          : null;
+                                                },
+                                          selectedColor: secondaryColor,
+                                          backgroundColor: isBooked
+                                              ? Colors.grey
+                                              : Colors.transparent,
+                                          labelStyle: TextStyle(
+                                              color: isBooked
+                                                  ? disabledButtonTextColor
+                                                  : (selectedTimeslot ==
+                                                          timeslot
+                                                      ? lighterGreyColor
+                                                      : Colors.black),
+                                              fontSize: regularText),
+                                        );
+                                      }).toList(),
+                                    ),
+                                    const SizedBox(
+                                      height: secondarySizedBox,
+                                    ),
+                                    const Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      children: [
+                                        Icon(
+                                          Icons.info_outline,
+                                          size: 15,
+                                        ),
+                                        SizedBox(
+                                          width: primarySizedBox,
+                                        ),
+                                        Text(
+                                          'Disabled timeslots are unavailable for booking.',
+                                          style: TextStyle(
+                                              fontSize: smallText,
+                                              color: darkGreyColor),
+                                        )
+                                      ],
+                                    )
+                                  ],
+                                );
+                              } else {
+                                return const Center(
+                                    child: Text(
+                                        'No available timeslots for this date.'));
+                              }
+                            },
+                            loading: () => const Center(
+                                child: CircularProgressIndicator()),
+                            error: (error, stackTrace) => const Center(
+                                child: Icon(Icons.error, size: 30)),
                           );
-                        } else {
-                          return const Center(
-                              child: Text('No available timeslots for this date.'));
-                        }
-                      },
-                      loading: () =>
-                          const Center(child: CircularProgressIndicator()),
-                      error: (error, stackTrace) =>
-                          Center(child: Text('Error: $error'))),
+                        },
+                        loading: () =>
+                            const Center(child: CircularProgressIndicator()),
+                        error: (error, stackTrace) =>
+                            const Center(child: Icon(Icons.error, size: 30)),
+                      ),
               ],
             ),
           ),

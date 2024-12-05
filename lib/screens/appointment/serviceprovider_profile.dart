@@ -292,7 +292,9 @@ class ServiceproviderProfileScreenState
                         );
                         setState(() {
                           ref.read(willBookProvider.notifier).state = true;
-                          ref.read(selectedTabProvider.notifier).state = 1;
+                          ref.watch(selectedTabProvider) == 0
+                              ? ref.read(selectedTabProvider.notifier).state = 1
+                              : selectedIndex;
                         });
                       }
                     },

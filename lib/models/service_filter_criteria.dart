@@ -4,7 +4,6 @@ class ServiceFilterCriteria {
   final String? petType;
   final String? serviceType;
   final String? serviceCategory;
-  // final String? size;
   final double? weight;
 
   ServiceFilterCriteria(
@@ -13,6 +12,5 @@ class ServiceFilterCriteria {
       this.petType,
       this.serviceType,
       this.serviceCategory,
-      // this.size,
       this.weight});
 }

@@ -356,6 +356,8 @@ class ChooseAppointmentPreferencesScreenState
                                 .read(selectedAppointmentCategoryProvider
                                     .notifier)
                                 .state = categoryOptions[index];
+                            print(
+                                'Category updated: ${categoryOptions[index]}');
                           });
                         },
                         child: Padding(

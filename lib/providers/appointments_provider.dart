@@ -1,4 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:pamfurred/providers/serviceprovider_provider.dart';
 import 'package:pamfurred/providers/user_id.dart';
 import 'package:supabase_flutter/supabase_flutter.dart' as supabase_flutter;
 
@@ -80,6 +81,28 @@ final appointmentSpIndexProvider = Provider<Map<String, dynamic>?>((ref) {
     },
     orElse: () => null,
   );
+});
+
+Future<List<Map<String, dynamic>>> fetchAppointmentsForDate(ref) async {
+  final supabase = supabase_flutter.Supabase.instance.client;
+
+  // Use ref to get sp_id
+  final spId = ref.watch(selectedSpIndexProvider);
+  final selectedDate = ref.watch(selectedDateProvider);
+
+  final response = await supabase.rpc('get_appointments_for_date', params: {
+    'selected_date': selectedDate,
+    'sp_id_param': spId,
+  });
+
+  return List<Map<String, dynamic>>.from(response as List);
+}
+
+final fetchAppointmentsPerDateProvider =
+    FutureProvider.family<List<Map<String, dynamic>>, String>(
+        (ref, selectedDate) async {
+  // Pass `ref` to the `fetchAppointmentsForDate` function
+  return fetchAppointmentsForDate(ref);
 });
 
 final tappedSpAppointmentIdProvider = StateProvider<String>((ref) => '');

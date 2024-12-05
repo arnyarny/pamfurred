@@ -68,3 +68,7 @@ flutter {
 dependencies {
     implementation(platform("com.google.firebase:firebase-bom:33.1.2"))
 }
+
+dependencies {
+    implementation 'androidx.appcompat:appcompat:1.4.0'
+}

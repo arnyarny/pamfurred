@@ -19,10 +19,22 @@ class AuthRedirect extends ConsumerStatefulWidget {
   AuthRedirectState createState() => AuthRedirectState();
 }
 
-class AuthRedirectState extends ConsumerState<AuthRedirect> {
+class AuthRedirectState extends ConsumerState<AuthRedirect>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<double> _animation;
+
   @override
   void initState() {
     super.initState();
+    // Initialize fade animation
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 2), // Fade-out duration
+    );
+    _animation = CurvedAnimation(parent: _controller, curve: Curves.easeInOut);
+    _controller.forward(); // Start the fade-out animation
+
     _checkSession();
     _listenToAppointments(); // Listen to appointment changes after initState
     _listenToSpAvailability(); // Listen to service provider availability changes after initState
@@ -121,10 +133,13 @@ class AuthRedirectState extends ConsumerState<AuthRedirect> {
 
   @override
   Widget build(BuildContext context) {
-    return const ConnectivityWrapper(
+    return ConnectivityWrapper(
       child: Scaffold(
         body: Center(
-            child: CircularProgressIndicator()), // While checking session
+            child: FadeTransition(
+                opacity: _animation,
+                child:
+                    const CircularProgressIndicator())), // While checking session
       ),
     );
   }

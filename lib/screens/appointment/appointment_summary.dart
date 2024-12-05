@@ -5,6 +5,7 @@ import 'package:pamfurred/components/regular_text.dart';
 import 'package:pamfurred/components/screen_transitions.dart';
 import 'package:pamfurred/components/time_and_date_formatter.dart';
 import 'package:pamfurred/components/title_text.dart';
+import 'package:pamfurred/components/width_expanded_button.dart';
 import 'package:pamfurred/models/packages.dart';
 import 'package:pamfurred/models/services.dart';
 import 'package:pamfurred/providers/cart_provider.dart';
@@ -163,142 +164,123 @@ class AppointmentSummaryScreenState
 
     final pet = asyncPet.value;
 
-    return isLoading
-        ? Container(
-            color: Colors.white,
-            child: const Center(child: CircularProgressIndicator()))
-        : Scaffold(
-            appBar: customAppBarWithTitle(context, 'Appointment Summary'),
-            backgroundColor: Colors.white,
-            body: Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.start,
-                children: [
-                  SizedBox(
-                    width: screenPadding(context),
-                    child: Column(
-                      children: [
-                        const SizedBox(height: tertiarySizedBox),
-                        getAppointmentTitle(context, 'Service provider'),
-                        const SizedBox(height: primarySizedBox),
-                        getAppointmentDetail(
-                            context, sp!['service_provider_name']),
-                        const SizedBox(height: secondarySizedBox),
-                        if (services.isNotEmpty)
-                          getAppointmentTitle(context, 'Services'),
-                        const SizedBox(height: primarySizedBox),
-                        ...services.map((service) => _buildCartItem(service)),
-                        const SizedBox(height: primarySizedBox),
-                        if (packages.isNotEmpty)
-                          getAppointmentTitle(context, 'Packages'),
-                        const SizedBox(height: primarySizedBox),
-                        ...packages.map((package) => _buildCartItem(package)),
-                        const SizedBox(height: secondarySizedBox),
-                        getAppointmentTitle(context, 'Pet name'),
-                        const SizedBox(height: primarySizedBox),
-                        getAppointmentDetail(context, pet?['pet_name']),
-                        const SizedBox(height: secondarySizedBox),
-                        getAppointmentTitle(context, 'Appointment type'),
-                        const SizedBox(height: primarySizedBox),
-                        getAppointmentDetail(context, servicePackageType),
-                        const SizedBox(height: secondarySizedBox),
+    return Stack(
+      children: [
+        Scaffold(
+          appBar: customAppBarWithTitle(context, 'Appointment Summary'),
+          backgroundColor: Colors.white,
+          body: Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.start,
+              children: [
+                SizedBox(
+                  width: screenPadding(context),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const SizedBox(height: tertiarySizedBox),
+                      getAppointmentTitle(context, 'Service provider'),
+                      const SizedBox(height: primarySizedBox),
+                      getAppointmentDetail(
+                          context, sp!['service_provider_name']),
+                      const SizedBox(height: secondarySizedBox),
+                      if (services.isNotEmpty)
+                        getAppointmentTitle(context, 'Services'),
+                      const SizedBox(height: primarySizedBox),
+                      ...services.map((service) => _buildCartItem(service)),
+                      const SizedBox(height: primarySizedBox),
+                      if (packages.isNotEmpty)
+                        getAppointmentTitle(context, 'Packages'),
+                      const SizedBox(height: primarySizedBox),
+                      ...packages.map((package) => _buildCartItem(package)),
+                      const SizedBox(height: secondarySizedBox),
+                      getAppointmentTitle(context, 'Pet name'),
+                      const SizedBox(height: primarySizedBox),
+                      getAppointmentDetail(context, pet?['pet_name']),
+                      const SizedBox(height: secondarySizedBox),
+                      getAppointmentTitle(context, 'Appointment type'),
+                      const SizedBox(height: primarySizedBox),
+                      getAppointmentDetail(context, servicePackageType),
+                      const SizedBox(height: secondarySizedBox),
 
-                        // Conditional rendering for Home service or In-clinic
-                        if (servicePackageType == 'Home service') ...[
-                          getAppointmentTitle(context, 'Home address'),
-                          getAppointmentAddressDetail(
-                              context, appointmentAddress),
-                        ] else if (servicePackageType == 'In-clinic') ...[
-                          getAppointmentTitle(
-                              context, 'Service provider address'),
-                          const SizedBox(height: primarySizedBox),
-                          getAppointmentAddressDetail(
-                              context, sp['full_address']),
-                        ],
-                        const SizedBox(height: secondarySizedBox),
-                        getAppointmentTitle(context, 'Date'),
+                      // Conditional rendering for Home service or In-clinic
+                      if (servicePackageType == 'Home Service') ...[
+                        getAppointmentTitle(context, 'Address'),
+                        wrappedText(context, appointmentAddress),
+                      ] else if (servicePackageType == 'In-clinic') ...[
+                        getAppointmentTitle(
+                            context, 'Service provider address'),
                         const SizedBox(height: primarySizedBox),
-                        getAppointmentDetail(context,
-                            secondaryFormatDate(appointmentDate.toString())),
-                        const SizedBox(height: secondarySizedBox),
-                        getAppointmentTitle(context, 'Time'),
-                        const SizedBox(height: primarySizedBox),
-                        getAppointmentDetail(
-                            context, formatTime(appointmentTime.toString())),
-                        const SizedBox(height: secondarySizedBox),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            getAppointmentTotalTitle(context, 'Total'),
-                            regularPrimaryColoredBoldTextWidget('₱$total')
-                          ],
-                        ),
-                        const SizedBox(height: quaternarySizedBox),
-                        Center(
-                          child: TextButton(
-                            onPressed: cartProducts.isEmpty
-                                ? null
-                                : () async {
-                                    final newAppointment =
-                                        await createAppointment(
-                                      petOwnerId: ref
-                                          .read(userIdProvider)
-                                          .toString(), // Pet owner ID
-                                      totalAmount: total,
-                                      appointmentStatus: 'Upcoming',
-                                      date:
-                                          formatDateToShort('$appointmentDate'),
-                                      time: '$appointmentTime',
-                                      appointmentType: servicePackageType,
-                                      address: appointmentAddress,
-                                      petProfileId: appointmentPetId,
-                                    );
-
-                              if (newAppointment != null) {
-                                // Insert appointment items into the table
-                                await insertAppointmentItems(
-                                    newAppointment.toString());
-
-                                      if (context.mounted) {
-                                        Navigator.push(
-                                          context,
-                                          crossFadeRoute(
-                                              const SuccessfulAppointment()),
-                                        );
-                                      }
-                                    }
-                                  },
-                            style: ButtonStyle(
-                              shape: WidgetStateProperty.all<
-                                  RoundedRectangleBorder>(
-                                RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(
-                                      secondaryBorderRadius),
-                                ),
-                              ),
-                              backgroundColor:
-                                  WidgetStateProperty.all<Color>(primaryColor),
-                            ),
-                            child: const Padding(
-                              padding: EdgeInsets.all(4),
-                              child: Text(
-                                'Confirm appointment',
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontSize: regularText,
-                                  fontWeight: FontWeight.normal,
-                                ),
-                              ),
-                            ),
-                          ),
-                        )
+                        wrappedText(context, sp['full_address']),
                       ],
-                    ),
+                      const SizedBox(height: secondarySizedBox),
+                      getAppointmentTitle(context, 'Date'),
+                      const SizedBox(height: primarySizedBox),
+                      getAppointmentDetail(context,
+                          secondaryFormatDate(appointmentDate.toString())),
+                      const SizedBox(height: secondarySizedBox),
+                      getAppointmentTitle(context, 'Time'),
+                      const SizedBox(height: primarySizedBox),
+                      getAppointmentDetail(
+                          context, formatTime(appointmentTime.toString())),
+                      const SizedBox(height: secondarySizedBox),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          getAppointmentTotalTitle(context, 'Total'),
+                          regularPrimaryColoredBoldTextWidget('₱$total')
+                        ],
+                      ),
+                      const SizedBox(height: quaternarySizedBox),
+                      CustomWideButton(
+                        text: 'Confirm appointment',
+                        onPressed: cartProducts.isEmpty
+                            ? null
+                            : () async {
+                                final newAppointment = await createAppointment(
+                                  petOwnerId: ref
+                                      .read(userIdProvider)
+                                      .toString(), // Pet owner ID
+                                  totalAmount: total,
+                                  appointmentStatus: 'Pending',
+                                  date: formatDateToShort('$appointmentDate'),
+                                  time: '$appointmentTime',
+                                  appointmentType: servicePackageType,
+                                  address: appointmentAddress,
+                                  petProfileId: appointmentPetId,
+                                );
+
+                                if (newAppointment != null) {
+                                  // Insert appointment items into the table
+                                  await insertAppointmentItems(
+                                      newAppointment.toString());
+
+                                  if (context.mounted) {
+                                    Navigator.push(
+                                      context,
+                                      crossFadeRoute(
+                                          const SuccessfulAppointment()),
+                                    );
+                                  }
+                                }
+                              },
+                      ),
+                    ],
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
-          );
+          ),
+        ),
+        if (isLoading)
+          Container(
+            color: Colors.black54, // Semi-transparent background
+            child: const Center(
+              child: CircularProgressIndicator(),
+            ),
+          ),
+      ],
+    );
   }
 
   getAppointmentTitle(BuildContext context, String title) {

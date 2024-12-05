@@ -303,69 +303,62 @@ class ChooseDateAndTimeScreen extends ConsumerWidget {
                               if (timeslotMap.containsKey(selectedDate)) {
                                 final timeslots = timeslotMap[selectedDate]!;
 
-                                return Column(
-                                  children: [
-                                    Wrap(
-                                      spacing: 8.0,
-                                      runSpacing: 8.0,
-                                      children: timeslots.map((timeslot) {
-                                        final isBooked =
-                                            bookedTimeslots.contains(timeslot);
-                                        return ChoiceChip(
-                                          label: Text(formatTime(timeslot)),
-                                          selected:
-                                              selectedTimeslot == timeslot,
-                                          onSelected: isBooked
-                                              ? null // Disable selection for booked slots
-                                              : (selected) {
-                                                  ref
-                                                          .read(
-                                                              selectedTimeslotProvider
-                                                                  .notifier)
-                                                          .state =
-                                                      selected
-                                                          ? timeslot
-                                                          : null;
-                                                },
-                                          selectedColor: secondaryColor,
-                                          backgroundColor: isBooked
-                                              ? Colors.grey
-                                              : Colors.transparent,
-                                          labelStyle: TextStyle(
-                                              color: isBooked
-                                                  ? disabledButtonTextColor
-                                                  : (selectedTimeslot ==
-                                                          timeslot
-                                                      ? lighterGreyColor
-                                                      : Colors.black),
-                                              fontSize: regularText),
-                                        );
-                                      }).toList(),
-                                    ),
-                                    const SizedBox(
-                                      height: secondarySizedBox,
-                                    ),
-                                    const Row(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.center,
-                                      children: [
-                                        Icon(
-                                          Icons.info_outline,
-                                          size: 15,
-                                        ),
-                                        SizedBox(
-                                          width: primarySizedBox,
-                                        ),
-                                        Text(
-                                          'Disabled timeslots are unavailable for booking.',
-                                          style: TextStyle(
-                                              fontSize: smallText,
-                                              color: darkGreyColor),
-                                        )
-                                      ],
-                                    )
-                                  ],
-                                );
+                                return Wrap(
+                                    spacing: 8.0,
+                                    runSpacing: 8.0,
+                                    children: timeslots.map((timeslot) {
+                                      final isBooked =
+                                          bookedTimeslots.contains(timeslot);
+                                      return ChoiceChip(
+                                        label: Text(formatTime(timeslot)),
+                                        selected: selectedTimeslot == timeslot,
+                                        onSelected: isBooked
+                                            ? null // Disable selection for booked slots
+                                            : (selected) {
+                                                ref
+                                                        .read(
+                                                            selectedTimeslotProvider
+                                                                .notifier)
+                                                        .state =
+                                                    selected ? timeslot : null;
+                                              },
+                                        selectedColor: secondaryColor,
+                                        backgroundColor: isBooked
+                                            ? Colors.grey
+                                            : Colors.transparent,
+                                        labelStyle: TextStyle(
+                                            color: isBooked
+                                                ? disabledButtonTextColor
+                                                : (selectedTimeslot == timeslot
+                                                    ? lighterGreyColor
+                                                    : Colors.black),
+                                            fontSize: regularText),
+                                      );
+                                    }).toList());
+                                // ),
+                                // const SizedBox(
+                                //   height: secondarySizedBox,
+                                // ),
+                                // const Row(
+                                //   mainAxisAlignment:
+                                //       MainAxisAlignment.center,
+                                //   children: [
+                                //     Icon(
+                                //       Icons.info_outline,
+                                //       size: 15,
+                                //     ),
+                                //     SizedBox(
+                                //       width: primarySizedBox,
+                                //     ),
+                                //     Text(
+                                //       'Disabled timeslots are unavailable for booking.',
+                                //       style: TextStyle(
+                                //           fontSize: smallText,
+                                //           color: darkGreyColor),
+                                //     )
+                                //   ],
+                                // )
+                                // ];
                               } else {
                                 return const Center(
                                     child: Text(

@@ -97,7 +97,7 @@ class _CartScreenState extends ConsumerState<CartScreen> {
                       : () {
                           if (ref.watch(
                                   selectedAppointmentPackageServiceTypeProvider) ==
-                              'Home service') {
+                              'Home Service') {
                             Navigator.push(
                                 context,
                                 slideUpRoute(
@@ -107,12 +107,14 @@ class _CartScreenState extends ConsumerState<CartScreen> {
                                 slideUpRoute(const ChooseDateAndTimeScreen()));
                           }
                         },
-                  child: const Text(
+                  child: Text(
                     'Next',
                     style: TextStyle(
                       fontSize: regularText,
                       fontWeight: regularWeight,
-                      color: Colors.white,
+                      color: cartProducts.isEmpty
+                          ? disabledButtonTextColor
+                          : Colors.white,
                     ),
                   ),
                 ),

@@ -285,6 +285,9 @@ class ChooseAppointmentPreferencesScreenState
                                     selectedAppointmentPackageServiceTypeProvider
                                         .notifier)
                                 .state = packageServiceTypeOptions[index];
+
+                            print(
+                                'Service type updated: ${packageServiceTypeOptions[index]}');
                           });
                         },
                         child: Padding(

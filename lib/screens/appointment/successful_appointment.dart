@@ -80,15 +80,25 @@ class SuccessfulAppointmentState extends ConsumerState<SuccessfulAppointment> {
                 Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    customTitleText(context, 'Appointment ID:'),
+                    customTitleText(context, 'Appointment Submitted!'),
                     const SizedBox(
                       height: primarySizedBox,
                     ),
-                    Row(
+                    const Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        getAppointmentDetail(context,
-                            ref.watch(appointmentIdProvider).toString()),
+                        SizedBox(
+                          width: 350,
+                          child: Text(
+                            'Please wait for the service provider\'s approval of your appointment.',
+                            style: TextStyle(
+                                fontSize: regularText,
+                                fontWeight: regularWeight,
+                                color: Colors.black,
+                                overflow: TextOverflow.visible),
+                                textAlign: TextAlign.center,
+                          ),
+                        )
                       ],
                     )
                   ],
@@ -98,6 +108,14 @@ class SuccessfulAppointmentState extends ConsumerState<SuccessfulAppointment> {
                   width: screenPadding(context),
                   child: Column(
                     children: [
+                      // Appointment ID
+                      getAppointmentTitle(context, 'Appointment ID'),
+                      const SizedBox(height: primarySizedBox),
+                      getAppointmentDetail(
+                          context, ref.watch(appointmentIdProvider).toString()),
+
+                      const SizedBox(height: secondarySizedBox),
+
                       // Service provider name
                       getAppointmentTitle(context, 'Service provider'),
                       const SizedBox(height: primarySizedBox),

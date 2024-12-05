@@ -21,13 +21,12 @@ class SelectAppointmentAddressScreen extends ConsumerStatefulWidget {
 
 class SelectAppointmentAddressScreenState
     extends ConsumerState<SelectAppointmentAddressScreen> {
-  String selectedOption = ""; // Tracks the selected option
-  String pinLocationAddress = ""; // Stores the Pin Location address
-
   @override
   Widget build(BuildContext context) {
     final addressAsyncValue = ref.watch(userAddressProvider);
     final addedAddress = ref.watch(addedAppointmentAddressProvider);
+    final selectedOption = ref.watch(selectedAddressOptionProvider);
+    final pinLocationAddress = ref.watch(pinnedLocationProvider);
 
     return Scaffold(
       appBar: customAppBarWithTitleAndWidget(context, 'Select Address', [
@@ -39,8 +38,7 @@ class SelectAppointmentAddressScreenState
               rightToLeftRoute(const ChooseDateAndTimeScreen()),
             );
           },
-          isEnabled: ref.watch(appointmentAddressProvider) != '' ||
-              ref.watch(appointmentAddressProvider).isNotEmpty,
+          isEnabled: selectedOption.isNotEmpty,
         )
       ]),
       backgroundColor: Colors.white,
@@ -74,7 +72,9 @@ class SelectAppointmentAddressScreenState
                         final formattedAddress =
                             '${address['floor_unit_room'] ?? ''}, ${address['street'] ?? ''}, ${address['barangay'] ?? ''}, ${address['city'] ?? ''}';
                         setState(() {
-                          selectedOption = "Home Address";
+                          ref
+                              .read(selectedAddressOptionProvider.notifier)
+                              .state = "Home Address";
                         });
                         ref.read(appointmentAddressProvider.notifier).state =
                             formattedAddress;
@@ -89,10 +89,14 @@ class SelectAppointmentAddressScreenState
                     description: pinLocationAddress.isNotEmpty
                         ? pinLocationAddress
                         : 'No address selected',
-                    isSelected: selectedOption == "Pin Location",
+                    isSelected: ref
+                            .read(selectedAddressOptionProvider.notifier)
+                            .state ==
+                        "Pin Location",
                     onTap: () {
                       setState(() {
-                        selectedOption = "Pin Location";
+                        ref.read(selectedAddressOptionProvider.notifier).state =
+                            "Pin Location";
                       });
                       Navigator.push(
                         context,
@@ -101,10 +105,11 @@ class SelectAppointmentAddressScreenState
                       ).then((result) {
                         if (result != null && result is String) {
                           setState(() {
-                            pinLocationAddress = result;
+                            ref.read(pinnedLocationProvider.notifier).state =
+                                result;
                             ref
                                 .read(appointmentAddressProvider.notifier)
-                                .state = pinLocationAddress;
+                                .state = result;
                           });
                         }
                       });
@@ -118,10 +123,14 @@ class SelectAppointmentAddressScreenState
                     description: addedAddress.isNotEmpty
                         ? addedAddress
                         : 'No address selected',
-                    isSelected: selectedOption == "Add New Address",
+                    isSelected: ref
+                            .read(selectedAddressOptionProvider.notifier)
+                            .state ==
+                        "Add New Address",
                     onTap: () {
                       setState(() {
-                        selectedOption = "Add New Address";
+                        ref.read(selectedAddressOptionProvider.notifier).state =
+                            "Add New Address";
                       });
                       Navigator.push(
                         context,

@@ -83,6 +83,7 @@ final appointmentSpIndexProvider = Provider<Map<String, dynamic>?>((ref) {
   );
 });
 
+// Provider to ensure that the timeslots each date are cross-validated with the appointments per service provider
 Future<List<Map<String, dynamic>>> fetchAppointmentsForDate(ref) async {
   final supabase = supabase_flutter.Supabase.instance.client;
 
@@ -119,3 +120,5 @@ final addedBarangayProvider = StateProvider<String>((ref) => '');
 final addedCityProvider = StateProvider<String>((ref) => '');
 final addedProvinceProvider = StateProvider<String>((ref) => '');
 final addedAppointmentAddressProvider = StateProvider<String>((ref) => '');
+final pinnedLocationProvider = StateProvider<String>((ref) => '');
+final selectedAddressOptionProvider = StateProvider<String>((ref) => '');

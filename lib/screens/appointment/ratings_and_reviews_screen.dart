@@ -44,10 +44,8 @@ class RatingsAndReviewsScreenState
 
           // Extract rating summary details and reviews
           final ratingSummary = data.first; // First entry contains summary
-          final reviews = data.skip(1).where((review) {
-            // Filter out feedbacks that don't have a review comment
-            return review['review'] != null;
-          }).toList(); // Only keep feedbacks that have reviews
+          final reviews =
+              data.skip(1).toList(); // Only keep feedbacks that have reviews
 
           return PullToRefresh(
             providersToRefresh: [ratingsSummaryWithReviewsProvider(spId)],
@@ -118,10 +116,15 @@ class RatingsAndReviewsScreenState
                                   duration: const Duration(milliseconds: 300),
                                   curve: Curves.easeInOut,
                                   child: SizedBox(
-                                    height: review['review'].length > 50 &&
-                                            !isExpanded
-                                        ? 30
-                                        : null, // Apply height limit only for long reviews
+                                    height: review['review'] == null ||
+                                            review['review'].isEmpty
+                                        ? 0 // Height for null or empty review
+                                        : !isExpanded
+                                            ? (review['review'].length > 50
+                                                ? 20
+                                                : 20) // Height for long reviews when not expanded
+                                            : null, // Default height (expanded fully)
+
                                     child: Text(
                                       review['review'],
                                       style:

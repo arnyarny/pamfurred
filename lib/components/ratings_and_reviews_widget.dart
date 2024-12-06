@@ -32,11 +32,13 @@ class RatingsAndReviewsWidget extends ConsumerWidget {
         final ratingSummary = data.first; // First entry contains summary
         final reviews = data.skip(1).where((review) {
           // Filter out feedbacks that don't have a review comment
-          return review['review'] != null;
+          return review['review'] != null && review['review'] != '';
         }).toList(); // Only keep feedbacks that have reviews
 
         if (reviews.isEmpty) {
-          return const Center(child: Text('No reviews available.'));
+          return SizedBox(
+              height: 60,
+              child: const Center(child: Text('No reviews available.')));
         }
 
         return Column(

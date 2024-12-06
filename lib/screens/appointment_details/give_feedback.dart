@@ -147,7 +147,7 @@ class GiveFeedbackBottomSheetState
               style: TextStyle(fontSize: titleFont),
             ),
             const SizedBox(height: secondarySizedBox),
-            TextField(
+            TextFormField(
               controller: _reviewController,
               maxLines: 4,
               textCapitalization: TextCapitalization.sentences,

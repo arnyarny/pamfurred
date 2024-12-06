@@ -36,9 +36,7 @@ class RatingsAndReviewsWidget extends ConsumerWidget {
         }).toList(); // Only keep feedbacks that have reviews
 
         if (reviews.isEmpty) {
-          return SizedBox(
-              height: 60,
-              child: const Center(child: Text('No reviews available.')));
+          return SizedBox.shrink();
         }
 
         return Column(

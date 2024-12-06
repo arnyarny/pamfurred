@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:pamfurred/components/screen_transitions.dart';
-import 'package:pamfurred/providers/search_results_provider.dart';
 import 'package:pamfurred/components/custom_appbar.dart';
 import 'package:pamfurred/components/globals.dart';
+import 'package:pamfurred/components/screen_transitions.dart';
+import 'package:pamfurred/providers/search_results_provider.dart';
 import 'package:pamfurred/screens/pin_location.dart';
 import 'package:pamfurred/screens/search_results/search_results_list.dart';
 // import 'package:pamfurred/screens/pin_location.dart';
@@ -21,11 +21,13 @@ class SearchResultsScreenState extends ConsumerState<SearchResultsScreen> {
 
   String selectedFilter = 'None';
 
+  // Controllers for price range (not input)
   final TextEditingController minRangeController = TextEditingController();
   final TextEditingController maxRangeController = TextEditingController();
 
-  // Inputted full address
-  String inputFullAddress = '';
+  // Controllers for INPUTted price range
+  final TextEditingController inputMinPriceController = TextEditingController();
+  final TextEditingController inputMaxPriceController = TextEditingController();
 
   @override
   void initState() {
@@ -117,7 +119,7 @@ class SearchResultsScreenState extends ConsumerState<SearchResultsScreen> {
                         onChanged: (String? value) {
                           setState(() {
                             selectedFilter = value!;
-                            ref.watch(isInputLocationProvider.notifier).state =
+                            ref.read(isInputLocationProvider.notifier).state =
                                 false;
                             ref.read(sortResultsProvider.notifier).state =
                                 'None';
@@ -141,7 +143,7 @@ class SearchResultsScreenState extends ConsumerState<SearchResultsScreen> {
                         onChanged: (String? value) {
                           setState(() {
                             selectedFilter = value!;
-                            ref.watch(isInputLocationProvider.notifier).state =
+                            ref.read(isInputLocationProvider.notifier).state =
                                 false;
                             ref.read(sortResultsProvider.notifier).state =
                                 'Nearest';
@@ -165,7 +167,7 @@ class SearchResultsScreenState extends ConsumerState<SearchResultsScreen> {
                         onChanged: (String? value) {
                           setState(() {
                             selectedFilter = value!;
-                            ref.watch(isInputLocationProvider.notifier).state =
+                            ref.read(isInputLocationProvider.notifier).state =
                                 false;
                             ref.read(sortResultsProvider.notifier).state =
                                 'Price';
@@ -173,7 +175,7 @@ class SearchResultsScreenState extends ConsumerState<SearchResultsScreen> {
                         },
                       ),
                       const Text(
-                        'Price (₱)',
+                        'Price range',
                         style: TextStyle(fontSize: regularText),
                       ),
                     ],
@@ -184,13 +186,13 @@ class SearchResultsScreenState extends ConsumerState<SearchResultsScreen> {
                   child: Row(
                     children: [
                       Radio<String>(
-                        value: 'Nearby input location',
+                        value: 'Nearby pinned location',
                         groupValue: selectedFilter,
                         onChanged: (String? value) {
                           setState(() {
                             selectedFilter = value!;
                             ref.read(sortResultsProvider.notifier).state =
-                                'Nearby input location';
+                                'Nearby pinned location';
                             ref.read(isInputLocationProvider.notifier).state =
                                 true;
                             Navigator.push(
@@ -209,9 +211,6 @@ class SearchResultsScreenState extends ConsumerState<SearchResultsScreen> {
                                         .state = result[
                                             'addressName']
                                         .toString();
-                                    // Set local variable to inputted full address
-                                    inputFullAddress =
-                                        result['addressName'].toString();
                                     // Set the selected location in the providers
                                     ref.read(inputLatProvider.notifier).state =
                                         result['latitude'];
@@ -230,7 +229,7 @@ class SearchResultsScreenState extends ConsumerState<SearchResultsScreen> {
                         },
                       ),
                       const Text(
-                        'Nearby input location',
+                        'Nearby pinned location',
                         style: TextStyle(fontSize: regularText),
                       ),
                     ],
@@ -241,20 +240,20 @@ class SearchResultsScreenState extends ConsumerState<SearchResultsScreen> {
                   child: Row(
                     children: [
                       Radio<String>(
-                        value: 'Input price range',
+                        value: 'Inputted price range',
                         groupValue: selectedFilter,
                         onChanged: (String? value) {
                           setState(() {
                             selectedFilter = value!;
-                            ref.watch(isInputLocationProvider.notifier).state =
+                            ref.read(isInputLocationProvider.notifier).state =
                                 false;
                             ref.read(sortResultsProvider.notifier).state =
-                                'Input price range';
+                                'Inputted price range';
                           });
                         },
                       ),
                       const Text(
-                        'Input price range',
+                        'Inputted price range',
                         style: TextStyle(fontSize: regularText),
                       ),
                     ],
@@ -312,14 +311,14 @@ class SearchResultsScreenState extends ConsumerState<SearchResultsScreen> {
                 ],
               ),
             ],
-            if (selectedFilter == 'Nearby input location') ...[
+            if (selectedFilter == 'Nearby pinned location') ...[
               Column(
                 children: [
                   Row(
                     mainAxisAlignment: MainAxisAlignment.start,
                     children: [
                       Text(
-                        'Inputted address:',
+                        'Pinned location',
                         style: TextStyle(
                             fontSize: titleFont, fontWeight: boldWeight),
                       ),
@@ -328,7 +327,50 @@ class SearchResultsScreenState extends ConsumerState<SearchResultsScreen> {
                   const SizedBox(
                     height: secondarySizedBox,
                   ),
-                  Text(inputFullAddress),
+                  Text(ref.watch(inputFullAddressProvider).toString()),
+                ],
+              )
+            ],
+            if (selectedFilter == 'Inputted price range') ...[
+              Column(
+                children: [
+                  const Text(
+                    'Price (₱)',
+                    style:
+                        TextStyle(fontSize: titleFont, fontWeight: boldWeight),
+                  ),
+                  const SizedBox(
+                    height: secondarySizedBox,
+                  ),
+                  Row(
+                    children: [
+                      TextFormField(
+                        controller: inputMinPriceController,
+                        maxLines: 1,
+                        keyboardType: TextInputType.number,
+                        decoration: const InputDecoration(
+                          hintText: 'Min price',
+                          hintStyle: TextStyle(
+                              fontSize: regularText, color: greyColor),
+                          border: OutlineInputBorder(
+                              borderSide: BorderSide(width: .25)),
+                        ),
+                      ),
+                      const SizedBox(width: secondarySizedBox),
+                      TextFormField(
+                        controller: inputMaxPriceController,
+                        maxLines: 1,
+                        keyboardType: TextInputType.number,
+                        decoration: const InputDecoration(
+                          hintText: 'Max price',
+                          hintStyle: TextStyle(
+                              fontSize: regularText, color: greyColor),
+                          border: OutlineInputBorder(
+                              borderSide: BorderSide(width: .25)),
+                        ),
+                      ),
+                    ],
+                  )
                 ],
               )
             ],

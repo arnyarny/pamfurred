@@ -118,7 +118,9 @@ class ResultsListWidget extends ConsumerWidget {
                                   if (snapshot.connectionState ==
                                       ConnectionState.done) {
                                     return CachedNetworkImage(
-                                      imageUrl: provider.imageUrl,
+                                      imageUrl: provider.imageUrl == ''
+                                          ? 'https://tinyurl.com/55w8ht23'
+                                          : provider.imageUrl,
                                       width: 120,
                                       height: 138,
                                       fit: BoxFit.cover,

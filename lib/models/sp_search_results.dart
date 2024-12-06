@@ -32,7 +32,7 @@ class ServiceProviderItem {
       servicePackageId: service['service_id'],
       name: service['service_name'],
       type: 'service',
-      imageUrl: service['service_image'],
+      imageUrl: service['service_image'] ?? 'https://tinyurl.com/55w8ht23',
       price: service['service_price'],
       averageRating: service['average_rating'],
       latitude: service['latitude'],

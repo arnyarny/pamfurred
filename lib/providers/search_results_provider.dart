@@ -5,7 +5,6 @@ import 'package:pamfurred/backend_logic_files/store_location.dart';
 import 'package:pamfurred/models/sp_search_results.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
-
 // To know which preference was selected
 final sortResultsProvider = StateProvider<String>((ref) => 'All');
 
@@ -14,6 +13,10 @@ final isInputLocationProvider = StateProvider<bool>((ref) => false);
 final inputLatProvider = StateProvider<double?>((ref) => null);
 final inputLongProvider = StateProvider<double?>((ref) => null);
 final inputFullAddressProvider = StateProvider<String?>((ref) => '');
+
+// Input price providers
+final inputMinPriceProvider = StateProvider<double>((ref) => 0);
+final inputMaxPriceProvider = StateProvider<double>((ref) => 5000);
 
 // Address providers
 final hasDetectedAddressProvider = StateProvider<bool>((ref) => false);

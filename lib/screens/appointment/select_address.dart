@@ -101,7 +101,7 @@ class SelectAppointmentAddressScreenState
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                            builder: (context) => const PinLocationNew()),
+                            builder: (context) => const PinLocationNew(searchResult: false,)),
                       ).then((result) {
                         if (result != null && result is String) {
                           setState(() {

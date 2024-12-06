@@ -103,9 +103,9 @@ class RatingsAndReviewsScreenState
                               children: [
                                 // Reviewer's name
                                 Text(
-                                  (review['pet_owner_first_name'] ?? '') +
+                                  (review['first_name'] ?? '') +
                                       ' ' +
-                                      (review['pet_owner_last_name'] ?? ''),
+                                      (review['last_name'] ?? ''),
                                   style: const TextStyle(
                                     fontWeight: boldWeight,
                                     fontSize: regularText,

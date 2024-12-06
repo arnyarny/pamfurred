@@ -1,15 +1,33 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:pamfurred/backend_logic_files/store_location.dart';
+import 'package:pamfurred/providers/search_results_provider.dart';
 
 // This function fetches the user's location and calculates the distance to a target location.
 Future<String?> getDistanceToTarget(
-    WidgetRef ref, double targetLatitude, double targetLongitude) async {
-  final location =
-      ref.watch(locationProvider); // Get the current location state
+  WidgetRef ref,
+  double targetLatitude,
+  double targetLongitude,
+) async {
+  // Check if the user is inputting location
+  final bool isIputLocation = ref.watch(isInputLocationProvider);
 
-  double myLat = location.latitude; // Use retrieved latitude
-  double myLon = location.longitude; // Use retrieved longitude
+  // Use input location if isIputLocation is true, otherwise use current location
+  double? myLat;
+  if (isIputLocation) {
+    myLat = ref.watch(inputLatProvider);
+  } else {
+    myLat = ref.watch(locationProvider).latitude;
+  }
+  double? myLon = isIputLocation
+      ? ref.watch(
+          inputLongProvider) // Access the state value of the StateProvider
+      : ref.watch(locationProvider).longitude;
+
+  // Ensure latitude and longitude are non-null
+  if (myLat == null || myLon == null) {
+    return 'Location not available'; // Handle null cases gracefully
+  }
 
   // Calculate the distance between the two points
   double distanceInMeters =

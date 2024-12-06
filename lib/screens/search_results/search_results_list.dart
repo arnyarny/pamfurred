@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pamfurred/components/capitalize_first_letter.dart';
 import 'package:pamfurred/components/empty_list_widget.dart';
+import 'package:pamfurred/components/error_builder.dart';
 import 'package:pamfurred/components/globals.dart';
 import 'package:pamfurred/components/pull_to_refresh.dart';
 import 'package:pamfurred/components/rating_widget.dart';
@@ -91,6 +92,13 @@ class ResultsListWidget extends ConsumerWidget {
                               provider.spId;
                           print(
                               'selectedSpIndexProvider ID: ${ref.read(selectedSpIndexProvider)}');
+                          ref
+                              .read(
+                                  selectedSearchResultServicePackageTypeProvider
+                                      .notifier)
+                              .state = provider.type;
+                          print(
+                              'selectedSearchResultServicePackageTypeProvider ID: ${ref.read(selectedSearchResultServicePackageTypeProvider)}');
                           Navigator.push(context,
                               slideUpRoute(const ServicePackageDetails()));
                         },
@@ -205,13 +213,13 @@ class ResultsListWidget extends ConsumerWidget {
                                             children: [
                                               FutureBuilder<String?>(
                                                 future: getDistanceToTarget(
-                                                    ref,
-                                                    provider.latitude,
-                                                    provider.longitude),
+                                                  ref,
+                                                  provider.latitude,
+                                                  provider.longitude,
+                                                ),
                                                 builder: (context, snapshot) {
                                                   if (snapshot.hasError) {
-                                                    return Text(
-                                                        'Error: ${snapshot.error}');
+                                                    return ErrorMessage();
                                                   } else if (snapshot.hasData) {
                                                     return Row(
                                                       children: [

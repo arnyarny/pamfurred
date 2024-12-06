@@ -5,8 +5,15 @@ import 'package:pamfurred/backend_logic_files/store_location.dart';
 import 'package:pamfurred/models/sp_search_results.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+
 // To know which preference was selected
 final sortResultsProvider = StateProvider<String>((ref) => 'All');
+
+// Input location providers
+final isInputLocationProvider = StateProvider<bool>((ref) => false);
+final inputLatProvider = StateProvider<double?>((ref) => null);
+final inputLongProvider = StateProvider<double?>((ref) => null);
+final inputFullAddressProvider = StateProvider<String?>((ref) => '');
 
 // Address providers
 final hasDetectedAddressProvider = StateProvider<bool>((ref) => false);
@@ -99,17 +106,20 @@ final sortSearchResultsByLocation =
   final combinedResults =
       await ref.watch(combinedSearchResultsProvider(category).future);
 
-  final location =
-      ref.watch(locationProvider); // Get the current location state
-
-  // Access the latitude and longitude from the respective providers
-  final latitude = location.latitude;
-  final longitude = location.longitude;
+  // Determine if using input location or current location
+  final isInputLocation = ref.watch(
+      isInputLocationProvider); // A boolean provider to indicate input location usage
+  final latitude = isInputLocation
+      ? ref.watch(inputLatProvider)
+      : ref.watch(locationProvider).latitude;
+  final longitude = isInputLocation
+      ? ref.watch(inputLongProvider)
+      : ref.watch(locationProvider).longitude;
 
   // Calculate the distance for each item and sort by distance (ascending)
   final sortedResults = combinedResults.map((item) {
     final distance =
-        calculateDistance(latitude, longitude, item.latitude, item.longitude);
+        calculateDistance(latitude!, longitude!, item.latitude, item.longitude);
     return {'item': item, 'distance': distance};
   }).toList()
     ..sort(

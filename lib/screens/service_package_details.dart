@@ -9,13 +9,15 @@ class ServicePackageDetails extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final servicePackageId = ref.watch(selectedServicePackageIdProvider).toString();
+    final servicePackageId =
+        ref.watch(selectedServicePackageIdProvider).toString();
     final details = ref.watch(servicePackageDetailsProvider(servicePackageId));
 
     return Scaffold(
       appBar: AppBar(title: const Text('Details')),
       body: details.when(
         data: (item) {
+          print('Items: $item');
           print('Image URL: ${item.imageUrl}');
           print('Sp Name: ${item.spName}');
           return Padding(
@@ -44,8 +46,8 @@ class ServicePackageDetails extends ConsumerWidget {
                 Text('Price: \$${item.price}',
                     style: const TextStyle(fontSize: 18)),
                 const SizedBox(height: 8),
-                Text('Rating: ${item.averageRating}',
-                    style: const TextStyle(fontSize: 18)),
+                // Text('Rating: ${item.averageRating}',
+                //     style: const TextStyle(fontSize: 18)),
                 const SizedBox(height: 8),
                 Text('Location: (${item.latitude}, ${item.longitude})',
                     style: const TextStyle(fontSize: 18)),

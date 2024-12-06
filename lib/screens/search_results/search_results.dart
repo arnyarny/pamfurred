@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:pamfurred/components/screen_transitions.dart';
 import 'package:pamfurred/providers/search_results_provider.dart';
 import 'package:pamfurred/components/custom_appbar.dart';
 import 'package:pamfurred/components/globals.dart';
+import 'package:pamfurred/screens/pin_location.dart';
 import 'package:pamfurred/screens/search_results/search_results_list.dart';
 // import 'package:pamfurred/screens/pin_location.dart';
 
@@ -21,6 +23,9 @@ class SearchResultsScreenState extends ConsumerState<SearchResultsScreen> {
 
   final TextEditingController minRangeController = TextEditingController();
   final TextEditingController maxRangeController = TextEditingController();
+
+  // Inputted full address
+  String inputFullAddress = '';
 
   @override
   void initState() {
@@ -112,6 +117,8 @@ class SearchResultsScreenState extends ConsumerState<SearchResultsScreen> {
                         onChanged: (String? value) {
                           setState(() {
                             selectedFilter = value!;
+                            ref.watch(isInputLocationProvider.notifier).state =
+                                false;
                             ref.read(sortResultsProvider.notifier).state =
                                 'None';
                           });
@@ -134,6 +141,8 @@ class SearchResultsScreenState extends ConsumerState<SearchResultsScreen> {
                         onChanged: (String? value) {
                           setState(() {
                             selectedFilter = value!;
+                            ref.watch(isInputLocationProvider.notifier).state =
+                                false;
                             ref.read(sortResultsProvider.notifier).state =
                                 'Nearest';
                           });
@@ -156,6 +165,8 @@ class SearchResultsScreenState extends ConsumerState<SearchResultsScreen> {
                         onChanged: (String? value) {
                           setState(() {
                             selectedFilter = value!;
+                            ref.watch(isInputLocationProvider.notifier).state =
+                                false;
                             ref.read(sortResultsProvider.notifier).state =
                                 'Price';
                           });
@@ -168,50 +179,90 @@ class SearchResultsScreenState extends ConsumerState<SearchResultsScreen> {
                     ],
                   ),
                 ),
+                SizedBox(
+                  height: 35,
+                  child: Row(
+                    children: [
+                      Radio<String>(
+                        value: 'Nearby input location',
+                        groupValue: selectedFilter,
+                        onChanged: (String? value) {
+                          setState(() {
+                            selectedFilter = value!;
+                            ref.read(sortResultsProvider.notifier).state =
+                                'Nearby input location';
+                            ref.read(isInputLocationProvider.notifier).state =
+                                true;
+                            Navigator.push(
+                              context,
+                              slideUpRoute(
+                                  const PinLocationNew(searchResult: true)),
+                            ).then((result) {
+                              if (result != null) {
+                                if (result is Map &&
+                                    result.containsKey('latitude') &&
+                                    result.containsKey('longitude')) {
+                                  setState(() {
+                                    // Set the selected full address in the provider
+                                    ref
+                                        .read(inputFullAddressProvider.notifier)
+                                        .state = result[
+                                            'addressName']
+                                        .toString();
+                                    // Set local variable to inputted full address
+                                    inputFullAddress =
+                                        result['addressName'].toString();
+                                    // Set the selected location in the providers
+                                    ref.read(inputLatProvider.notifier).state =
+                                        result['latitude'];
+                                    ref.read(inputLongProvider.notifier).state =
+                                        result['longitude'];
+                                  });
+                                  print(
+                                      'Selected location: ${result['latitude']}, ${result['longitude']}');
+                                  print(result['addressName'].toString());
+                                } else {
+                                  print('Address: $result');
+                                }
+                              }
+                            });
+                          });
+                        },
+                      ),
+                      const Text(
+                        'Nearby input location',
+                        style: TextStyle(fontSize: regularText),
+                      ),
+                    ],
+                  ),
+                ),
+                SizedBox(
+                  height: 35,
+                  child: Row(
+                    children: [
+                      Radio<String>(
+                        value: 'Input price range',
+                        groupValue: selectedFilter,
+                        onChanged: (String? value) {
+                          setState(() {
+                            selectedFilter = value!;
+                            ref.watch(isInputLocationProvider.notifier).state =
+                                false;
+                            ref.read(sortResultsProvider.notifier).state =
+                                'Input price range';
+                          });
+                        },
+                      ),
+                      const Text(
+                        'Input price range',
+                        style: TextStyle(fontSize: regularText),
+                      ),
+                    ],
+                  ),
+                ),
               ],
             ),
-
             const SizedBox(height: tertiarySizedBox),
-
-            // Conditional rendering based on the selected filter
-            // if (selectedFilter == 'Location') ...[
-            //   const Row(
-            //     mainAxisAlignment: MainAxisAlignment.start,
-            //     children: [
-            //       Text(
-            //         'Location',
-            //         style:
-            //             TextStyle(fontSize: titleFont, fontWeight: boldWeight),
-            //       ),
-            //     ],
-            //   ),
-            //   const SizedBox(height: secondarySizedBox),
-            // Row(
-            //   children: [
-            //     Expanded(
-            //       child: TextField(
-            //         decoration: InputDecoration(
-            //           hintText: hasDetectedAddress
-            //               ? '$street, $city, $province'
-            //               : 'Enter location',
-            //           suffixIcon: IconButton(
-            //             icon: const Icon(Icons.my_location,
-            //                 color: primaryColor),
-            //             onPressed: () {
-            //               Navigator.push(
-            //                   context, slideUpRoute(const PinAddress()));
-            //             },
-            //           ),
-            //           border: OutlineInputBorder(
-            //             borderRadius: BorderRadius.circular(8.0),
-            //           ),
-            //         ),
-            //         style: const TextStyle(fontSize: regularText),
-            //       ),
-            //     ),
-            //   ],
-            // ),
-            // ]
             if (selectedFilter == 'Price') ...[
               Column(
                 children: [
@@ -261,10 +312,30 @@ class SearchResultsScreenState extends ConsumerState<SearchResultsScreen> {
                 ],
               ),
             ],
-            const SizedBox(height: secondarySizedBox),
+            if (selectedFilter == 'Nearby input location') ...[
+              Column(
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Inputted address:',
+                        style: TextStyle(
+                            fontSize: titleFont, fontWeight: boldWeight),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(
+                    height: secondarySizedBox,
+                  ),
+                  Text(inputFullAddress),
+                ],
+              )
+            ],
+            const SizedBox(height: tertiarySizedBox),
             TextButton(
               onPressed: () {
-                // Add your action here
+                // Add action here
                 Navigator.pop(context); // Close the drawer
               },
               style: TextButton.styleFrom(

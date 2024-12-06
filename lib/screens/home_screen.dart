@@ -20,6 +20,7 @@ import 'package:pamfurred/models/package_filter_criteria.dart';
 import 'package:pamfurred/models/service_filter_criteria.dart';
 import 'package:pamfurred/providers/appointments_provider.dart';
 import 'package:pamfurred/providers/global_providers.dart';
+import 'package:pamfurred/providers/search_results_provider.dart';
 import 'package:pamfurred/providers/serviceprovider_provider.dart';
 import 'package:pamfurred/providers/sp_profile_provider_packages.dart';
 import 'package:pamfurred/providers/sp_profile_provider_services.dart';
@@ -102,7 +103,7 @@ class HomeScreenState extends ConsumerState<HomeScreen> {
         child: ConnectivityWrapper(
           child: Scaffold(
             backgroundColor: Colors.white,
-          
+
             // Smooth height animation for AppBar visibility
             appBar: PreferredSize(
               preferredSize: const Size.fromHeight(appBarHeight),
@@ -113,7 +114,7 @@ class HomeScreenState extends ConsumerState<HomeScreen> {
                 child: isVisible ? appBar(context) : null,
               ),
             ),
-          
+
             // Body with scroll controller for detecting scroll direction
             body: NotificationListener<ScrollNotification>(
               onNotification: (scrollNotification) {
@@ -158,7 +159,8 @@ class HomeScreenState extends ConsumerState<HomeScreen> {
                           const SizedBox(height: primarySizedBox),
                           SizedBox(
                               width: screenPadding(context),
-                              child: _sectionHeader(context, "I'm looking for")),
+                              child:
+                                  _sectionHeader(context, "I'm looking for")),
                           const SizedBox(height: primarySizedBox),
                           _serviceSelection(context),
                           const SizedBox(height: primarySizedBox),
@@ -821,6 +823,10 @@ class ServiceProvidersWidget extends ConsumerWidget {
                                                     TextOverflow.ellipsis),
                                           ); // Display error message if there's an error
                                         } else if (snapshot.hasData) {
+                                          ref
+                                              .read(isInputLocationProvider
+                                                  .notifier)
+                                              .state = false;
                                           // Check if the data is not null
                                           return Row(
                                             children: [

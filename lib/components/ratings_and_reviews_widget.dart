@@ -82,9 +82,9 @@ class RatingsAndReviewsWidget extends ConsumerWidget {
                         children: [
                           // Reviewer's name
                           Text(
-                            (review['pet_owner_first_name'] ?? '') +
+                            (review['first_name'] ?? '') +
                                 ' ' +
-                                (review['pet_owner_last_name'] ?? ''),
+                                (review['last_name'] ?? ''),
                             style: const TextStyle(
                               fontWeight: FontWeight.bold,
                               fontSize: 16,
@@ -108,7 +108,7 @@ class RatingsAndReviewsWidget extends ConsumerWidget {
                               ),
                             ),
 
-                          const SizedBox(height: 8),
+                          const SizedBox(height: primarySizedBox),
                           // Star rating
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,

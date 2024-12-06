@@ -19,9 +19,9 @@ class SplashScreenState extends State<SplashScreen>
     super.initState();
     _controller = AnimationController(
       vsync: this,
-      duration: const Duration(seconds: 2), // Fade-out duration
+      duration: const Duration(seconds: 1), // Fade-out duration
     );
-    _animation = CurvedAnimation(parent: _controller, curve: Curves.easeInOut);
+    _animation = CurvedAnimation(parent: _controller, curve: Curves.easeOut);
     _controller.forward(); // Start the fade animation
 
     // Wait until the fade animation is complete, then navigate

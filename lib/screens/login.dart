@@ -22,6 +22,7 @@ class LoginScreenState extends ConsumerState<LoginScreen> {
   final passwordController = TextEditingController();
   bool obscureText = true;
   bool isLoading = false;
+  bool showErrors = false; // Flag to trigger validation messages
 
   late FocusNode emailFocusNode;
   late FocusNode passwordFocusNode;
@@ -157,108 +158,109 @@ class LoginScreenState extends ConsumerState<LoginScreen> {
                             // Email address field
                             SizedBox(
                               width: deviceWidth,
-                              height: 50,
-                              child: TextFormField(
-                                validator: (value) {
-                                  if (value == null || value.isEmpty) {
-                                    return 'Please enter email address';
-                                  } else if (!EmailValidator.validate(value)) {
-                                    return 'Invalid Email Address';
-                                  }
-                                  return null;
-                                },
-                                cursorColor:
-                                    const Color.fromRGBO(74, 74, 74, 1),
-                                focusNode: emailFocusNode,
-                                controller: emailController,
-                                keyboardType: TextInputType.emailAddress,
-                                readOnly:
-                                    isLoading, // Disable input when loading
-                                decoration: InputDecoration(
-                                  contentPadding: const EdgeInsets.all(10.0),
-                                  prefixIcon:
-                                      const Icon(Icons.person, size: 19),
-                                  labelText: emailFocusNode.hasFocus
-                                      ? ''
-                                      : 'Email address',
-                                  labelStyle:
-                                      const TextStyle(fontSize: regularText),
-                                  floatingLabelBehavior:
-                                      FloatingLabelBehavior.never,
-                                  filled: true,
-                                  fillColor:
-                                      const Color.fromRGBO(241, 241, 241, 1.0),
-                                  border: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(
-                                        secondaryBorderRadius),
-                                    borderSide: BorderSide.none,
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  TextFormField(
+                                    cursorColor:
+                                        const Color.fromRGBO(74, 74, 74, 1),
+                                    focusNode: emailFocusNode,
+                                    controller: emailController,
+                                    keyboardType: TextInputType.emailAddress,
+                                    readOnly: isLoading,
+                                    decoration: InputDecoration(
+                                      contentPadding:
+                                          const EdgeInsets.all(10.0),
+                                      prefixIcon:
+                                          const Icon(Icons.person, size: 19),
+                                      labelText: emailFocusNode.hasFocus
+                                          ? ''
+                                          : 'Email address',
+                                      labelStyle: const TextStyle(
+                                          fontSize: regularText),
+                                      floatingLabelBehavior:
+                                          FloatingLabelBehavior.never,
+                                      filled: true,
+                                      fillColor: const Color.fromRGBO(
+                                          241, 241, 241, 1.0),
+                                      border: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(
+                                            secondaryBorderRadius),
+                                        borderSide: BorderSide.none,
+                                      ),
+                                    ),
+                                    style:
+                                        const TextStyle(fontSize: regularText),
                                   ),
-                                ),
-                                style: const TextStyle(fontSize: regularText),
+                                  if (showErrors &&
+                                      (emailController.text.isEmpty ||
+                                          !EmailValidator.validate(
+                                              emailController.text)))
+                                    Padding(
+                                      padding: const EdgeInsets.only(top: 4.0),
+                                      child: Text(
+                                        emailController.text.isEmpty
+                                            ? 'Please enter email address'
+                                            : 'Invalid Email Address',
+                                        style: const TextStyle(
+                                            color: Colors.red, fontSize: 12),
+                                      ),
+                                    ),
+                                ],
                               ),
                             ),
                             const SizedBox(height: 16),
                             // Password field
                             SizedBox(
                               width: deviceWidth,
-                              height: 50,
-                              child: TextFormField(
-                                textAlignVertical: TextAlignVertical.center,
-                                cursorColor:
-                                    const Color.fromRGBO(74, 74, 74, 1),
-                                focusNode: passwordFocusNode,
-                                controller: passwordController,
-                                obscureText: obscureText,
-                                validator: (value) {
-                                  return (value == null || value.isEmpty)
-                                      ? 'Please enter password'
-                                      : null;
-                                },
-                                readOnly:
-                                    isLoading, // Disable input when loading
-                                decoration: InputDecoration(
-                                  contentPadding: const EdgeInsets.all(10.0),
-                                  prefixIcon: Transform.rotate(
-                                    angle: 40,
-                                    child: const Icon(Icons.key, size: 19),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  TextFormField(
+                                    cursorColor:
+                                        const Color.fromRGBO(74, 74, 74, 1),
+                                    focusNode: passwordFocusNode,
+                                    controller: passwordController,
+                                    obscureText: obscureText,
+                                    readOnly: isLoading,
+                                    decoration: InputDecoration(
+                                      contentPadding:
+                                          const EdgeInsets.all(10.0),
+                                      prefixIcon:
+                                          const Icon(Icons.key, size: 19),
+                                      labelText: passwordFocusNode.hasFocus
+                                          ? ''
+                                          : 'Password',
+                                      labelStyle: const TextStyle(
+                                          fontSize: regularText),
+                                      floatingLabelBehavior:
+                                          FloatingLabelBehavior.never,
+                                      filled: true,
+                                      fillColor: const Color.fromRGBO(
+                                          241, 241, 241, 1.0),
+                                      border: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(
+                                            secondaryBorderRadius),
+                                        borderSide: BorderSide.none,
+                                      ),
+                                    ),
+                                    style:
+                                        const TextStyle(fontSize: regularText),
                                   ),
-                                  labelText: passwordFocusNode.hasFocus
-                                      ? ''
-                                      : 'Password',
-                                  labelStyle:
-                                      const TextStyle(fontSize: regularText),
-                                  suffix: Row(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      GestureDetector(
-                                        onTap: (() {
-                                          setState(() {
-                                            obscureText = !obscureText;
-                                          });
-                                        }),
-                                        child: Icon(
-                                          obscureText
-                                              ? Icons.visibility_outlined
-                                              : Icons.visibility_off_outlined,
-                                          size: 19,
-                                        ),
-                                      )
-                                    ],
-                                  ),
-                                  floatingLabelBehavior:
-                                      FloatingLabelBehavior.never,
-                                  filled: true,
-                                  fillColor:
-                                      const Color.fromRGBO(241, 241, 241, 1.0),
-                                  border: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(
-                                        secondaryBorderRadius),
-                                    borderSide: BorderSide.none,
-                                  ),
-                                ),
-                                style: const TextStyle(fontSize: regularText),
+                                  if (showErrors &&
+                                      passwordController.text.isEmpty)
+                                    Padding(
+                                      padding: const EdgeInsets.only(top: 4.0),
+                                      child: Text(
+                                        'Please enter password',
+                                        style: const TextStyle(
+                                            color: Colors.red, fontSize: 12),
+                                      ),
+                                    ),
+                                ],
                               ),
                             ),
+
                             const SizedBox(height: 24),
                             Container(
                               width: deviceWidth,
@@ -284,6 +286,11 @@ class LoginScreenState extends ConsumerState<LoginScreen> {
                                 onPressed: isLoading
                                     ? null
                                     : () async {
+                                        setState(() {
+                                          showErrors =
+                                              true; // Show errors when login is pressed
+                                        });
+
                                         if (formKey.currentState!.validate()) {
                                           await authenticateUser(
                                             emailController.text,
@@ -309,9 +316,8 @@ class LoginScreenState extends ConsumerState<LoginScreen> {
                                     : const Text(
                                         "Login",
                                         style: TextStyle(
-                                          fontSize: regularText,
-                                          color: Colors.white,
-                                        ),
+                                            fontSize: regularText,
+                                            color: Colors.white),
                                       ),
                               ),
                             ),

@@ -6,6 +6,7 @@ import 'package:pamfurred/providers/available_timeslots_provider.dart';
 import 'package:pamfurred/providers/global_providers.dart';
 import 'package:pamfurred/providers/notifications_provider.dart';
 import 'package:pamfurred/providers/pet_profile_provider.dart';
+import 'package:pamfurred/providers/ratings_and_reviews_provider.dart';
 import 'package:pamfurred/providers/serviceprovider_provider.dart';
 import 'package:pamfurred/screens/login.dart';
 import 'package:pamfurred/screens/main_screen.dart';
@@ -40,6 +41,7 @@ class AuthRedirectState extends ConsumerState<AuthRedirect>
     _listenToSpAvailability(); // Listen to service provider availability changes after initState
     _listenToPetProfiles();
     _listenToNotifications();
+    _listenToFeedback();
 
     // Ensure these functions are called after the widget is built
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -111,6 +113,18 @@ class AuthRedirectState extends ConsumerState<AuthRedirect>
           // Invalidate the provider to refetch the data when changes occur
           ref.invalidate(fetchAppointmentsPerDateProvider(selectedDate!));
         });
+  }
+
+  void _listenToFeedback() {
+    final supabase = Supabase.instance.client;
+
+    // Stream listens for changes in the service_provider_availability table
+    supabase
+        .from('feedback')
+        .stream(primaryKey: ['feedback_id']).listen((event) {
+      // Invalidate the provider when the data changes
+      ref.invalidate(ratingsSummaryWithReviewsProvider);
+    });
   }
 
   Future<void> _checkSession() async {

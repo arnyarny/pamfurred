@@ -4,6 +4,7 @@ class Service implements CartItem {
   const Service({
     required this.serviceServiceProviderId,
     required this.serviceId,
+    required this.serviceProviderServiceId,
     required this.serviceName,
     required this.category,
     required this.servicePrice,
@@ -16,6 +17,7 @@ class Service implements CartItem {
   });
   final String serviceServiceProviderId;
   final String serviceId;
+  final String serviceProviderServiceId;
   final String serviceName;
   final List<String> category;
   final int servicePrice;
@@ -32,6 +34,9 @@ class Service implements CartItem {
 
   @override
   String get id => serviceId;
+
+  @override
+  String get servicePackageDetailsId => serviceProviderServiceId;
 
   @override
   int get price => servicePrice;

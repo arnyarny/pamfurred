@@ -33,6 +33,7 @@ final allServicesProvider =
     return Service(
       serviceServiceProviderId: service['sp_id'] as String? ?? '',
       serviceId: service['service_id'] as String? ?? '',
+      serviceProviderServiceId: service['serviceprovider_service_id'] ?? '',
       serviceName: service['service_name'] as String? ?? '',
       category: service['service_category'] is List<dynamic>
           ? List<String>.from(service['service_category'] as List<dynamic>)

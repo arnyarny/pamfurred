@@ -621,8 +621,11 @@ final servicesTabProvider = FutureProvider<List<Widget>>((ref) async {
                                   final cartServices =
                                       ref.watch(cartNotifierProvider);
                                   final isInCart = cartServices.any(
-                                      (cartService) =>
-                                          cartService.id == service.serviceId);
+                                    (cartService) =>
+                                        cartService.id == service.serviceId &&
+                                        cartService.servicePackageDetailsId ==
+                                            service.servicePackageDetailsId,
+                                  );
 
                                   bool willBook = ref.watch(willBookProvider);
                                   return Card(
@@ -804,8 +807,11 @@ final packagesTabProvider = FutureProvider<List<Widget>>((ref) async {
                                   final cartServices =
                                       ref.watch(cartNotifierProvider);
                                   final isInCart = cartServices.any(
-                                      (cartService) =>
-                                          cartService.id == package.packageId);
+                                    (cartService) =>
+                                        cartService.id == package.packageId &&
+                                        cartService.servicePackageDetailsId ==
+                                            package.servicePackageDetailsId,
+                                  );
 
                                   bool willBook = ref.watch(willBookProvider);
                                   return Card(

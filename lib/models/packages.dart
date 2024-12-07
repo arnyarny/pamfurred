@@ -4,6 +4,7 @@ class Package implements CartItem {
   const Package({
     required this.packageServiceProviderId,
     required this.packageId,
+    required this.serviceProviderPackageId,
     required this.packageName,
     required this.category,
     // required this.minSize,
@@ -19,6 +20,7 @@ class Package implements CartItem {
 
   final String packageServiceProviderId;
   final String packageId;
+  final String serviceProviderPackageId;
   final String packageName;
   final List<String> category;
   // final int minSize;
@@ -37,6 +39,9 @@ class Package implements CartItem {
 
   @override
   String get id => packageId;
+
+  @override
+  String get servicePackageDetailsId => serviceProviderPackageId;
 
   @override
   int get price => packagePrice;

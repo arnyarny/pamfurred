@@ -52,7 +52,9 @@ class CartNotifier extends StateNotifier<Set<CartItem>> {
       _showProviderConflictDialog(context);
       return;
     }
-    if (!state.any((item) => item.id == service.id)) {
+    if (!state.any((item) =>
+        item.id == service.id &&
+        item.servicePackageDetailsId == service.servicePackageDetailsId)) {
       state = {...state, service};
     }
   }
@@ -62,7 +64,9 @@ class CartNotifier extends StateNotifier<Set<CartItem>> {
       _showProviderConflictDialog(context);
       return;
     }
-    if (!state.any((item) => item.id == package.id)) {
+    if (!state.any((item) =>
+        item.id == package.id &&
+        item.servicePackageDetailsId == package.servicePackageDetailsId)) {
       state = {...state, package};
     }
   }
@@ -78,11 +82,19 @@ class CartNotifier extends StateNotifier<Set<CartItem>> {
   }
 
   void removeService(Service service) {
-    state = state.where((item) => item.id != service.id).toSet();
+    state = state
+        .where((item) =>
+            item.id != service.id ||
+            item.servicePackageDetailsId != service.servicePackageDetailsId)
+        .toSet();
   }
 
   void removePackage(Package package) {
-    state = state.where((item) => item.id != package.id).toSet();
+    state = state
+        .where((item) =>
+            item.id != package.id ||
+            item.servicePackageDetailsId != package.servicePackageDetailsId)
+        .toSet();
   }
 
   void clearCart() {

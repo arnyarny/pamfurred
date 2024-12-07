@@ -23,6 +23,7 @@ final allPackagesProvider =
     return Package(
       packageServiceProviderId: package['sp_id'] as String? ?? '',
       packageId: package['package_id'] as String? ?? '',
+      serviceProviderPackageId: package['serviceprovider_package_id'] ?? '',
       packageName: package['package_name'] as String? ?? '',
       category: package['package_category'] is List<dynamic>
           ? List<String>.from(package['package_category'] as List<dynamic>)

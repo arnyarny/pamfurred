@@ -119,7 +119,9 @@ class AppointmentSummaryScreenState
       appointmentItems.add({
         'appointment_id': appointmentId,
         'service_id': service.id,
+        'serviceprovider_service_id': service.serviceProviderServiceId,
         'package_id': null,
+        'serviceprovider_package_id': null
       });
     }
 
@@ -127,7 +129,9 @@ class AppointmentSummaryScreenState
       appointmentItems.add({
         'appointment_id': appointmentId,
         'service_id': null,
+        'serviceprovider_service_id': null,
         'package_id': package.id,
+        'serviceprovider_package_id': package.serviceProviderPackageId
       });
     }
 

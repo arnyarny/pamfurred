@@ -42,6 +42,7 @@ class AuthRedirectState extends ConsumerState<AuthRedirect>
     _listenToPetProfiles();
     _listenToNotifications();
     _listenToFeedback();
+    _listenToServiceProviders();
 
     // Ensure these functions are called after the widget is built
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -142,6 +143,19 @@ class AuthRedirectState extends ConsumerState<AuthRedirect>
         // User is not logged in, navigate to Login Screen
         Navigator.push(context, slideUpRoute(const LoginScreen()));
       }
+    });
+  }
+
+  // Listen for changes in the `service_provider_availability` table
+  void _listenToServiceProviders() {
+    final supabase = Supabase.instance.client;
+
+    // Stream listens for changes in the service_provider_availability table
+    supabase
+        .from('service_provider_with_categories_and_sentiment')
+        .stream(primaryKey: ['sp_id']).listen((event) {
+      // Invalidate the provider when the data changes
+      ref.invalidate(serviceProviderFutureProvider);
     });
   }
 

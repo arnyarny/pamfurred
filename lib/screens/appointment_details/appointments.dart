@@ -8,7 +8,11 @@ import 'package:pamfurred/components/error_widget.dart';
 import 'package:pamfurred/components/screen_transitions.dart';
 import 'package:pamfurred/components/time_and_date_formatter.dart';
 import 'package:pamfurred/components/title_text.dart';
+import 'package:pamfurred/math_functions/is_one_day_or_earlier.dart';
 import 'package:pamfurred/providers/appointments_provider.dart';
+import 'package:pamfurred/providers/global_providers.dart';
+import 'package:pamfurred/providers/serviceprovider_provider.dart';
+import 'package:pamfurred/screens/appointment/reschedule/reschedule.dart';
 import 'package:pamfurred/screens/appointment_details/appointment_details.dart';
 import 'package:pamfurred/screens/appointment_details/give_feedback.dart';
 import 'package:quickalert/models/quickalert_animtype.dart';
@@ -30,6 +34,7 @@ class AppointmentsScreenState extends ConsumerState<AppointmentsScreen>
   late TabController _tabController;
 
   bool isLoading = false;
+  bool isCancelling = false;
 
   final SupabaseClient supabaseClient = Supabase.instance.client;
   late AppointmentService appointmentService;
@@ -76,48 +81,60 @@ class AppointmentsScreenState extends ConsumerState<AppointmentsScreen>
   Widget build(BuildContext context) {
     final appointmentAsyncValue = ref.watch(appointmentDetailsProvider);
 
-    return ConnectivityWrapper(
-      child: Scaffold(
-        backgroundColor: Colors.white,
-        appBar: AppBar(
-          backgroundColor: Colors.white,
-          automaticallyImplyLeading: false,
-          toolbarHeight: 20,
-          elevation: 0,
-          bottom: TabBar(
-            isScrollable: true,
-            controller: _tabController,
-            tabs: [
-              _buildTab('Today'),
-              _buildTab('Pending'),
-              _buildTab('Upcoming'),
-              _buildTab('Done'),
-              _buildTab('Cancelled'),
-              _buildTab('All'),
-            ],
-            labelColor: tangerine,
-            indicatorColor: tangerine,
-          ),
-        ),
-        body: Center(
-          child: appointmentAsyncValue.when(
-            data: (appointmentData) {
-              final appointmentList =
-                  appointmentData['appointments'] as List<Map<String, dynamic>>;
-
-              return TabBarView(
+    return Stack(
+      children: [
+        ConnectivityWrapper(
+          child: Scaffold(
+            backgroundColor: Colors.white,
+            appBar: AppBar(
+              backgroundColor: Colors.white,
+              automaticallyImplyLeading: false,
+              toolbarHeight: 20,
+              elevation: 0,
+              bottom: TabBar(
+                isScrollable: true,
                 controller: _tabController,
-                physics: const BouncingScrollPhysics(),
-                children: List.generate(6, (index) {
-                  return _buildAppointmentList(index, appointmentList);
-                }),
-              );
-            },
-            loading: () => const Center(child: CircularProgressIndicator()),
-            error: (error, stackTrace) => Center(child: somethingWentWrong()),
+                tabs: [
+                  _buildTab('Today'),
+                  _buildTab('Pending'),
+                  _buildTab('Upcoming'),
+                  _buildTab('Done'),
+                  _buildTab('Cancelled'),
+                  _buildTab('All'),
+                ],
+                labelColor: tangerine,
+                indicatorColor: tangerine,
+              ),
+            ),
+            body: Center(
+              child: appointmentAsyncValue.when(
+                data: (appointmentData) {
+                  final appointmentList = appointmentData['appointments']
+                      as List<Map<String, dynamic>>;
+
+                  return TabBarView(
+                    controller: _tabController,
+                    physics: const BouncingScrollPhysics(),
+                    children: List.generate(6, (index) {
+                      return _buildAppointmentList(index, appointmentList);
+                    }),
+                  );
+                },
+                loading: () => const Center(child: CircularProgressIndicator()),
+                error: (error, stackTrace) =>
+                    Center(child: somethingWentWrong()),
+              ),
+            ),
           ),
         ),
-      ),
+        if (isCancelling)
+          Container(
+            color: Colors.black54, // Semi-transparent background
+            child: Center(
+              child: CircularProgressIndicator(),
+            ),
+          ),
+      ],
     );
   }
 
@@ -237,6 +254,7 @@ class AppointmentsScreenState extends ConsumerState<AppointmentsScreen>
                           appointment['appointment_status'] == 'Pending') &&
                       isOneDayBeforeOrEarlier(appointment[
                           'appointment_date']) // If it's 1 day before the appointment_date
+
                   ? Padding(
                       padding: const EdgeInsets.only(left: tertiarySizedBox),
                       child: Row(
@@ -256,9 +274,15 @@ class AppointmentsScreenState extends ConsumerState<AppointmentsScreen>
                                   showCancelBtn: true,
                                   cancelBtnText: 'No',
                                   onConfirmBtnTap: () async {
+                                    Navigator.pop(context);
+
                                     setState(() {
-                                      isLoading =
+                                      // ref.read(spIndexProvider.notifier).state = appointment['sp_id'];
+                                      isCancelling =
                                           true; // Set isLoading to true when confirming cancellation
+                                      ref
+                                          .read(isLoadingProvider.notifier)
+                                          .state = true;
                                     });
 
                                     final toBeCancelledAppointId = ref
@@ -269,14 +293,13 @@ class AppointmentsScreenState extends ConsumerState<AppointmentsScreen>
                                     // Call the cancelAppointment function and await the result
                                     await cancelAppointment(
                                         toBeCancelledAppointId);
-                                    if (context.mounted) {
-                                      Navigator.pop(
-                                          context); // Close the QuickAlert dialog after the action is completed
-                                    }
 
                                     setState(() {
-                                      isLoading =
-                                          false; // Set isLoading to false once the cancellation is complete
+                                      isCancelling =
+                                          false; // Set isCancelling to false once the cancellation is complete
+                                      ref
+                                          .read(isLoadingProvider.notifier)
+                                          .state = false;
                                     });
 
                                     if (context.mounted) {
@@ -308,7 +331,19 @@ class AppointmentsScreenState extends ConsumerState<AppointmentsScreen>
                                     confirmBtnText: 'Yes',
                                     showCancelBtn: true,
                                     cancelBtnText: 'No',
-                                    onConfirmBtnTap: () {});
+                                    onConfirmBtnTap: () {
+                                      setState(() {
+                                        ref
+                                            .read(selectedSpIndexProvider
+                                                .notifier)
+                                            .state = appointment['sp_id'];
+                                      });
+                                      Navigator.pop(context);
+                                      Navigator.push(
+                                          context,
+                                          slideUpRoute(
+                                              const RescheduleAppointmentScreen()));
+                                    });
                               },
                               backgroundColor: Colors.green,
                               textColor: Colors.white),
@@ -364,27 +399,5 @@ class AppointmentsScreenState extends ConsumerState<AppointmentsScreen>
         );
       },
     );
-  }
-
-  bool isOneDayBeforeOrEarlier(String? dateStr) {
-    if (dateStr == null) return false;
-
-    try {
-      // Parse the given date string
-      final DateTime givenDate = DateTime.parse(dateStr);
-
-      // Get the current date (ignoring time by setting it to midnight)
-      final DateTime today = DateTime.now();
-      final DateTime currentDate = DateTime(today.year, today.month, today.day);
-
-      // Calculate the difference in days
-      final int difference = givenDate.difference(currentDate).inDays;
-
-      // Check if the given date is 1 day before or earlier
-      return difference <= -1;
-    } catch (e) {
-      // Return false if there's an error in parsing the date
-      return false;
-    }
   }
 }

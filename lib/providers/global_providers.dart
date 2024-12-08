@@ -35,3 +35,5 @@ final selectedCategoryIndexProvider = StateProvider<int>((ref) => 0);
 
 // Provider to hold the index of the bottom navbar
 final bottomNavBarIndexProvider = StateProvider<int>((ref) => 0);
+
+final isLoadingProvider = StateProvider<bool>((ref) => false);

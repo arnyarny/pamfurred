@@ -320,52 +320,67 @@ class ResultsListWidget extends ConsumerWidget {
           itemBuilder: (context, index) {
             return SizedBox(
               height: 150,
-              child: Column(
-                children: [
-                  Shimmer.fromColors(
-                    baseColor: Colors.grey[300]!,
-                    highlightColor: Colors.grey[100]!,
-                    child: Container(
-                      width: 120,
-                      height: 138,
-                      color: Colors.grey[300],
-                    ),
-                  ),
-                  Expanded(
-                    child: Padding(
-                      padding: const EdgeInsets.all(secondarySizedBox),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Shimmer.fromColors(
-                            baseColor: Colors.grey[300]!,
-                            highlightColor: Colors.grey[100]!,
-                            child: Container(
-                                width: 150,
-                                height: 20,
-                                color: Colors.grey[300]),
-                          ),
-                          const SizedBox(height: 10),
-                          Shimmer.fromColors(
-                            baseColor: Colors.grey[300]!,
-                            highlightColor: Colors.grey[100]!,
-                            child: Container(
-                                width: 100,
-                                height: 20,
-                                color: Colors.grey[300]),
-                          ),
-                        ],
+              child: Center(
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: Card(
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(0),
+                        ),
+                        child: Row(
+                          children: [
+                            Shimmer.fromColors(
+                              baseColor: Colors.grey[300]!,
+                              highlightColor: Colors.grey[100]!,
+                              child: Container(
+                                  width: 120,
+                                  height: 138,
+                                  color: Colors.grey[300]),
+                            ),
+                            Expanded(
+                              child: Padding(
+                                padding:
+                                    const EdgeInsets.all(secondarySizedBox),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Shimmer.fromColors(
+                                      baseColor: Colors.grey[300]!,
+                                      highlightColor: Colors.grey[100]!,
+                                      child: Container(
+                                          width: 150,
+                                          height: 20,
+                                          color: Colors.grey[300]),
+                                    ),
+                                    const SizedBox(height: 10),
+                                    Shimmer.fromColors(
+                                      baseColor: Colors.grey[300]!,
+                                      highlightColor: Colors.grey[100]!,
+                                      child: Container(
+                                          width: 100,
+                                          height: 20,
+                                          color: Colors.grey[300]),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                            Shimmer.fromColors(
+                              baseColor: Colors.grey[300]!,
+                              highlightColor: Colors.grey[100]!,
+                              child: Container(
+                                  width: 25,
+                                  height: 25,
+                                  color: Colors.grey[300]),
+                            ),
+                            const SizedBox(width: 8),
+                          ],
+                        ),
                       ),
                     ),
-                  ),
-                  Shimmer.fromColors(
-                    baseColor: Colors.grey[300]!,
-                    highlightColor: Colors.grey[100]!,
-                    child: Container(
-                        width: 25, height: 25, color: Colors.grey[300]),
-                  ),
-                  const SizedBox(width: 8),
-                ],
+                  ],
+                ),
               ),
             );
           },

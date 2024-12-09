@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pamfurred/components/globals.dart';
@@ -62,26 +63,46 @@ class SearchResultsScreenState extends ConsumerState<SearchResultsScreen> {
                   decoration: BoxDecoration(
                     color:
                         Colors.grey[200], // Background color of the container
-                    borderRadius: BorderRadius.circular(10),
+                    borderRadius: BorderRadius.circular(secondaryBorderRadius),
                   ),
                   padding: const EdgeInsets.all(10),
                   child: Row(
                     children: [
                       Expanded(
                         child: Text(
-                          'Search...',
+                          ref.watch(searchedServicePackageProvider) == ''
+                              ? 'Search service or package...'
+                              : ref.watch(searchedServicePackageProvider),
                           style: TextStyle(
-                            color: Colors.grey,
+                            color: greyColor,
                             fontSize: 16,
                           ),
                         ),
                       ),
                       const SizedBox(width: 10),
-                      Icon(
-                        Icons.search,
-                        color: Colors.black,
-                        size: 25,
-                      ),
+                      if (ref
+                              .read(searchedServicePackageProvider.notifier)
+                              .state !=
+                          '') ...[
+                        GestureDetector(
+                          onTap: () {
+                            ref
+                                .read(searchedServicePackageProvider.notifier)
+                                .state = '';
+                          },
+                          child: Icon(
+                            CupertinoIcons.clear_circled_solid,
+                            color: Colors.black,
+                            size: 25,
+                          ),
+                        ),
+                      ] else ...[
+                        Icon(
+                          CupertinoIcons.search,
+                          color: Colors.black,
+                          size: 25,
+                        )
+                      ]
                     ],
                   ),
                 ),

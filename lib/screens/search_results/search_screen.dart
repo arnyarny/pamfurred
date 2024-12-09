@@ -1,5 +1,7 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:pamfurred/components/globals.dart';
 import 'package:pamfurred/providers/search_results_provider.dart';
 import 'package:pamfurred/providers/serviceprovider_provider.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -12,9 +14,10 @@ class SearchScreen extends ConsumerStatefulWidget {
 }
 
 class _SearchScreenState extends ConsumerState<SearchScreen> {
-  final TextEditingController _searchController = TextEditingController();
   final FocusNode _focusNode = FocusNode(); // FocusNode for TextField
   List<String> filteredSuggestions = [];
+
+  late TextEditingController _searchController;
 
   // Fetch service names based on the selected category
   Future<List<String>> fetchServiceNamesByCategory(String category) async {
@@ -39,20 +42,19 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
 
   // Fetch both services and packages and filter based on the query
   void _filterSuggestions(String query, String category) async {
-    // Fetch both services and package names concurrently
     try {
       final category = ref.watch(selectedHomeScreenSpCategoryProvider);
       final serviceNames = await fetchServiceNamesByCategory(category);
       final packageNames = await fetchPackageNamesByCategory(category);
 
-      // Filter suggestions based on the query (both services and packages)
+      // Filter and limit the suggestions to 10 items
       setState(() {
         filteredSuggestions = [
           ...serviceNames.where(
               (service) => service.toLowerCase().contains(query.toLowerCase())),
           ...packageNames.where(
-              (package) => package.toLowerCase().contains(query.toLowerCase()))
-        ];
+              (package) => package.toLowerCase().contains(query.toLowerCase())),
+        ].take(10).toList(); // Limit the combined results to 10
       });
     } catch (error) {
       print('Error fetching services and packages: $error');
@@ -64,6 +66,9 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
     super.initState();
     // Request focus on the text field as soon as the screen is loaded
     _focusNode.requestFocus();
+
+    _searchController = TextEditingController(
+        text: ref.read(searchedServicePackageProvider) ?? '');
   }
 
   @override
@@ -92,24 +97,45 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
           Padding(
             padding: const EdgeInsets.all(10.0),
             child: Center(
-              child: Container(
-                width: 350, // Adjust width as needed
-                child: TextField(
-                  controller: _searchController,
-                  focusNode: _focusNode, // Attach FocusNode to TextField
-                  onChanged: (query) => _filterSuggestions(
-                      query, selectedCategory), // Filter suggestions
-                  decoration: InputDecoration(
-                    hintText: 'Search...',
-                    hintStyle: TextStyle(color: Colors.grey),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(10),
-                      borderSide: BorderSide.none,
+              child: Row(
+                children: [
+                  Container(
+                    width: 270,
+                    child: TextField(
+                      controller: _searchController,
+                      focusNode: _focusNode, // Attach FocusNode to TextField
+                      onChanged: (query) => _filterSuggestions(
+                          query, selectedCategory), // Filter suggestions
+                      decoration: InputDecoration(
+                        hintText: 'Search service or package...',
+                        hintStyle: TextStyle(color: Colors.grey),
+                        border: OutlineInputBorder(
+                          borderRadius:
+                              BorderRadius.circular(secondaryBorderRadius),
+                          borderSide: BorderSide.none,
+                        ),
+                        filled: true,
+                        fillColor: Colors.grey[200],
+                        suffixIcon: GestureDetector(
+                          onTap: () {
+                            _searchController.text = '';
+                            ref
+                                .read(searchedServicePackageProvider.notifier)
+                                .state = '';
+                          },
+                          child: Icon(
+                            CupertinoIcons.clear_circled_solid,
+                            color: Colors.black,
+                            size: 25,
+                          ),
+                        ),
+                        contentPadding: EdgeInsets.all(10),
+                      ),
                     ),
-                    filled: true,
-                    fillColor: Colors.grey[200],
-                    suffixIcon: GestureDetector(
-                      onTap: () {
+                  ),
+                  const SizedBox(width: secondarySizedBox),
+                  TextButton(
+                      onPressed: () {
                         print(_searchController.text);
 
                         // Update the selected service/package name in Riverpod
@@ -118,15 +144,17 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
                             .state = _searchController.text;
                         Navigator.pop(context);
                       },
-                      child: Icon(
-                        Icons.search,
-                        color: Colors.black,
-                        size: 25,
+                      child: Text(
+                        'Search',
+                        style: TextStyle(color: Colors.white),
                       ),
-                    ),
-                    contentPadding: EdgeInsets.all(10),
-                  ),
-                ),
+                      style: ButtonStyle(
+                        backgroundColor: WidgetStatePropertyAll(primaryColor),
+                        shape: WidgetStatePropertyAll(RoundedRectangleBorder(
+                            borderRadius:
+                                BorderRadius.circular(secondaryBorderRadius))),
+                      )),
+                ],
               ),
             ),
           ),

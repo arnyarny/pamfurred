@@ -132,8 +132,8 @@ class AddPetProfileScreenState extends ConsumerState<AddPetProfileScreen> {
                   // Description Text Field (Longer than other fields)
                   SizedBox(
                     height: 112,
-                    child: buildTextField(
-                        'Description', 'description', TextInputType.text),
+                    child:
+                        buildTextField('', 'description', TextInputType.text),
                   ),
                   const SizedBox(height: tertiarySizedBox),
                   // Date of Birth Field
@@ -295,10 +295,16 @@ class AddPetProfileScreenState extends ConsumerState<AddPetProfileScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        customRichText(label),
+        controllerKey == 'description'
+            ? Text(
+                "Description",
+                style:
+                    const TextStyle(color: Colors.black, fontSize: regularText),
+              )
+            : customRichText(label),
         const SizedBox(height: primarySizedBox),
         SizedBox(
-          height: controllerKey == 'description' ? 90 : primaryTextFieldHeight,
+          height: controllerKey == 'description' ? 87 : primaryTextFieldHeight,
           child: TextFormField(
             minLines: controllerKey == 'description' ? 3 : 1,
             maxLines: controllerKey == 'description' ? 10 : 1,
@@ -317,6 +323,9 @@ class AddPetProfileScreenState extends ConsumerState<AddPetProfileScreen> {
             ),
             // Validation
             validator: (value) {
+              if (controllerKey == 'description') {
+                return null; // No validation for optional field
+              }
               if (value == null || value.isEmpty) {
                 return '$label is required';
               }

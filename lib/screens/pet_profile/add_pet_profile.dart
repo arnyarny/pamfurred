@@ -1,7 +1,9 @@
+import 'dart:io';
 import 'package:animated_custom_dropdown/custom_dropdown.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart'; // For date formatting
 import 'package:pamfurred/components/capitalize_first_letter.dart';
 import 'package:pamfurred/components/custom_appbar.dart';
@@ -38,6 +40,20 @@ class AddPetProfileScreenState extends ConsumerState<AddPetProfileScreen> {
 
   final supabase = Supabase.instance.client;
 
+  File? _image; // Store the picked image file
+  final ImagePicker _picker = ImagePicker();
+
+  // Method to pick an image from the gallery
+  Future<void> changeImage() async {
+    final pickedFile = await _picker.pickImage(source: ImageSource.gallery);
+    if (pickedFile != null) {
+      setState(() {
+        _image =
+            File(pickedFile.path); // Update the state with the selected image
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -59,6 +75,53 @@ class AddPetProfileScreenState extends ConsumerState<AddPetProfileScreen> {
                     ),
                   ]),
                   const SizedBox(height: tertiarySizedBox),
+                  Center(
+                    child: Stack(
+                      alignment:
+                          Alignment.center, // Center the overlay text or icon
+                      children: [
+                        Container(
+                          width: 200, // Set width
+                          height:
+                              200, // Set height to the same value for a square
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(100),
+                            color: Colors
+                                .grey[300], // Placeholder background color
+                            image: _image != null
+                                ? DecorationImage(
+                                    image: FileImage(_image!) as ImageProvider,
+                                    fit: BoxFit.cover,
+                                  )
+                                : null, // Only show the image decoration if _image is not null
+                          ),
+                          child: _image == null
+                              ? const Icon(
+                                  Icons.camera_alt_rounded,
+                                  size: 50,
+                                  color: Colors.grey,
+                                )
+                              : null, // Show camera icon if _image is null
+                        ),
+                        Positioned(
+                          bottom: 10,
+                          right: 5,
+                          child: Container(
+                            decoration: BoxDecoration(
+                                color: primaryColor,
+                                borderRadius: BorderRadius.circular(100)),
+                            child: IconButton(
+                                onPressed: changeImage,
+                                icon: Icon(
+                                  Icons.edit,
+                                  color: Colors.white,
+                                )),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+
                   // Pet Name Text Field
                   buildTextField('Pet Name', 'petName', TextInputType.text),
                   const SizedBox(height: tertiarySizedBox),
@@ -173,6 +236,14 @@ class AddPetProfileScreenState extends ConsumerState<AddPetProfileScreen> {
                         String petType = selectedPetType.name;
                         String breed = selectedBreed ?? '';
 
+                        // Upload image to Supabase storage
+                        String imageUrl = '';
+                        if (_image != null) {
+                          imageUrl = await uploadImage(
+                              _image!); // Get the image URL after uploading
+                          print("Uploaded image URL: $imageUrl"); // Debug print
+                        }
+
                         // Insert data into pet_profile table in Supabase
                         final userId = ref.watch(userIdProvider);
 
@@ -180,6 +251,7 @@ class AddPetProfileScreenState extends ConsumerState<AddPetProfileScreen> {
                             await supabase.from('pet_profile').insert({
                           'pet_owner_id': userId,
                           'pet_name': petName,
+                          'pet_image': imageUrl,
                           'weight': petWeight,
                           'description': description,
                           'date_of_birth': dateOfBirth,
@@ -313,6 +385,17 @@ class AddPetProfileScreenState extends ConsumerState<AddPetProfileScreen> {
         selectedDateOfBirth = picked;
       });
   }
+}
+
+Future<String> uploadImage(File image) async {
+  final filePath = '${image.uri.pathSegments.last}';
+  final supabase = Supabase.instance.client;
+
+  await supabase.storage.from('pet_profile').upload(filePath, image);
+// If the upload is successful, get the public URL
+  final publicUrl = supabase.storage.from('pet_profile').getPublicUrl(filePath);
+  print("Generated public URL: $publicUrl");
+  return publicUrl;
 }
 
 // Updated function signature with 5 parameters

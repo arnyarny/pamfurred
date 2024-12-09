@@ -5,6 +5,7 @@ import 'package:pamfurred/components/globals.dart';
 import 'package:pamfurred/components/screen_transitions.dart';
 import 'package:pamfurred/providers/search_results_provider.dart';
 import 'package:pamfurred/screens/pin_location.dart';
+import 'package:pamfurred/screens/search_results/input_price.dart';
 import 'package:pamfurred/screens/search_results/search_results_list.dart';
 // import 'package:pamfurred/screens/pin_location.dart';
 
@@ -169,6 +170,8 @@ class SearchResultsScreenState extends ConsumerState<SearchResultsScreen> {
                             selectedFilter = value!;
                             ref.read(isInputLocationProvider.notifier).state =
                                 false;
+                            ref.read(isInputPriceProvider.notifier).state =
+                                false;
                             ref.read(sortResultsProvider.notifier).state =
                                 'Price';
                           });
@@ -245,10 +248,56 @@ class SearchResultsScreenState extends ConsumerState<SearchResultsScreen> {
                         onChanged: (String? value) {
                           setState(() {
                             selectedFilter = value!;
+                            // Set input location provider to false to avoid changing the distance calculation
                             ref.read(isInputLocationProvider.notifier).state =
                                 false;
+
+                            // Set input price provider to true to watch changes during price range inputting
+                            ref.read(isInputPriceProvider.notifier).state =
+                                true;
                             ref.read(sortResultsProvider.notifier).state =
                                 'Inputted price range';
+
+                            // Navigate to the price range input screen
+                            Navigator.push(
+                                context,
+                                slideUpRoute(
+                                  PriceRangeInputScreen(
+                                    inputMinPriceController:
+                                        inputMinPriceController,
+                                    inputMaxPriceController:
+                                        inputMaxPriceController,
+                                  ),
+                                )).then(
+                              (result) {
+                                if (result != null) {
+                                  if (result is Map &&
+                                      result.containsKey('latitude') &&
+                                      result.containsKey('longitude')) {
+                                    setState(() {
+                                      // Set the selected full address in the provider
+                                      ref
+                                              .read(inputFullAddressProvider
+                                                  .notifier)
+                                              .state =
+                                          result['addressName'].toString();
+                                      // Set the selected location in the providers
+                                      ref
+                                          .read(inputLatProvider.notifier)
+                                          .state = result['latitude'];
+                                      ref
+                                          .read(inputLongProvider.notifier)
+                                          .state = result['longitude'];
+                                    });
+                                    print(
+                                        'Selected location: ${result['latitude']}, ${result['longitude']}');
+                                    print(result['addressName'].toString());
+                                  } else {
+                                    print('Address: $result');
+                                  }
+                                }
+                              },
+                            );
                           });
                         },
                       ),
@@ -286,11 +335,11 @@ class SearchResultsScreenState extends ConsumerState<SearchResultsScreen> {
                   RangeSlider(
                     activeColor: secondaryColor,
                     values: currentRangeValues,
-                    max: 5000,
-                    divisions: 500,
+                    max: 1000,
+                    divisions: 100,
                     labels: RangeLabels(
-                      currentRangeValues.start.round().toString(),
-                      currentRangeValues.end.round().toString(),
+                      currentRangeValues.start.round().toStringAsFixed(0),
+                      currentRangeValues.end.round().toStringAsFixed(0),
                     ),
                     onChanged: (RangeValues values) {
                       setState(() {
@@ -334,43 +383,32 @@ class SearchResultsScreenState extends ConsumerState<SearchResultsScreen> {
             if (selectedFilter == 'Inputted price range') ...[
               Column(
                 children: [
-                  const Text(
-                    'Price (₱)',
-                    style:
-                        TextStyle(fontSize: titleFont, fontWeight: boldWeight),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Price (₱)',
+                        style: TextStyle(
+                            fontSize: titleFont, fontWeight: boldWeight),
+                      ),
+                    ],
                   ),
                   const SizedBox(
                     height: secondarySizedBox,
                   ),
                   Row(
                     children: [
-                      TextFormField(
-                        controller: inputMinPriceController,
-                        maxLines: 1,
-                        keyboardType: TextInputType.number,
-                        decoration: const InputDecoration(
-                          hintText: 'Min price',
-                          hintStyle: TextStyle(
-                              fontSize: regularText, color: greyColor),
-                          border: OutlineInputBorder(
-                              borderSide: BorderSide(width: .25)),
-                        ),
+                      Text(
+                        ref.watch(inputMinPriceProvider).toString(),
+                        style: TextStyle(fontSize: regularText),
                       ),
-                      const SizedBox(width: secondarySizedBox),
-                      TextFormField(
-                        controller: inputMaxPriceController,
-                        maxLines: 1,
-                        keyboardType: TextInputType.number,
-                        decoration: const InputDecoration(
-                          hintText: 'Max price',
-                          hintStyle: TextStyle(
-                              fontSize: regularText, color: greyColor),
-                          border: OutlineInputBorder(
-                              borderSide: BorderSide(width: .25)),
-                        ),
+                      const Text(' - '),
+                      Text(
+                        ref.watch(inputMaxPriceProvider).toString(),
+                        style: TextStyle(fontSize: regularText),
                       ),
                     ],
-                  )
+                  ),
                 ],
               )
             ],

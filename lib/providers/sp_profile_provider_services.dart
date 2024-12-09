@@ -11,7 +11,7 @@ final allServicesProvider =
   final response = await supabase.rpc('get_service_provider_services',
       params: {'spid': filterCriteria.spId});
 
-  print('Supabase Response: $response');
+  // print('Supabase Response: $response');
 
   if (response is! List) {
     print('Unexpected Response Type: $response');
@@ -20,7 +20,7 @@ final allServicesProvider =
 
   List<dynamic> services = response;
 
-  print('Initial Services from Supabase: $services');
+  // print('Initial Services from Supabase: $services');
 
   // Map and filter services
   List<Service> serviceList = services
@@ -33,6 +33,7 @@ final allServicesProvider =
     return Service(
       serviceServiceProviderId: service['sp_id'] as String? ?? '',
       serviceId: service['service_id'] as String? ?? '',
+      serviceProviderNameOfService: service['sp_name'] as String? ?? '',
       serviceProviderServiceId: service['serviceprovider_service_id'] ?? '',
       serviceName: service['service_name'] as String? ?? '',
       category: service['service_category'] is List<dynamic>
@@ -56,14 +57,14 @@ final allServicesProvider =
     );
   }).toList();
 
-  print('Mapped Service List: $serviceList');
+  // print('Mapped Service List: $serviceList');
 
   // Apply filters with debug logs
   if (filterCriteria.petType != null && filterCriteria.petType!.isNotEmpty) {
     serviceList = serviceList.where((service) {
       return service.servicePetType.contains(filterCriteria.petType);
     }).toList();
-    print('After petType filter: $serviceList');
+    // print('After petType filter: $serviceList');
   }
 
   if (filterCriteria.serviceType != null &&
@@ -71,7 +72,7 @@ final allServicesProvider =
     serviceList = serviceList.where((service) {
       return service.serviceType.contains(filterCriteria.serviceType);
     }).toList();
-    print('After serviceType filter: $serviceList');
+    // print('After serviceType filter: $serviceList');
   }
 
   if (filterCriteria.serviceCategory != null &&
@@ -79,7 +80,7 @@ final allServicesProvider =
     serviceList = serviceList.where((service) {
       return service.category.contains(filterCriteria.serviceCategory);
     }).toList();
-    print('After serviceCategory filter: $serviceList');
+    // print('After serviceCategory filter: $serviceList');
   }
 
   if (filterCriteria.weight != null) {
@@ -87,7 +88,7 @@ final allServicesProvider =
       return filterCriteria.weight! >= service.minWeight &&
           filterCriteria.weight! <= service.maxWeight;
     }).toList();
-    print('After weight filter: $serviceList');
+    // print('After weight filter: $serviceList');
   }
 
   return serviceList;

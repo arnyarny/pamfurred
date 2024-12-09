@@ -7,5 +7,11 @@ final selectedServiceProviderIdProvider = StateProvider<String>((ref) => '');
 // Provider to manage the selected service ID for fetching details
 final selectedServicePackageIdProvider = StateProvider<String>((ref) => '');
 
+// Provider to manage the selected serviceprovider_service_id selected serviceprovider_package_id for fetching details
+final selectedServiceProviderServicePackageIdProvider = StateProvider<String>((ref) => '');
+
+// Provider to manage the selected category for fetching details
+final selectedSearchResultCategoryProvider = StateProvider<String>((ref) => '');
+
 // Provider to manage the selected service package type after search result
 final selectedSearchResultServicePackageTypeProvider = StateProvider<String>((ref) => '');

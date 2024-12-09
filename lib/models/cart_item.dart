@@ -1,5 +1,6 @@
 abstract class CartItem {
   String get serviceProviderId;
+  String get serviceProviderName;
   String get id;
   String get servicePackageDetailsId;
   int get price;

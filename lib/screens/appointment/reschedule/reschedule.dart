@@ -10,18 +10,24 @@ import 'package:pamfurred/components/time_and_date_formatter.dart';
 import 'package:pamfurred/providers/appointments_provider.dart';
 import 'package:pamfurred/providers/available_timeslots_provider.dart';
 import 'package:pamfurred/providers/serviceprovider_provider.dart';
-import 'package:pamfurred/screens/appointment/appointment_summary.dart';
+import 'package:pamfurred/screens/appointment/reschedule/resched_summary.dart.dart';
 import 'package:shimmer/shimmer.dart';
 import 'package:table_calendar/table_calendar.dart';
 
-class ChooseDateAndTimeScreen extends ConsumerWidget {
-  const ChooseDateAndTimeScreen({super.key});
+class RescheduleAppointmentScreen extends ConsumerStatefulWidget {
+  const RescheduleAppointmentScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<ConsumerStatefulWidget> createState() =>
+      _RescheduleAppointmentScreenState();
+}
+
+class _RescheduleAppointmentScreenState
+    extends ConsumerState<RescheduleAppointmentScreen> {
+  @override
+  Widget build(BuildContext context) {
     final selectedDate = ref.watch(selectedDateProvider);
     final selectedTimeslot = ref.watch(selectedTimeslotProvider);
-
     return Scaffold(
       appBar: customAppBarWithTitleAndWidget(context, 'Select Date & Time', [
         TextButton(
@@ -37,8 +43,10 @@ class ChooseDateAndTimeScreen extends ConsumerWidget {
                       : lighterGreyColor)),
           onPressed: selectedDate != null && selectedTimeslot != null
               ? () {
-                  Navigator.push(context,
-                      rightToLeftRoute(const AppointmentSummaryScreen()));
+                  Navigator.push(
+                      context,
+                      rightToLeftRoute(
+                          const ReschedAppointmentSummaryScreen()));
                 }
               : null,
           child: Text(
@@ -343,30 +351,6 @@ class ChooseDateAndTimeScreen extends ConsumerWidget {
                                             fontSize: regularText),
                                       );
                                     }).toList());
-                                // ),
-                                // const SizedBox(
-                                //   height: secondarySizedBox,
-                                // ),
-                                // const Row(
-                                //   mainAxisAlignment:
-                                //       MainAxisAlignment.center,
-                                //   children: [
-                                //     Icon(
-                                //       Icons.info_outline,
-                                //       size: 15,
-                                //     ),
-                                //     SizedBox(
-                                //       width: primarySizedBox,
-                                //     ),
-                                //     Text(
-                                //       'Disabled timeslots are unavailable for booking.',
-                                //       style: TextStyle(
-                                //           fontSize: smallText,
-                                //           color: darkGreyColor),
-                                //     )
-                                //   ],
-                                // )
-                                // ];
                               } else {
                                 return const Center(
                                     child: Text(

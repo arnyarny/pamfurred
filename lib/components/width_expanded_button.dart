@@ -2,21 +2,25 @@ import 'package:flutter/material.dart';
 import 'package:pamfurred/components/globals.dart';
 
 class CustomWideButton extends StatelessWidget {
-  final String text;
+  final String? text; // Make text optional
   final Function()? onPressed;
   final bool Function()? validator; // Optional validation function
   final Function()? onValidationFailed; // Optional failure handler
   final bool isOutlineButton; // For outline button style
   final bool isLoading; // New parameter to show loading indicator
+  final String? leadingText; // Optional leading text
+  final Widget? trailingIcon; // Optional trailing icon
 
   const CustomWideButton({
     super.key,
-    required this.text,
+    this.text = '', // Default to empty string if not provided
     required this.onPressed,
     this.validator,
     this.onValidationFailed,
     this.isOutlineButton = false, // Default to filled button if not specified
     this.isLoading = false, // Default to not loading
+    this.leadingText, // Optional leading text
+    this.trailingIcon, // Optional trailing icon
   });
 
   static const Color _defaultBackgroundColor = primaryColor;
@@ -75,11 +79,33 @@ class CustomWideButton extends StatelessWidget {
           padding: const EdgeInsets.all(tertiarySizedBox),
           child: isLoading
               ? const CircularProgressIndicator(color: Colors.white)
-              : Text(
-                  text,
-                  style: isOutlineButton
-                      ? _outlineTextStyle
-                      : _defaultTextStyle, // Text style for outline or filled button
+              : Row(
+                  children: [
+                    if (leadingText != null && leadingText!.isNotEmpty) ...[
+                      Text(
+                        leadingText!,
+                        style: _defaultTextStyle,
+                      ),
+                      const SizedBox(
+                          width:
+                              8), // Spacing between leading text and button text
+                    ],
+                    Expanded(
+                      child: Center(
+                        child: text != null && text!.isNotEmpty
+                            ? Text(
+                                text!,
+                                style: isOutlineButton
+                                    ? _outlineTextStyle
+                                    : _defaultTextStyle,
+                              )
+                            : Container(), // Empty container if no text is provided
+                      ),
+                    ),
+                    if (trailingIcon != null) ...[
+                      trailingIcon!, // Trailing icon at the end
+                    ],
+                  ],
                 ),
         ),
       ),

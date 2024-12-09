@@ -3,6 +3,7 @@ import 'package:pamfurred/models/cart_item.dart';
 class Package implements CartItem {
   const Package({
     required this.packageServiceProviderId,
+    required this.serviceProviderNameOfPackage,
     required this.packageId,
     required this.serviceProviderPackageId,
     required this.packageName,
@@ -19,6 +20,7 @@ class Package implements CartItem {
   });
 
   final String packageServiceProviderId;
+  final String serviceProviderNameOfPackage;
   final String packageId;
   final String serviceProviderPackageId;
   final String packageName;
@@ -36,6 +38,9 @@ class Package implements CartItem {
   // Override the CartItem getters
   @override
   String get serviceProviderId => packageServiceProviderId;
+
+  @override
+  String get serviceProviderName => serviceProviderNameOfPackage;
 
   @override
   String get id => packageId;

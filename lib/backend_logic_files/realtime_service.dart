@@ -23,14 +23,14 @@ class RealtimeService {
           .select()
           .eq('appointment_id', appointmentId)
           .single();
-      print("what's inside: $response");
+      // print("what's inside: $response");
 
       if (response != null) {
         // kung naa sa table
-        print("worked");
+        // print("worked");
         return true;
       }
-      print("didn't work");
+      // print("didn't work");
       return response != null;
     }
 
@@ -54,8 +54,8 @@ class RealtimeService {
                 // This is an update
                 if (appointmentStatus == 'Done' ||
                     appointmentStatus == 'Cancelled') {
-                  print(appointmentId);
-                  print(appointmentStatus);
+                  // print(appointmentId);
+                  // print(appointmentStatus);
                   await _createNotification(appointmentId, appointmentStatus);
                 }
               }
@@ -71,21 +71,21 @@ class RealtimeService {
       String appointmentId, String notificationType) async {
     try {
       // Check if a notification already exists for this appointment and type
-      final existingNotification = await _client
+      await _client
           .from('notification')
           .select('notification_id')
           .eq('appointment_id', appointmentId)
           .eq('appointment_notif_type', notificationType);
 
-// Print the result for debugging
-      print("unsay naa ani: $existingNotification");
+// // Print the result for debugging
+//       print("unsay naa ani: $existingNotification");
 
-// If a notification already exists, skip sending it
-      if (existingNotification.isNotEmpty) {
-        print(
-            'Notification already exists for appointment ID $appointmentId and type $notificationType');
-        return;
-      }
+// // If a notification already exists, skip sending it
+//       if (existingNotification.isNotEmpty) {
+//         print(
+//             'Notification already exists for appointment ID $appointmentId and type $notificationType');
+//         return;
+//       }
 
       final supabase = Supabase.instance.client;
 
@@ -154,7 +154,7 @@ class RealtimeService {
         details, // Notification details
       );
 
-      print('Notification sent for appointment ID $appointmentId');
+      // print('Notification sent for appointment ID $appointmentId');
     } catch (e) {
       print('Error sending notification: $e');
     }

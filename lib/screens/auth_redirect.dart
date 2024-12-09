@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:pamfurred/components/connectivity_wrapper.dart';
 import 'package:pamfurred/components/screen_transitions.dart';
@@ -25,6 +26,9 @@ class AuthRedirectState extends ConsumerState<AuthRedirect>
   late AnimationController _controller;
   late Animation<double> _animation;
 
+  final List<StreamSubscription> _streamSubscriptions =
+      []; // Store subscriptions
+
   @override
   void initState() {
     super.initState();
@@ -37,94 +41,14 @@ class AuthRedirectState extends ConsumerState<AuthRedirect>
     _controller.forward(); // Start the fade-out animation
 
     _checkSession();
-    _listenToAppointments(); // Listen to appointment changes after initState
-    _listenToSpAvailability(); // Listen to service provider availability changes after initState
+    _listenToAppointments();
+    _listenToSpAvailability();
     _listenToPetProfiles();
     _listenToNotifications();
     _listenToFeedback();
-    _listenToServiceProviders();
 
-    // Ensure these functions are called after the widget is built
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _listenToAVailableTimes(ref);
-    });
-  }
-
-  // Listen for changes in the `appointments` table
-  void _listenToAppointments() {
-    final supabase = Supabase.instance.client;
-
-    // Stream listens for changes in the appointments table
-    supabase
-        .from('appointment')
-        .stream(primaryKey: ['appointment_id']).listen((event) {
-      // Invalidate the provider when the data changes
-      ref.invalidate(appointmentDetailsProvider);
-    });
-  }
-
-  // Listen for changes in the `service_provider_availability` table
-  void _listenToSpAvailability() {
-    final supabase = Supabase.instance.client;
-
-    // Stream listens for changes in the service_provider_availability table
-    supabase
-        .from('service_provider_availability')
-        .stream(primaryKey: ['availability_id']).listen((event) {
-      // Invalidate the provider when the data changes
-      ref.invalidate(availableTimeslotsProvider);
-    });
-  }
-
-  void _listenToPetProfiles() {
-    final supabase = Supabase.instance.client;
-
-    // Stream listens for changes in the service_provider_availability table
-    supabase
-        .from('pet_profile')
-        .stream(primaryKey: ['pet_profile_id']).listen((event) {
-      // Invalidate the provider when the data changes
-      ref.invalidate(petProfileProvider);
-    });
-  }
-
-  void _listenToNotifications() {
-    final supabase = Supabase.instance.client;
-
-    // Stream listens for changes in the service_provider_availability table
-    supabase
-        .from('notification')
-        .stream(primaryKey: ['notification_id']).listen((event) {
-      // Invalidate the provider when the data changes
-      ref.invalidate(notificationDetailsProvider);
-    });
-  }
-
-  void _listenToAVailableTimes(WidgetRef ref) {
-    final supabase = Supabase.instance.client;
-    final selectedDate = ref.watch(selectedDateProvider);
-
-    // Stream listens for changes in the appointment table related to the selected date and service provider
-    supabase
-        .from('appointment')
-        .stream(primaryKey: ['appointment_id'])
-        .eq('appointment_date', selectedDate) // Filter by selected date
-        .eq('sp_id', ref.watch(selectedSpIndexProvider)) // Filter by sp_id
-        .listen((event) {
-          // Invalidate the provider to refetch the data when changes occur
-          ref.invalidate(fetchAppointmentsPerDateProvider(selectedDate!));
-        });
-  }
-
-  void _listenToFeedback() {
-    final supabase = Supabase.instance.client;
-
-    // Stream listens for changes in the service_provider_availability table
-    supabase
-        .from('feedback')
-        .stream(primaryKey: ['feedback_id']).listen((event) {
-      // Invalidate the provider when the data changes
-      ref.invalidate(ratingsSummaryWithReviewsProvider);
     });
   }
 
@@ -146,17 +70,88 @@ class AuthRedirectState extends ConsumerState<AuthRedirect>
     });
   }
 
-  // Listen for changes in the `service_provider_availability` table
-  void _listenToServiceProviders() {
+  void _listenToAppointments() {
     final supabase = Supabase.instance.client;
-
-    // Stream listens for changes in the service_provider_availability table
-    supabase
-        .from('service_provider_with_categories_and_sentiment')
-        .stream(primaryKey: ['sp_id']).listen((event) {
-      // Invalidate the provider when the data changes
-      ref.invalidate(serviceProviderFutureProvider);
+    final subscription = supabase
+        .from('appointment')
+        .stream(primaryKey: ['appointment_id']).listen((event) {
+      ref.invalidate(appointmentDetailsProvider);
     });
+
+    _streamSubscriptions.add(subscription);
+  }
+
+  void _listenToSpAvailability() {
+    final supabase = Supabase.instance.client;
+    final subscription = supabase
+        .from('service_provider_availability')
+        .stream(primaryKey: ['availability_id']).listen((event) {
+      ref.invalidate(availableTimeslotsProvider);
+    });
+
+    _streamSubscriptions.add(subscription);
+  }
+
+  void _listenToPetProfiles() {
+    final supabase = Supabase.instance.client;
+    final subscription = supabase
+        .from('pet_profile')
+        .stream(primaryKey: ['pet_profile_id']).listen((event) {
+      ref.invalidate(petProfileProvider);
+    });
+
+    _streamSubscriptions.add(subscription);
+  }
+
+  void _listenToNotifications() {
+    final supabase = Supabase.instance.client;
+    final subscription = supabase
+        .from('notification')
+        .stream(primaryKey: ['notification_id']).listen((event) {
+      ref.invalidate(notificationDetailsProvider);
+    });
+
+    _streamSubscriptions.add(subscription);
+  }
+
+  void _listenToAVailableTimes(WidgetRef ref) {
+    final supabase = Supabase.instance.client;
+    final selectedDate = ref.watch(selectedDateProvider);
+
+    final subscription = supabase
+        .from('appointment')
+        .stream(primaryKey: ['appointment_id'])
+        .eq('appointment_date', selectedDate)
+        .eq('sp_id', ref.watch(selectedSpIndexProvider))
+        .listen((event) {
+          ref.invalidate(fetchAppointmentsPerDateProvider(selectedDate!));
+        });
+
+    _streamSubscriptions.add(subscription);
+  }
+
+  void _listenToFeedback() {
+    final supabase = Supabase.instance.client;
+    final subscription = supabase
+        .from('feedback')
+        .stream(primaryKey: ['feedback_id']).listen((event) {
+      ref.invalidate(ratingsSummaryWithReviewsProvider);
+    });
+
+    _streamSubscriptions.add(subscription);
+  }
+
+  @override
+  void dispose() {
+    // Dispose animation controller
+    _controller.dispose();
+
+    // Cancel all stream subscriptions
+    for (final subscription in _streamSubscriptions) {
+      subscription.cancel();
+    }
+
+    super.dispose();
   }
 
   @override
@@ -164,10 +159,11 @@ class AuthRedirectState extends ConsumerState<AuthRedirect>
     return ConnectivityWrapper(
       child: Scaffold(
         body: Center(
-            child: FadeTransition(
-                opacity: _animation,
-                child:
-                    const CircularProgressIndicator())), // While checking session
+          child: FadeTransition(
+            opacity: _animation,
+            child: const CircularProgressIndicator(),
+          ),
+        ),
       ),
     );
   }

@@ -1,5 +1,4 @@
 import 'dart:math';
-
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pamfurred/backend_logic_files/store_location.dart';
 import 'package:pamfurred/models/sp_search_results.dart';
@@ -15,8 +14,9 @@ final inputLongProvider = StateProvider<double?>((ref) => null);
 final inputFullAddressProvider = StateProvider<String?>((ref) => '');
 
 // Input price providers
-final inputMinPriceProvider = StateProvider<double>((ref) => 0);
-final inputMaxPriceProvider = StateProvider<double>((ref) => 5000);
+final isInputPriceProvider = StateProvider<bool>((ref) => false);
+final inputMinPriceProvider = StateProvider<num>((ref) => 0);
+final inputMaxPriceProvider = StateProvider<num>((ref) => 5000);
 
 // Address providers
 final hasDetectedAddressProvider = StateProvider<bool>((ref) => false);
@@ -30,12 +30,12 @@ final latProvider = StateProvider<double?>((ref) => null);
 final longProvider = StateProvider<double?>((ref) => null);
 
 // Price providers
-final minPriceProvider = StateProvider<double>((ref) => 0);
-final maxPriceProvider = StateProvider<double>((ref) => 5000);
+final minPriceProvider = StateProvider<num>((ref) => 0);
+final maxPriceProvider = StateProvider<num>((ref) => 1000);
 
 // For services
 final searchResultsServiceProviderServices =
-    FutureProvider.family<List<dynamic>, String>((ref, category) async {
+    FutureProvider.family<List<dynamic>, String?>((ref, category) async {
   final supabase = Supabase.instance.client;
 
   final response =
@@ -48,7 +48,7 @@ final searchResultsServiceProviderServices =
 
 // For packages
 final searchResultsServiceProviderPackages =
-    FutureProvider.family<List<dynamic>, String>((ref, category) async {
+    FutureProvider.family<List<dynamic>, String?>((ref, category) async {
   final supabase = Supabase.instance.client;
 
   final response =
@@ -68,17 +68,62 @@ final combinedSearchResultsProvider =
   final packages =
       await ref.watch(searchResultsServiceProviderPackages(category).future);
 
+  // print(
+  //     "Services: $services"); // Check if 'service_id' and 'serviceprovider_service_id' are present
+  // print(
+  //     "Packages: $packages"); // Check if 'package_id' and 'serviceprovider_package_id' are present
+
   // Convert services and packages into ServiceProviderItem list
   final serviceItems = services
-      .map((service) => ServiceProviderItem.fromService(service))
+      .map((service) => ServiceProviderItem.fromService(
+          service,
+          service['service_id'] ?? '',
+          service['serviceprovider_service_id'] ??
+              '')) // Pass serviceId and spServiceId
       .toList();
+
   final packageItems = packages
-      .map((package) => ServiceProviderItem.fromPackage(package))
+      .map((package) => ServiceProviderItem.fromPackage(
+          package,
+          package['package_id'] ?? '',
+          package['serviceprovider_package_id'] ??
+              '')) // Pass packageId and spServiceId
       .toList();
 
   // Combine both lists
   return [...serviceItems, ...packageItems];
 });
+
+// If gusto kag unique service and/or package ids ang i return:
+// final combinedSearchResultsProvider =
+//     FutureProvider.family<List<ServiceProviderItem>, String>(
+//         (ref, category) async {
+//   final services =
+//       await ref.watch(searchResultsServiceProviderServices(category).future);
+//   final packages =
+//       await ref.watch(searchResultsServiceProviderPackages(category).future);
+
+//   // Convert services and packages into ServiceProviderItem list
+//   final serviceItems = services
+//       .map((service) => ServiceProviderItem.fromService(service))
+//       .toList();
+//   final packageItems = packages
+//       .map((package) => ServiceProviderItem.fromPackage(package))
+//       .toList();
+
+//   // Combine both lists and filter duplicates by unique ID
+//   final uniqueResults = <String, ServiceProviderItem>{};
+
+//   for (final item in [...serviceItems, ...packageItems]) {
+//     // Combine `serviceId` and `packageId` as a unique key
+//     final uniqueKey =
+//         '${item.servicePackageId}'; // Use `serviceId` and `packageId` to form a unique key
+//     uniqueResults[uniqueKey] = item;
+//   }
+
+//   // Return only the unique results as a list
+//   return uniqueResults.values.toList();
+// });
 
 // Sorted by price (cheapest to most expensive) using combinedSearchResultsProvider
 final sortSearchResultsByPrice =
@@ -89,8 +134,15 @@ final sortSearchResultsByPrice =
       await ref.watch(combinedSearchResultsProvider(category).future);
 
   // Retrieve the min and max price from the respective providers
-  final minPrice = ref.watch(minPriceProvider);
-  final maxPrice = ref.watch(maxPriceProvider);
+  final minPrice = ref.watch(isInputPriceProvider)
+      ? ref.watch(
+          inputMinPriceProvider) // Use inputMinProvider if isInputPriceProvider is true
+      : ref.watch(minPriceProvider); // Use minPriceProvider otherwise
+
+  final maxPrice = ref.watch(isInputPriceProvider)
+      ? ref.watch(
+          inputMaxPriceProvider) // Use inputMaxProvider if isInputPriceProvider is true
+      : ref.watch(maxPriceProvider); // Use maxPriceProvider otherwise
 
   // Filter results by price range and sort by price (ascending)
   final filteredAndSortedResults = combinedResults

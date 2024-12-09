@@ -8,7 +8,6 @@ import 'package:pamfurred/components/error_builder.dart';
 import 'package:pamfurred/components/globals.dart';
 import 'package:pamfurred/components/pull_to_refresh.dart';
 import 'package:pamfurred/components/rating_widget.dart';
-import 'package:pamfurred/components/screen_transitions.dart';
 import 'package:pamfurred/components/sentiment_label.dart';
 import 'package:pamfurred/components/title_text.dart';
 import 'package:pamfurred/math_functions/distance_calculator.dart';
@@ -84,23 +83,49 @@ class ResultsListWidget extends ConsumerWidget {
                     children: [
                       GestureDetector(
                         onTap: () {
-                          final spId = ref
-                              .read(selectedServicePackageIdProvider.notifier)
-                              .state = provider.servicePackageId;
-                          print('selectedServicePackageIdProvider ID: $spId');
+                          // Service Provider ID
                           ref.read(selectedSpIndexProvider.notifier).state =
                               provider.spId;
                           print(
                               'selectedSpIndexProvider ID: ${ref.read(selectedSpIndexProvider)}');
+
+                          // Service/Package ID
+                          final servicePackageId = ref
+                              .read(selectedServicePackageIdProvider.notifier)
+                              .state = provider.servicePackageId.toString();
+                          print(
+                              'selectedServicePackageIdProvider ID: $servicePackageId');
+
+                          // serviceprovider_service_id or serviceprovider_package_id
+                          final serviceProviderServicePackageId = ref
+                              .read(
+                                  selectedServiceProviderServicePackageIdProvider
+                                      .notifier)
+                              .state = provider.serviceProviderServicePackageId;
+                          print(
+                              'selectedServiceProviderServicePackageIdProvider ID: $serviceProviderServicePackageId');
+
+                          // Service/Package Type
                           ref
                               .read(
                                   selectedSearchResultServicePackageTypeProvider
                                       .notifier)
                               .state = provider.type;
                           print(
-                              'selectedSearchResultServicePackageTypeProvider ID: ${ref.read(selectedSearchResultServicePackageTypeProvider)}');
-                          Navigator.push(context,
-                              slideUpRoute(const ServicePackageDetails()));
+                              'selectedSearchResultServicePackageTypeProvider: ${ref.read(selectedSearchResultServicePackageTypeProvider)}');
+                          showModalBottomSheet(
+                            context: context,
+                            isScrollControlled: true,
+                            shape: const RoundedRectangleBorder(
+                              borderRadius: BorderRadius.vertical(
+                                  top: Radius.circular(16)),
+                            ),
+                            builder: (context) {
+                              return SizedBox(
+                                  height: 500,
+                                  child: const ServicePackageDetails());
+                            },
+                          );
                         },
                         child: Card(
                           shape: RoundedRectangleBorder(
@@ -188,6 +213,20 @@ class ResultsListWidget extends ConsumerWidget {
                                       const SizedBox(height: primarySizedBox),
                                       Row(
                                         children: [
+                                          Text(
+                                            "${provider.size}",
+                                            style: TextStyle(
+                                              fontSize: regularText,
+                                              color: Colors.black,
+                                            ),
+                                          ),
+                                          const Text(
+                                            " • ",
+                                            style: TextStyle(
+                                              fontSize: smallText,
+                                              color: Colors.black,
+                                            ),
+                                          ),
                                           const Text(
                                             "₱",
                                             style: TextStyle(

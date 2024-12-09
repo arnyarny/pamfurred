@@ -93,6 +93,16 @@ class HomeScreenState extends ConsumerState<HomeScreen> {
   }
 
   @override
+  void dispose() {
+    // Dispose of the scroll controller
+    _scrollController.removeListener(_scrollListener);
+    _scrollController.dispose();
+
+    // Call super.dispose
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     final isVisible = ref.watch(visibilityProvider);
     const appBarHeight = 60.0;
@@ -747,9 +757,10 @@ class ServiceProvidersWidget extends ConsumerWidget {
                                         imageUrl: imageUrl,
                                         width: double.infinity,
                                         height: 150,
-                                        fit: sp['image'] == null
-                                            ? BoxFit.fitWidth
-                                            : BoxFit.contain,
+                                        fit:
+                                            sp['service_provider_image'] == null
+                                                ? BoxFit.fitWidth
+                                                : BoxFit.contain,
                                         placeholder:
                                             (BuildContext context, String url) {
                                           // Shimmer effect while loading

@@ -1,7 +1,9 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:latlong2/latlong.dart';
 import 'package:pamfurred/components/capitalize_first_letter.dart';
 import 'package:pamfurred/components/cart_icon.dart';
 import 'package:pamfurred/components/custom_floating_action_button.dart';
@@ -25,6 +27,7 @@ import 'package:pamfurred/providers/user_id.dart';
 import 'package:pamfurred/screens/appointment/cart_screen.dart';
 import 'package:pamfurred/screens/appointment/choose_appointment_pref.dart';
 import 'package:pamfurred/components/ratings_and_reviews_widget.dart';
+import 'package:pamfurred/screens/appointment/full_map_screen.dart';
 import 'package:pamfurred/screens/appointment/ratings_and_reviews_screen.dart';
 import 'package:pamfurred/screens/pet_profile/add_pet_profile.dart';
 import 'package:quickalert/models/quickalert_animtype.dart';
@@ -310,7 +313,7 @@ class ServiceproviderProfileScreenState
               ),
       ),
       body: SingleChildScrollView(
-        physics: const BouncingScrollPhysics(),
+        physics: BouncingScrollPhysics(),
         child: Center(
           child: Column(
             children: [
@@ -482,7 +485,6 @@ final aboutTabProvider = FutureProvider<List<Widget>>((ref) async {
                                   sentimentLabelTextWidget(
                                       sp['sentiment_label'])),
                               const SizedBox(height: secondarySizedBox),
-
                               spDistanceDetailsHeader(
                                 CupertinoIcons.location,
                                 FutureBuilder<String?>(
@@ -490,47 +492,37 @@ final aboutTabProvider = FutureProvider<List<Widget>>((ref) async {
                                   builder: (context, snapshot) {
                                     if (snapshot.hasError) {
                                       return regularTextWidget(
-                                          'Error: ${snapshot.error}'); // Display error message if there's an error
+                                          'Error: ${snapshot.error}');
                                     } else if (snapshot.hasData) {
-                                      // Check if the data is not null
                                       return regularTextWidget(snapshot.data ??
-                                          'Distance not available'); // Display the calculated distance
+                                          'Distance not available');
                                     } else {
-                                      return regularTextWidget(
-                                          ''); // Handle the case where there is no data
+                                      return regularTextWidget('');
                                     }
                                   },
                                 ),
                               ),
                               const SizedBox(height: secondarySizedBox),
-
-                              // This is temporary. Remove this when it's ensured that we don't take null addresses from service providers
                               sp.isNotEmpty
                                   ? spDetailsHeader(
                                       Icons.location_on_outlined, fullAddress)
                                   : spDetailsHeader(
                                       CupertinoIcons.location_solid, 'N/A'),
                               const SizedBox(height: secondarySizedBox),
-
-                              // Rating display logic (assuming 'displayRating' handles null internally)
                               spDetailsHeader(Icons.star_border, displayRating),
                               const SizedBox(height: secondarySizedBox),
-
                               spDetailsHeader(
                                 Icons.home_repair_service_outlined,
                                 serviceTypes.join(', '),
                               ),
                               const SizedBox(height: secondarySizedBox),
-
                               spDetailsHeader(Icons.access_time,
                                   'Opens from ${formatTime(timeOpen)} to ${formatTime(timeClose)}'),
                               const SizedBox(height: secondarySizedBox),
-
-                              spDetailsHeader(Icons.call_outlined,
-                                  sp['phone_number'] ?? 'N/A',
+                              spDetailsHeader(
+                                  Icons.call_outlined, sp['phone'] ?? 'N/A',
                                   isPhoneNumber: true),
                               const SizedBox(height: secondarySizedBox),
-
                               spDetailsHeader(CupertinoIcons.heart,
                                   'Caters ${petsCatered.join(', ')}'),
                               const SizedBox(height: secondarySizedBox),
@@ -570,6 +562,79 @@ final aboutTabProvider = FutureProvider<List<Widget>>((ref) async {
                             ),
                             const SizedBox(height: secondarySizedBox),
                             const RatingsAndReviewsWidget(),
+                            const SizedBox(height: tertiarySizedBox),
+
+                            // Pinned location of service provider
+                            GestureDetector(
+                              onTap: () {
+                                // Navigate to full map screen on tap
+                                Navigator.push(
+                                    context,
+                                    slideUpRoute(
+                                      FullMapScreen(
+                                        latitude: latitude,
+                                        longitude: longitude,
+                                      ),
+                                    ));
+                              },
+                              child: SizedBox(
+                                width: screenPadding(context),
+                                child: const Row(
+                                  mainAxisAlignment: MainAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      'View in map',
+                                      style: TextStyle(
+                                        fontWeight: boldWeight,
+                                        color: Colors.black,
+                                        fontSize: regularText,
+                                      ),
+                                    ),
+                                    SizedBox(width: primarySizedBox),
+                                    Icon(
+                                      Icons.arrow_forward_ios_outlined,
+                                      size: 20,
+                                      color: Colors.black,
+                                    )
+                                  ],
+                                ),
+                              ),
+                            ),
+                            const SizedBox(height: secondarySizedBox),
+                            Container(
+                              width: screenPadding(context),
+                              height: 200,
+                              decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(
+                                      secondaryBorderRadius)),
+                              child: FlutterMap(
+                                options: MapOptions(
+                                  initialCenter: LatLng(latitude, longitude),
+                                  initialZoom:
+                                      13.0, // Adjust for better preview zoom
+                                ),
+                                children: [
+                                  TileLayer(
+                                    urlTemplate:
+                                        'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+                                    subdomains: ['a', 'b', 'c'],
+                                  ),
+                                  MarkerLayer(
+                                    markers: [
+                                      Marker(
+                                        point: LatLng(latitude, longitude),
+                                        // Use 'child' instead of 'builder'
+                                        child: Icon(
+                                          Icons.location_on,
+                                          color: primaryColor,
+                                          size: 40,
+                                        ),
+                                      ),
+                                    ],
+                                  )
+                                ],
+                              ),
+                            ),
                           ],
                         ),
                       )

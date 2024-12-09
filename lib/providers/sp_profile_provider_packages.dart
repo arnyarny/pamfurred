@@ -22,6 +22,7 @@ final allPackagesProvider =
       .map((package) {
     return Package(
       packageServiceProviderId: package['sp_id'] as String? ?? '',
+      serviceProviderNameOfPackage: package['sp_name'] as String? ?? '',
       packageId: package['package_id'] as String? ?? '',
       serviceProviderPackageId: package['serviceprovider_package_id'] ?? '',
       packageName: package['package_name'] as String? ?? '',

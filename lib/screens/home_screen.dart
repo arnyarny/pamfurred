@@ -757,10 +757,9 @@ class ServiceProvidersWidget extends ConsumerWidget {
                                         imageUrl: imageUrl,
                                         width: double.infinity,
                                         height: 150,
-                                        fit:
-                                            sp['service_provider_image'] == null
-                                                ? BoxFit.fitWidth
-                                                : BoxFit.contain,
+                                        fit: sp['image'] == null
+                                            ? BoxFit.fitWidth
+                                            : BoxFit.contain,
                                         placeholder:
                                             (BuildContext context, String url) {
                                           // Shimmer effect while loading

@@ -4,32 +4,31 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:pamfurred/backend_logic_files/store_location.dart';
 import 'package:pamfurred/components/capitalize_first_letter.dart';
+import 'package:pamfurred/components/connectivity_wrapper.dart';
 import 'package:pamfurred/components/custom_appbar.dart';
 import 'package:pamfurred/components/custom_padded_button.dart';
 import 'package:pamfurred/components/error_builder.dart';
+import 'package:pamfurred/components/globals.dart';
 import 'package:pamfurred/components/pull_to_refresh.dart';
 import 'package:pamfurred/components/rating_widget.dart';
+import 'package:pamfurred/components/screen_transitions.dart';
 import 'package:pamfurred/components/sentiment_label.dart';
 import 'package:pamfurred/components/time_and_date_formatter.dart';
 import 'package:pamfurred/components/title_text.dart';
-import 'package:pamfurred/components/globals.dart';
-import 'package:pamfurred/components/screen_transitions.dart';
 import 'package:pamfurred/math_functions/distance_calculator.dart';
 import 'package:pamfurred/models/package_filter_criteria.dart';
 import 'package:pamfurred/models/service_filter_criteria.dart';
 import 'package:pamfurred/providers/appointments_provider.dart';
 import 'package:pamfurred/providers/global_providers.dart';
-import 'package:pamfurred/providers/search_results_provider.dart';
 import 'package:pamfurred/providers/serviceprovider_provider.dart';
 import 'package:pamfurred/providers/sp_profile_provider_packages.dart';
 import 'package:pamfurred/providers/sp_profile_provider_services.dart';
-import 'package:pamfurred/backend_logic_files/store_location.dart';
 import 'package:pamfurred/providers/user_id.dart';
-import 'package:pamfurred/components/connectivity_wrapper.dart';
+import 'package:pamfurred/screens/appointment/serviceprovider_profile.dart';
 import 'package:pamfurred/screens/location_permission.dart';
 import 'package:pamfurred/screens/search_results/search_results.dart';
-import 'package:pamfurred/screens/appointment/serviceprovider_profile.dart';
 import 'package:pamfurred/screens/service_providers.dart';
 import 'package:shimmer/shimmer.dart';
 
@@ -52,6 +51,7 @@ class HomeScreenState extends ConsumerState<HomeScreen> {
     super.initState();
     _scrollController.addListener(_scrollListener);
     LocationService locationService = LocationService();
+
     locationService.determinePosition(context).then((position) {
       storeLocation(position.latitude, position.longitude, ref);
     }).catchError((error) {
@@ -833,10 +833,6 @@ class ServiceProvidersWidget extends ConsumerWidget {
                                                     TextOverflow.ellipsis),
                                           ); // Display error message if there's an error
                                         } else if (snapshot.hasData) {
-                                          ref
-                                              .read(isInputLocationProvider
-                                                  .notifier)
-                                              .state = false;
                                           // Check if the data is not null
                                           return Row(
                                             children: [

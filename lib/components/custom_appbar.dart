@@ -31,7 +31,7 @@ AppBar appBar(BuildContext context) {
 
 // 2) customAppBar
 // This is for other screens but homescreen
-AppBar customAppBar(BuildContext context) {
+AppBar customAppBar(BuildContext context, {VoidCallback? onBackPressed}) {
   return AppBar(
     backgroundColor: Colors.white,
     toolbarHeight: 60,
@@ -40,14 +40,15 @@ AppBar customAppBar(BuildContext context) {
       padding: const EdgeInsets.all(10.0),
       child: IconButton(
         icon: const Icon(Icons.arrow_back_ios, color: Colors.black),
-        onPressed: () {
-          // Custom action on back button press
+        onPressed: onBackPressed ?? () {
+          // Default action if no callback is provided
           Navigator.pop(context);
         },
       ),
     ),
   );
 }
+
 
 // 3) customAppBar with Title
 // This is for other screens but homescreen

@@ -45,7 +45,10 @@ class SearchResultsScreenState extends ConsumerState<SearchResultsScreen> {
     return Scaffold(
       key: scaffoldKey, // Pass the key here
       backgroundColor: Colors.white,
-      appBar: customAppBar(context),
+      appBar: customAppBar(context, onBackPressed: () {
+        Navigator.pop(context);
+        ref.read(isInputLocationProvider.notifier).state = false;
+      }),
       endDrawer: buildDrawer(
           context), // Ensure this method is used to build the drawer
       body: Column(
@@ -248,7 +251,7 @@ class SearchResultsScreenState extends ConsumerState<SearchResultsScreen> {
                         onChanged: (String? value) {
                           setState(() {
                             selectedFilter = value!;
-                            // Set input location provider to false to avoid changing the distance calculation
+                            // Set input location provider to false to avoid chang  ing the distance calculation
                             ref.read(isInputLocationProvider.notifier).state =
                                 false;
 

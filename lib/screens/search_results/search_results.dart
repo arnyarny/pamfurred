@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:pamfurred/components/custom_appbar.dart';
 import 'package:pamfurred/components/globals.dart';
 import 'package:pamfurred/components/screen_transitions.dart';
 import 'package:pamfurred/providers/search_results_provider.dart';
 import 'package:pamfurred/screens/pin_location.dart';
 import 'package:pamfurred/screens/search_results/input_price.dart';
 import 'package:pamfurred/screens/search_results/search_results_list.dart';
+import 'package:pamfurred/screens/search_results/search_screen.dart';
 // import 'package:pamfurred/screens/pin_location.dart';
 
 class SearchResultsScreen extends ConsumerStatefulWidget {
@@ -45,10 +45,61 @@ class SearchResultsScreenState extends ConsumerState<SearchResultsScreen> {
     return Scaffold(
       key: scaffoldKey, // Pass the key here
       backgroundColor: Colors.white,
-      appBar: customAppBar(context, onBackPressed: () {
-        Navigator.pop(context);
-        ref.read(isInputLocationProvider.notifier).state = false;
-      }),
+      appBar: AppBar(
+        backgroundColor: Colors.white,
+        toolbarHeight: 60,
+        actions: [
+          Padding(
+            padding: const EdgeInsets.all(10.0),
+            child: Center(
+              child: GestureDetector(
+                onTap: () {
+                  // Navigate to a new screen with an actual TextField
+                  Navigator.push(context, crossFadeRoute(SearchScreen()));
+                },
+                child: Container(
+                  width: 350, // Adjust width as needed
+                  decoration: BoxDecoration(
+                    color:
+                        Colors.grey[200], // Background color of the container
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  padding: const EdgeInsets.all(10),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          'Search...',
+                          style: TextStyle(
+                            color: Colors.grey,
+                            fontSize: 16,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 10),
+                      Icon(
+                        Icons.search,
+                        color: Colors.black,
+                        size: 25,
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ],
+        leading: Padding(
+          padding: const EdgeInsets.all(10.0),
+          child: IconButton(
+            icon: const Icon(Icons.arrow_back_ios, color: Colors.black),
+            onPressed: () {
+              Navigator.pop(context);
+              ref.read(searchedServicePackageProvider.notifier).state = '';
+            },
+          ),
+        ),
+      ),
       endDrawer: buildDrawer(
           context), // Ensure this method is used to build the drawer
       body: Column(
@@ -82,11 +133,6 @@ class SearchResultsScreenState extends ConsumerState<SearchResultsScreen> {
   }
 
   Widget buildDrawer(BuildContext context) {
-    // final hasDetectedAddress = ref.read(hasDetectedAddressProvider);
-    // final street = ref.watch(streetProvider);
-    // final city = ref.watch(cityProvider);
-    // final province = ref.watch(provinceProvider);
-
     final minValue = ref.watch(minPriceProvider);
     final maxValue = ref.watch(maxPriceProvider);
     var currentRangeValues =
@@ -201,36 +247,29 @@ class SearchResultsScreenState extends ConsumerState<SearchResultsScreen> {
                                 'Nearby pinned location';
                             ref.read(isInputLocationProvider.notifier).state =
                                 true;
-                            Navigator.push(
-                              context,
-                              slideUpRoute(
-                                  const PinLocationNew(searchResult: true)),
-                            ).then((result) {
-                              if (result != null) {
-                                if (result is Map &&
-                                    result.containsKey('latitude') &&
-                                    result.containsKey('longitude')) {
-                                  setState(() {
-                                    // Set the selected full address in the provider
-                                    ref
-                                        .read(inputFullAddressProvider.notifier)
-                                        .state = result[
-                                            'addressName']
-                                        .toString();
-                                    // Set the selected location in the providers
-                                    ref.read(inputLatProvider.notifier).state =
-                                        result['latitude'];
-                                    ref.read(inputLongProvider.notifier).state =
-                                        result['longitude'];
-                                  });
-                                  print(
-                                      'Selected location: ${result['latitude']}, ${result['longitude']}');
-                                  print(result['addressName'].toString());
-                                } else {
-                                  print('Address: $result');
-                                }
+                          });
+                          Navigator.push(
+                            context,
+                            slideUpRoute(
+                                const PinLocationNew(searchResult: true)),
+                          ).then((result) {
+                            if (result != null) {
+                              if (result is Map &&
+                                  result.containsKey('latitude') &&
+                                  result.containsKey('longitude')) {
+                                // Set the selected full address in the provider
+                                ref
+                                    .read(inputFullAddressProvider.notifier)
+                                    .state = result['addressName'].toString();
+                                // Set the selected location in the providers
+
+                                print(
+                                    'Selected location: ${result['latitude']}, ${result['longitude']}');
+                                print(result['addressName'].toString());
+                              } else {
+                                print('Address: $result');
                               }
-                            });
+                            }
                           });
                         },
                       ),
@@ -275,28 +314,26 @@ class SearchResultsScreenState extends ConsumerState<SearchResultsScreen> {
                               (result) {
                                 if (result != null) {
                                   if (result is Map &&
-                                      result.containsKey('latitude') &&
-                                      result.containsKey('longitude')) {
+                                      result.containsKey('inputMinPrice') &&
+                                      result.containsKey('inputMaxPrice')) {
                                     setState(() {
-                                      // Set the selected full address in the provider
+                                      // Set input price provider to true to watch changes during price range inputting
                                       ref
-                                              .read(inputFullAddressProvider
-                                                  .notifier)
-                                              .state =
-                                          result['addressName'].toString();
+                                          .read(isInputPriceProvider.notifier)
+                                          .state = true;
                                       // Set the selected location in the providers
                                       ref
-                                          .read(inputLatProvider.notifier)
-                                          .state = result['latitude'];
+                                          .read(inputMinPriceProvider.notifier)
+                                          .state = result['inputMinPrice'];
                                       ref
-                                          .read(inputLongProvider.notifier)
-                                          .state = result['longitude'];
+                                          .read(inputMaxPriceProvider.notifier)
+                                          .state = result['inputMaxPrice'];
                                     });
                                     print(
-                                        'Selected location: ${result['latitude']}, ${result['longitude']}');
-                                    print(result['addressName'].toString());
+                                        'Inputted prices: ${result['inputMinPrice']} and ${result['inputMaxPrice']}');
+                                    print(result['inputMinPrice'].toString());
                                   } else {
-                                    print('Address: $result');
+                                    print('Prices: $result');
                                   }
                                 }
                               },

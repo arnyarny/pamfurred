@@ -14,6 +14,7 @@ import 'package:pamfurred/math_functions/distance_calculator.dart';
 import 'package:pamfurred/providers/global_providers.dart';
 import 'package:pamfurred/providers/search_results_provider.dart';
 import 'package:pamfurred/providers/service_details_provider.dart';
+import 'package:pamfurred/providers/service_package_details_provider.dart';
 import 'package:pamfurred/providers/serviceprovider_provider.dart';
 import 'package:pamfurred/screens/service_package_details.dart';
 import 'package:shimmer/shimmer.dart';
@@ -42,8 +43,14 @@ class ResultsListWidget extends ConsumerWidget {
     final checkResultsSorter = ref.watch(sortResultsProvider);
     final selectedCategory = checkSelectedServiceCategory(selectedIndex);
 
-    // Use combined provider based on sorting option
-    final providerDataAsync = checkResultsSorter == 'None' ||
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      ref.read(selectedHomeScreenSpCategoryProvider.notifier).state =
+          selectedCategory;
+    });
+
+    // Check the searchedServicePackageProvider state
+    final searchedServicePackage = ref.watch(searchedServicePackageProvider);
+    final combinedProviderDataAsync = checkResultsSorter == 'None' ||
             checkResultsSorter == ''
         ? ref.watch(combinedSearchResultsProvider(selectedCategory))
         : checkResultsSorter == 'Nearest'
@@ -53,15 +60,24 @@ class ResultsListWidget extends ConsumerWidget {
                 : ref.watch(combinedSearchResultsProvider(selectedCategory));
 
     return Expanded(
-      child: providerDataAsync.when(
+      child: combinedProviderDataAsync.when(
         data: (providers) {
-          if (providers.isEmpty) {
+          // Filter providers based on searchedServicePackage if it's not empty
+          final filteredProviders = searchedServicePackage.isEmpty
+              ? providers
+              : providers.where((provider) {
+                  // Filter logic, for example:
+                  return provider.name
+                      .toLowerCase()
+                      .contains(searchedServicePackage.toLowerCase());
+                }).toList();
+
+          if (filteredProviders.isEmpty) {
             return Center(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  emptyListWidget(Icons.search_off, 'No results found',
-                      'Try adjusting your filter.')
+                  emptyListWidget(Icons.search_off, 'No results found', '')
                 ],
               ),
             );
@@ -70,12 +86,13 @@ class ResultsListWidget extends ConsumerWidget {
           return PullToRefresh(
             providersToRefresh: [
               combinedSearchResultsProvider(selectedCategory),
+              servicePackageDetailsProvider
             ],
             child: ListView.builder(
               physics: const BouncingScrollPhysics(),
-              itemCount: providers.length,
+              itemCount: filteredProviders.length,
               itemBuilder: (context, index) {
-                var provider = providers[index];
+                var provider = filteredProviders[index];
 
                 return SizedBox(
                   height: 150,
@@ -303,67 +320,52 @@ class ResultsListWidget extends ConsumerWidget {
           itemBuilder: (context, index) {
             return SizedBox(
               height: 150,
-              child: Center(
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: Card(
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(0),
-                        ),
-                        child: Row(
-                          children: [
-                            Shimmer.fromColors(
-                              baseColor: Colors.grey[300]!,
-                              highlightColor: Colors.grey[100]!,
-                              child: Container(
-                                  width: 120,
-                                  height: 138,
-                                  color: Colors.grey[300]),
-                            ),
-                            Expanded(
-                              child: Padding(
-                                padding:
-                                    const EdgeInsets.all(secondarySizedBox),
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Shimmer.fromColors(
-                                      baseColor: Colors.grey[300]!,
-                                      highlightColor: Colors.grey[100]!,
-                                      child: Container(
-                                          width: 150,
-                                          height: 20,
-                                          color: Colors.grey[300]),
-                                    ),
-                                    const SizedBox(height: 10),
-                                    Shimmer.fromColors(
-                                      baseColor: Colors.grey[300]!,
-                                      highlightColor: Colors.grey[100]!,
-                                      child: Container(
-                                          width: 100,
-                                          height: 20,
-                                          color: Colors.grey[300]),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ),
-                            Shimmer.fromColors(
-                              baseColor: Colors.grey[300]!,
-                              highlightColor: Colors.grey[100]!,
-                              child: Container(
-                                  width: 25,
-                                  height: 25,
-                                  color: Colors.grey[300]),
-                            ),
-                            const SizedBox(width: 8),
-                          ],
-                        ),
+              child: Column(
+                children: [
+                  Shimmer.fromColors(
+                    baseColor: Colors.grey[300]!,
+                    highlightColor: Colors.grey[100]!,
+                    child: Container(
+                      width: 120,
+                      height: 138,
+                      color: Colors.grey[300],
+                    ),
+                  ),
+                  Expanded(
+                    child: Padding(
+                      padding: const EdgeInsets.all(secondarySizedBox),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Shimmer.fromColors(
+                            baseColor: Colors.grey[300]!,
+                            highlightColor: Colors.grey[100]!,
+                            child: Container(
+                                width: 150,
+                                height: 20,
+                                color: Colors.grey[300]),
+                          ),
+                          const SizedBox(height: 10),
+                          Shimmer.fromColors(
+                            baseColor: Colors.grey[300]!,
+                            highlightColor: Colors.grey[100]!,
+                            child: Container(
+                                width: 100,
+                                height: 20,
+                                color: Colors.grey[300]),
+                          ),
+                        ],
                       ),
                     ),
-                  ],
-                ),
+                  ),
+                  Shimmer.fromColors(
+                    baseColor: Colors.grey[300]!,
+                    highlightColor: Colors.grey[100]!,
+                    child: Container(
+                        width: 25, height: 25, color: Colors.grey[300]),
+                  ),
+                  const SizedBox(width: 8),
+                ],
               ),
             );
           },

@@ -33,6 +33,9 @@ final longProvider = StateProvider<double?>((ref) => null);
 final minPriceProvider = StateProvider<num>((ref) => 0);
 final maxPriceProvider = StateProvider<num>((ref) => 1000);
 
+// Input search providers
+final searchedServicePackageProvider = StateProvider<String>((ref) => '');
+
 // For services
 final searchResultsServiceProviderServices =
     FutureProvider.family<List<dynamic>, String?>((ref, category) async {
@@ -68,83 +71,38 @@ final combinedSearchResultsProvider =
   final packages =
       await ref.watch(searchResultsServiceProviderPackages(category).future);
 
-  // print(
-  //     "Services: $services"); // Check if 'service_id' and 'serviceprovider_service_id' are present
-  // print(
-  //     "Packages: $packages"); // Check if 'package_id' and 'serviceprovider_package_id' are present
-
-  // Convert services and packages into ServiceProviderItem list
   final serviceItems = services
       .map((service) => ServiceProviderItem.fromService(
           service,
           service['service_id'] ?? '',
-          service['serviceprovider_service_id'] ??
-              '')) // Pass serviceId and spServiceId
+          service['serviceprovider_service_id'] ?? ''))
       .toList();
 
   final packageItems = packages
       .map((package) => ServiceProviderItem.fromPackage(
           package,
           package['package_id'] ?? '',
-          package['serviceprovider_package_id'] ??
-              '')) // Pass packageId and spServiceId
+          package['serviceprovider_package_id'] ?? ''))
       .toList();
 
-  // Combine both lists
   return [...serviceItems, ...packageItems];
 });
-
-// If gusto kag unique service and/or package ids ang i return:
-// final combinedSearchResultsProvider =
-//     FutureProvider.family<List<ServiceProviderItem>, String>(
-//         (ref, category) async {
-//   final services =
-//       await ref.watch(searchResultsServiceProviderServices(category).future);
-//   final packages =
-//       await ref.watch(searchResultsServiceProviderPackages(category).future);
-
-//   // Convert services and packages into ServiceProviderItem list
-//   final serviceItems = services
-//       .map((service) => ServiceProviderItem.fromService(service))
-//       .toList();
-//   final packageItems = packages
-//       .map((package) => ServiceProviderItem.fromPackage(package))
-//       .toList();
-
-//   // Combine both lists and filter duplicates by unique ID
-//   final uniqueResults = <String, ServiceProviderItem>{};
-
-//   for (final item in [...serviceItems, ...packageItems]) {
-//     // Combine `serviceId` and `packageId` as a unique key
-//     final uniqueKey =
-//         '${item.servicePackageId}'; // Use `serviceId` and `packageId` to form a unique key
-//     uniqueResults[uniqueKey] = item;
-//   }
-
-//   // Return only the unique results as a list
-//   return uniqueResults.values.toList();
-// });
 
 // Sorted by price (cheapest to most expensive) using combinedSearchResultsProvider
 final sortSearchResultsByPrice =
     FutureProvider.family<List<ServiceProviderItem>, String>(
         (ref, category) async {
-  // Retrieve combined search results
   final combinedResults =
       await ref.watch(combinedSearchResultsProvider(category).future);
 
-  // Retrieve the min and max price from the respective providers
   final minPrice = ref.watch(isInputPriceProvider)
-      ? ref.watch(
-          inputMinPriceProvider) // Use inputMinProvider if isInputPriceProvider is true
-      : ref.watch(minPriceProvider); // Use minPriceProvider otherwise
+      ? ref.watch(inputMinPriceProvider)
+      : ref.watch(minPriceProvider);
 
   final maxPrice = ref.watch(isInputPriceProvider)
-      ? ref.watch(
-          inputMaxPriceProvider) // Use inputMaxProvider if isInputPriceProvider is true
-      : ref.watch(maxPriceProvider); // Use maxPriceProvider otherwise
+      ? ref.watch(inputMaxPriceProvider)
+      : ref.watch(maxPriceProvider);
 
-  // Filter results by price range and sort by price (ascending)
   final filteredAndSortedResults = combinedResults
       .where((item) => item.price >= minPrice && item.price <= maxPrice)
       .toList()
@@ -157,13 +115,10 @@ final sortSearchResultsByPrice =
 final sortSearchResultsByLocation =
     FutureProvider.family<List<ServiceProviderItem>, String>(
         (ref, category) async {
-  // Retrieve combined search results
   final combinedResults =
       await ref.watch(combinedSearchResultsProvider(category).future);
 
-  // Determine if using input location or current location
-  final isInputLocation = ref.watch(
-      isInputLocationProvider); // A boolean provider to indicate input location usage
+  final isInputLocation = ref.watch(isInputLocationProvider);
   final latitude = isInputLocation
       ? ref.watch(inputLatProvider)
       : ref.watch(locationProvider).latitude;
@@ -171,16 +126,28 @@ final sortSearchResultsByLocation =
       ? ref.watch(inputLongProvider)
       : ref.watch(locationProvider).longitude;
 
-  // Calculate the distance for each item and sort by distance (ascending)
+  print("Using coordinates: Latitude: $latitude, Longitude: $longitude");
+
   final sortedResults = combinedResults.map((item) {
     final distance =
         calculateDistance(latitude!, longitude!, item.latitude, item.longitude);
+
+    print('Distance to ${item.name}: $distance km');
     return {'item': item, 'distance': distance};
   }).toList()
-    ..sort(
-        (a, b) => (a['distance'] as double).compareTo(b['distance'] as double));
+    ..sort((a, b) {
+      final distanceA = a['distance'] as double;
+      final distanceB = b['distance'] as double;
 
-  // Extract and return the sorted list of items
+      // Precision handling: if the difference is smaller than a threshold, consider them equal
+      if ((distanceA - distanceB).abs() < 0.0001) {
+        print("Distances are considered equal: $distanceA km vs $distanceB km");
+        return 0; // No sorting if they are nearly identical
+      }
+      return distanceA.compareTo(distanceB);
+    });
+
+  // Return sorted items
   return sortedResults
       .map((entry) => entry['item'] as ServiceProviderItem)
       .toList();

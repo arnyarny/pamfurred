@@ -264,12 +264,6 @@ class PetProfileScreenState extends ConsumerState<PetProfileScreen> {
                                                   petProfileImage:
                                                       pet['pet_image'] ?? '');
                                       Navigator.pop(context);
-                                      QuickAlert.show(
-                                          context: context,
-                                          type: QuickAlertType.success,
-                                          title: 'Delete success',
-                                          text:
-                                              'The pet profile has been successfully deleted');
 
                                       if (result != null) {
                                         final refreshed = ref.refresh(
@@ -277,10 +271,18 @@ class PetProfileScreenState extends ConsumerState<PetProfileScreen> {
                                                 .watch(userIdProvider)
                                                 .toString()));
                                         print(refreshed);
+
                                         Navigator.pushReplacement(
                                             context,
                                             crossFadeRoute(const MainScreen(
                                                 initialPage: 3)));
+
+                                        QuickAlert.show(
+                                            context: context,
+                                            type: QuickAlertType.success,
+                                            title: 'Delete success',
+                                            text:
+                                                'The pet profile has been successfully deleted.');
                                         print(
                                             'Pet profile deleted successfully.');
                                       } else {

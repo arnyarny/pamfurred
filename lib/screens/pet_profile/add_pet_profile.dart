@@ -18,6 +18,8 @@ import 'package:pamfurred/models/dropdown_contents/pet_type.dart'; // Assuming P
 import 'package:pamfurred/models/dropdown_contents/sex.dart';
 import 'package:pamfurred/providers/pet_profile_provider.dart';
 import 'package:pamfurred/providers/user_id.dart';
+import 'package:quickalert/models/quickalert_type.dart';
+import 'package:quickalert/widgets/quickalert_dialog.dart';
 import 'package:supabase_flutter/supabase_flutter.dart'; // Import the Sex class
 
 class AddPetProfileScreen extends ConsumerStatefulWidget {
@@ -270,11 +272,12 @@ class AddPetProfileScreenState extends ConsumerState<AddPetProfileScreen> {
                                 ref.watch(userIdProvider).toString()));
                             print(refreshed);
                             Navigator.pop(context);
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                  content:
-                                      Text('Pet profile added successfully!')),
-                            );
+                            QuickAlert.show(
+                                context: context,
+                                type: QuickAlertType.success,
+                                title: 'Success',
+                                text:
+                                    'The pet profile has been successfully added.');
                           }
                         }
                       }

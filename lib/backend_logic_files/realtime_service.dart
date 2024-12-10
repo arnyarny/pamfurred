@@ -16,86 +16,54 @@ class RealtimeService {
 
     final loggedInPetOwnerId = currentUser.id;
 
-    // Function to check if an appointment exists in the database
-    Future<bool> doesAppointmentExist(String appointmentId) async {
-      final response = await _client
-          .from('appointment')
-          .select()
-          .eq('appointment_id', appointmentId)
-          .single();
-      // print("what's inside: $response");
-
-      if (response != null) {
-        // kung naa sa table
-        // print("worked");
-        return true;
-      }
-      // print("didn't work");
-      return response != null;
-    }
-
+    print('Start listening to real-time updates');
 // Listen to real-time updates in the 'appointment' table
     _client
-        .from('appointment')
-        .stream(primaryKey: ['appointment_id'])
-        .eq('pet_owner_id', loggedInPetOwnerId)
-        .listen(
-          (changes) async {
-            for (final change in changes) {
-              final appointmentId = change['appointment_id'];
-              final appointmentStatus = change['appointment_status'];
+        .from('notification_with_appointment')
+        .stream(primaryKey: ['notification_id']).listen(
+      (changes) async {
+        final filteredChanges = changes.where((change) =>
+            change['pet_owner_id'] == loggedInPetOwnerId &&
+            change['processed'] == false);
+        for (final change in filteredChanges) {
+          final notificationId = change['notification_id'];
+          final appointmentNotifType = change['appointment_notif_type'];
+          final appointmentId = change['appointment_id'];
+          print('\nNotification ID: $notificationId');
+          print('\nNotiftype: $appointmentNotifType');
 
-              if (appointmentId == null) continue;
+          if (appointmentNotifType == 'Done' ||
+              appointmentNotifType == 'Cancelled') {
+            await _createNotification(
+                notificationId, appointmentNotifType, appointmentId);
 
-              // Check if the appointment ID exists in the database
-              bool exists = await doesAppointmentExist(appointmentId);
-
-              if (exists) {
-                // This is an update
-                if (appointmentStatus == 'Done' ||
-                    appointmentStatus == 'Cancelled') {
-                  // print(appointmentId);
-                  // print(appointmentStatus);
-                  await _createNotification(appointmentId, appointmentStatus);
-                }
-              }
-            }
-          },
-          onError: (error) {
-            print('Real-time stream error: $error');
-          },
-        );
+            // After sending the notification, mark it as processed
+            await _markNotificationAsProcessed(notificationId);
+          }
+        }
+      },
+      onError: (error) {
+        print('Real-time stream error: $error');
+      },
+    );
   }
 
-  Future<void> _createNotification(
-      String appointmentId, String notificationType) async {
+  Future<void> _markNotificationAsProcessed(String notificationId) async {
     try {
-      // Check if a notification already exists for this appointment and type
       await _client
           .from('notification')
-          .select('notification_id')
-          .eq('appointment_id', appointmentId)
-          .eq('appointment_notif_type', notificationType);
+          .update({'processed': true}) // Set processed flag to true
+          .eq('notification_id', notificationId);
 
-// // Print the result for debugging
-//       print("unsay naa ani: $existingNotification");
+      print('Notification ID $notificationId marked as processed.');
+    } catch (e) {
+      print('Error marking notification as processed: $e');
+    }
+  }
 
-// // If a notification already exists, skip sending it
-//       if (existingNotification.isNotEmpty) {
-//         print(
-//             'Notification already exists for appointment ID $appointmentId and type $notificationType');
-//         return;
-//       }
-
-      final supabase = Supabase.instance.client;
-
-      await supabase.from('notification').insert({
-        'appointment_id': appointmentId,
-        'appointment_notif_type':
-            notificationType, // Or any type based on your logic
-        'created_at': DateTime.now().toUtc().toIso8601String(),
-      });
-
+  Future<void> _createNotification(String notificationId,
+      String notificationType, String appointmentId) async {
+    try {
       // Fetch related service provider details for notification content
       final appointment = await _client
           .from('appointment')
@@ -154,7 +122,7 @@ class RealtimeService {
         details, // Notification details
       );
 
-      // print('Notification sent for appointment ID $appointmentId');
+      print('Notification sent for notification ID $notificationId');
     } catch (e) {
       print('Error sending notification: $e');
     }

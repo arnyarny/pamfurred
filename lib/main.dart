@@ -4,7 +4,6 @@ import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:pamfurred/backend_logic_files/realtime_service.dart';
 import 'package:pamfurred/components/globals.dart';
 import 'package:pamfurred/screens/main_screen.dart';
 import 'package:pamfurred/screens/splash_screen.dart';
@@ -60,11 +59,6 @@ void main() async {
 
   // Initialize local notifications
   await initializeNotifications();
-
-  final realtimeService = RealtimeService();
-
-  // Start listening to appointments
-  realtimeService.listenToAppointments();
 
   // Lock device orientation to portrait
   SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]).then(

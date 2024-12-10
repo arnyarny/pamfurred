@@ -143,6 +143,21 @@ class AppointmentSummaryScreenState
     return response;
   }
 
+  // Function to insert a new notification into the notification table
+  Future<void> insertNotification(String appointmentId) async {
+    final supabase = Supabase.instance.client;
+
+    final response = await supabase.from('notification').insert({
+      'appointment_id': appointmentId,
+      'appointment_notif_type': 'Pending', // Or any type based on your logic
+      'created_at':
+          DateTime.now().toUtc().toIso8601String(), // Current timestamp in UTC
+    });
+    if (response != null) {
+      print('Notification inserted successfully');
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final sp = ref.watch(spIndexProvider);
@@ -258,6 +273,12 @@ class AppointmentSummaryScreenState
                                   // Insert appointment items into the table
                                   await insertAppointmentItems(
                                       newAppointment.toString());
+
+                                  final appointmentId =
+                                      ref.watch(appointmentIdProvider);
+
+                                  // Insert notification entry into the notification table
+                                  await insertNotification(appointmentId);
 
                                   if (context.mounted) {
                                     Navigator.push(

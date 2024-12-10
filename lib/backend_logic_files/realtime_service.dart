@@ -20,28 +20,45 @@ class RealtimeService {
 // Listen to real-time updates in the 'appointment' table
     _client
         .from('notification_with_appointment')
-        .stream(primaryKey: ['notification_id'])
-        .eq('pet_owner_id', loggedInPetOwnerId)
-        .listen(
-          (changes) async {
-            for (final change in changes) {
-              final notificationId = change['notification_id'];
-              final appointmentNotifType = change['appointment_notif_type'];
-              final appointmentId = change['appointment_id'];
-              print('\nNotification ID: $notificationId');
-              print('\nNotiftype: $appointmentNotifType');
+        .stream(primaryKey: ['notification_id']).listen(
+      (changes) async {
+        final filteredChanges = changes.where((change) =>
+            change['pet_owner_id'] == loggedInPetOwnerId &&
+            change['processed'] == false);
+        for (final change in filteredChanges) {
+          final notificationId = change['notification_id'];
+          final appointmentNotifType = change['appointment_notif_type'];
+          final appointmentId = change['appointment_id'];
+          print('\nNotification ID: $notificationId');
+          print('\nNotiftype: $appointmentNotifType');
 
-              if (appointmentNotifType == 'Done' ||
-                  appointmentNotifType == 'Cancelled') {
-                await _createNotification(
-                    notificationId, appointmentNotifType, appointmentId);
-              }
-            }
-          },
-          onError: (error) {
-            print('Real-time stream error: $error');
-          },
-        );
+          if (appointmentNotifType == 'Done' ||
+              appointmentNotifType == 'Cancelled') {
+            await _createNotification(
+                notificationId, appointmentNotifType, appointmentId);
+
+            // After sending the notification, mark it as processed
+            await _markNotificationAsProcessed(notificationId);
+          }
+        }
+      },
+      onError: (error) {
+        print('Real-time stream error: $error');
+      },
+    );
+  }
+
+  Future<void> _markNotificationAsProcessed(String notificationId) async {
+    try {
+      await _client
+          .from('notification')
+          .update({'processed': true}) // Set processed flag to true
+          .eq('notification_id', notificationId);
+
+      print('Notification ID $notificationId marked as processed.');
+    } catch (e) {
+      print('Error marking notification as processed: $e');
+    }
   }
 
   Future<void> _createNotification(String notificationId,

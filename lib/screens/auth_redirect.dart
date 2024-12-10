@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:pamfurred/backend_logic_files/realtime_service.dart';
 import 'package:pamfurred/components/connectivity_wrapper.dart';
 import 'package:pamfurred/components/screen_transitions.dart';
 import 'package:pamfurred/providers/appointments_provider.dart';
@@ -22,9 +23,10 @@ class AuthRedirect extends ConsumerStatefulWidget {
 }
 
 class AuthRedirectState extends ConsumerState<AuthRedirect>
-    with SingleTickerProviderStateMixin {
+    with SingleTickerProviderStateMixin, WidgetsBindingObserver {
   late AnimationController _controller;
   late Animation<double> _animation;
+  late RealtimeService realtimeService;
 
   final List<StreamSubscription> _streamSubscriptions =
       []; // Store subscriptions
@@ -40,6 +42,9 @@ class AuthRedirectState extends ConsumerState<AuthRedirect>
     _animation = CurvedAnimation(parent: _controller, curve: Curves.easeInOut);
     _controller.forward(); // Start the fade-out animation
 
+    WidgetsBinding.instance.addObserver(this); // Add lifecycle observer
+    realtimeService = RealtimeService();
+
     _checkSession();
     _listenToAppointments();
     _listenToSpAvailability();
@@ -52,11 +57,25 @@ class AuthRedirectState extends ConsumerState<AuthRedirect>
     });
   }
 
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      // Restart listener on resume
+      print("App resumed, restarting real-time listener...");
+      realtimeService.listenToAppointments();
+    }
+  }
+
   Future<void> _checkSession() async {
     final session = Supabase.instance.client.auth.currentSession;
     // print('Session: $session'); // Log the session to the terminal
 
     await Future.delayed(const Duration(seconds: 2)); // Add delay for debugging
+
+    // If there is an active session, start listening to appointments
+    final realtimeService = RealtimeService();
+    realtimeService.listenToAppointments(); // Start listening to notifications
+    print("LISTEN TO APPOINTMENTS LET'S GO!");
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (session != null) {
@@ -143,6 +162,7 @@ class AuthRedirectState extends ConsumerState<AuthRedirect>
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     // Dispose animation controller
     _controller.dispose();
 

@@ -16,24 +16,12 @@ import 'package:pamfurred/providers/search_results_provider.dart';
 import 'package:pamfurred/providers/service_details_provider.dart';
 import 'package:pamfurred/providers/service_package_details_provider.dart';
 import 'package:pamfurred/providers/serviceprovider_provider.dart';
+import 'package:pamfurred/screens/search_results/methods/check_selected_category.dart';
 import 'package:pamfurred/screens/service_package_details.dart';
 import 'package:shimmer/shimmer.dart';
 
 class ResultsListWidget extends ConsumerWidget {
   const ResultsListWidget({super.key});
-
-  String checkSelectedServiceCategory(int selectedIndex) {
-    switch (selectedIndex) {
-      case 0:
-        return "veterinary service";
-      case 1:
-        return "pet grooming";
-      case 2:
-        return "pet boarding";
-      default:
-        return "";
-    }
-  }
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {

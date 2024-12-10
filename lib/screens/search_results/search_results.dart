@@ -3,9 +3,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pamfurred/components/globals.dart';
 import 'package:pamfurred/components/screen_transitions.dart';
+import 'package:pamfurred/providers/global_providers.dart';
 import 'package:pamfurred/providers/search_results_provider.dart';
 import 'package:pamfurred/screens/pin_location.dart';
 import 'package:pamfurred/screens/search_results/input_price.dart';
+import 'package:pamfurred/screens/search_results/methods/check_selected_category.dart';
 import 'package:pamfurred/screens/search_results/search_results_list.dart';
 import 'package:pamfurred/screens/search_results/search_screen.dart';
 // import 'package:pamfurred/screens/pin_location.dart';
@@ -39,6 +41,14 @@ class SearchResultsScreenState extends ConsumerState<SearchResultsScreen> {
     final maxValue = ref.read(maxPriceProvider);
     minRangeController.text = minValue.toString();
     maxRangeController.text = maxValue.toString();
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final selectedIndex = ref.watch(selectedCategoryIndexProvider);
+
+      final refreshedProvider = ref.refresh(combinedSearchResultsProvider(
+          checkSelectedServiceCategory(selectedIndex)));
+      print('Refreshed provider: $refreshedProvider');
+    });
   }
 
   @override

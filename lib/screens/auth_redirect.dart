@@ -1,5 +1,7 @@
 import 'dart:async';
+
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart'; // Import Riverpod package
 import 'package:pamfurred/components/connectivity_wrapper.dart';
 import 'package:pamfurred/components/screen_transitions.dart';
 import 'package:pamfurred/providers/appointments_provider.dart';
@@ -8,11 +10,11 @@ import 'package:pamfurred/providers/global_providers.dart';
 import 'package:pamfurred/providers/notifications_provider.dart';
 import 'package:pamfurred/providers/pet_profile_provider.dart';
 import 'package:pamfurred/providers/ratings_and_reviews_provider.dart';
+import 'package:pamfurred/providers/search_results_provider.dart';
 import 'package:pamfurred/providers/serviceprovider_provider.dart';
 import 'package:pamfurred/screens/login.dart';
 import 'package:pamfurred/screens/main_screen.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart'; // Import Riverpod package
 
 class AuthRedirect extends ConsumerStatefulWidget {
   const AuthRedirect({super.key});
@@ -28,6 +30,8 @@ class AuthRedirectState extends ConsumerState<AuthRedirect>
 
   final List<StreamSubscription> _streamSubscriptions =
       []; // Store subscriptions
+
+  final categories = ['pet grooming', 'pet boarding', 'veterinary service'];
 
   @override
   void initState() {
@@ -46,6 +50,8 @@ class AuthRedirectState extends ConsumerState<AuthRedirect>
     _listenToPetProfiles();
     _listenToNotifications();
     _listenToFeedback();
+    _listenToServiceProviders(ref);
+    _listenToServices;
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _listenToAVailableTimes(ref);
@@ -136,6 +142,38 @@ class AuthRedirectState extends ConsumerState<AuthRedirect>
         .from('feedback')
         .stream(primaryKey: ['feedback_id']).listen((event) {
       ref.invalidate(ratingsSummaryWithReviewsProvider);
+    });
+
+    _streamSubscriptions.add(subscription);
+  }
+
+  // Not sure yet
+  void _listenToServiceProviders(WidgetRef ref) {
+    final supabase = Supabase.instance.client;
+
+    // Listen for changes in the base view or table
+    final subscription = supabase
+        .from('service_provider_with_categories_and_sentiment_mv')
+        .stream(primaryKey: ['sp_id']).listen((event) {
+      // Invalidate all category providers when the view updates
+      for (final category in categories) {
+        ref.invalidate(serviceProviderFutureProvider(category));
+      }
+      // Invalidate the provider without category
+      ref.invalidate(serviceProviderFutureProviderWithoutCategory);
+    });
+
+    // Add to subscriptions for cleanup
+    _streamSubscriptions.add(subscription);
+  }
+
+  // Not sure yet
+  void _listenToServices() {
+    final supabase = Supabase.instance.client;
+    final subscription = supabase
+        .from('service')
+        .stream(primaryKey: ['service_id']).listen((event) {
+      ref.invalidate(searchResultsServiceProviderServices);
     });
 
     _streamSubscriptions.add(subscription);

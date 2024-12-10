@@ -7,7 +7,7 @@ final serviceProviderFutureProvider =
 
   // Perform the query with the 'contains' operator
   final response = await supabase
-      .from('service_provider_with_categories_and_sentiment')
+      .from('service_provider_with_categories_and_sentiment_mv')
       .select('*')
       .contains('unique_categories', '["$category"]');
 

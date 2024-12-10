@@ -104,6 +104,13 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
                     child: TextField(
                       controller: _searchController,
                       focusNode: _focusNode, // Attach FocusNode to TextField
+                      textInputAction: TextInputAction.search,
+                      onSubmitted: (String query) {
+                        ref
+                            .read(searchedServicePackageProvider.notifier)
+                            .state = query;
+                        Navigator.pop(context);
+                      },
                       onChanged: (query) => _filterSuggestions(
                           query, selectedCategory), // Filter suggestions
                       decoration: InputDecoration(

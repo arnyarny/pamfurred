@@ -147,6 +147,8 @@ dependencies:
   logger: ^2.5.0
   fancy_password_field: ^2.0.8
 
+  image_picker: ^1.1.2
+
 dev_dependencies:
   flutter_launcher_icons: "^0.14.2"
 flutter_launcher_icons:

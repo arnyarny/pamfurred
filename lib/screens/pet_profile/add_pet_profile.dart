@@ -16,6 +16,7 @@ import 'package:pamfurred/models/dropdown_contents/cat_breeds.dart';
 import 'package:pamfurred/models/dropdown_contents/bunny_breeds.dart';
 import 'package:pamfurred/models/dropdown_contents/pet_type.dart'; // Assuming PetType is in this file
 import 'package:pamfurred/models/dropdown_contents/sex.dart';
+import 'package:pamfurred/providers/pet_profile_provider.dart';
 import 'package:pamfurred/providers/user_id.dart';
 import 'package:supabase_flutter/supabase_flutter.dart'; // Import the Sex class
 
@@ -265,6 +266,9 @@ class AddPetProfileScreenState extends ConsumerState<AddPetProfileScreen> {
                           log('Pet profile added successfully');
 
                           if (context.mounted) {
+                            final refreshed = ref.refresh(petProfileProvider(
+                                ref.watch(userIdProvider).toString()));
+                            print(refreshed);
                             Navigator.pop(context);
                             ScaffoldMessenger.of(context).showSnackBar(
                               const SnackBar(

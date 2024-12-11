@@ -10,6 +10,7 @@ import 'package:pamfurred/screens/search_results/input_price.dart';
 import 'package:pamfurred/screens/search_results/methods/check_selected_category.dart';
 import 'package:pamfurred/screens/search_results/search_results_list.dart';
 import 'package:pamfurred/screens/search_results/search_screen.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 // import 'package:pamfurred/screens/pin_location.dart';
 
 class SearchResultsScreen extends ConsumerStatefulWidget {
@@ -53,6 +54,41 @@ class SearchResultsScreenState extends ConsumerState<SearchResultsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final supabase = Supabase.instance.client;
+
+    final selectedIndex = ref.watch(selectedCategoryIndexProvider);
+
+    // Listen to realtime changes in db
+    supabase.from('service').stream(primaryKey: ['service_id']).listen(
+        (List<Map<String, dynamic>> data) {
+      ref.invalidate(combinedSearchResultsProvider(
+          checkSelectedServiceCategory(selectedIndex)));
+      final refreshCombined = ref.refresh(combinedSearchResultsProvider(
+          checkSelectedServiceCategory(selectedIndex)));
+      print('Refresh provider: $refreshCombined');
+
+      ref.invalidate(searchResultsServiceProviderServices(
+          checkSelectedServiceCategory(selectedIndex)));
+      final refreshServices = ref.refresh(searchResultsServiceProviderServices(
+          checkSelectedServiceCategory(selectedIndex)));
+      print('Refresh provider: $refreshServices');
+    });
+
+    supabase.from('package').stream(primaryKey: ['package_id']).listen(
+        (List<Map<String, dynamic>> data) {
+      ref.invalidate(combinedSearchResultsProvider(
+          checkSelectedServiceCategory(selectedIndex)));
+      final refreshCombined = ref.refresh(combinedSearchResultsProvider(
+          checkSelectedServiceCategory(selectedIndex)));
+      print('Refresh provider: $refreshCombined');
+
+      ref.invalidate(searchResultsServiceProviderPackages(
+          checkSelectedServiceCategory(selectedIndex)));
+      final refreshPackages = ref.refresh(searchResultsServiceProviderPackages(
+          checkSelectedServiceCategory(selectedIndex)));
+      print('Refresh provider: $refreshPackages');
+    });
+
     return Scaffold(
       key: scaffoldKey, // Pass the key here
       backgroundColor: Colors.white,

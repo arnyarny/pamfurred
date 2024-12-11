@@ -9,8 +9,6 @@ import 'package:pamfurred/providers/appointments_provider.dart';
 import 'package:pamfurred/providers/available_timeslots_provider.dart';
 import 'package:pamfurred/providers/global_providers.dart';
 import 'package:pamfurred/providers/notifications_provider.dart';
-import 'package:pamfurred/providers/ratings_and_reviews_provider.dart';
-import 'package:pamfurred/providers/search_results_provider.dart';
 import 'package:pamfurred/providers/serviceprovider_provider.dart';
 import 'package:pamfurred/screens/login.dart';
 import 'package:pamfurred/screens/main_screen.dart';
@@ -29,10 +27,10 @@ class AuthRedirectState extends ConsumerState<AuthRedirect>
   late Animation<double> _animation;
   late RealtimeService realtimeService;
 
+  final supabase = Supabase.instance.client;
+
   final List<StreamSubscription> _streamSubscriptions =
       []; // Store subscriptions
-
-  final categories = ['pet grooming', 'pet boarding', 'veterinary service'];
 
   @override
   void initState() {
@@ -52,12 +50,9 @@ class AuthRedirectState extends ConsumerState<AuthRedirect>
     _listenToAppointments();
     _listenToSpAvailability();
     _listenToNotifications();
-    _listenToFeedback();
-    _listenToServices;
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _listenToAVailableTimes(ref);
-      _listenToServiceProviders(ref);
     });
   }
 
@@ -94,7 +89,6 @@ class AuthRedirectState extends ConsumerState<AuthRedirect>
   }
 
   void _listenToAppointments() {
-    final supabase = Supabase.instance.client;
     final subscription = supabase
         .from('appointment')
         .stream(primaryKey: ['appointment_id']).listen((event) {
@@ -105,7 +99,6 @@ class AuthRedirectState extends ConsumerState<AuthRedirect>
   }
 
   void _listenToSpAvailability() {
-    final supabase = Supabase.instance.client;
     final subscription = supabase
         .from('service_provider_availability')
         .stream(primaryKey: ['availability_id']).listen((event) {
@@ -115,9 +108,7 @@ class AuthRedirectState extends ConsumerState<AuthRedirect>
     _streamSubscriptions.add(subscription);
   }
 
-
   void _listenToNotifications() {
-    final supabase = Supabase.instance.client;
     final subscription = supabase
         .from('notification')
         .stream(primaryKey: ['notification_id']).listen((event) {
@@ -128,7 +119,6 @@ class AuthRedirectState extends ConsumerState<AuthRedirect>
   }
 
   void _listenToAVailableTimes(WidgetRef ref) {
-    final supabase = Supabase.instance.client;
     final selectedDate = ref.watch(selectedDateProvider);
 
     final subscription = supabase
@@ -138,49 +128,6 @@ class AuthRedirectState extends ConsumerState<AuthRedirect>
         .listen((event) {
           ref.invalidate(fetchAppointmentsPerDateProvider(selectedDate!));
         });
-
-    _streamSubscriptions.add(subscription);
-  }
-
-  void _listenToFeedback() {
-    final supabase = Supabase.instance.client;
-    final subscription = supabase
-        .from('feedback')
-        .stream(primaryKey: ['feedback_id']).listen((event) {
-      ref.invalidate(ratingsSummaryWithReviewsProvider);
-    });
-
-    _streamSubscriptions.add(subscription);
-  }
-
-  // Not sure yet
-  void _listenToServiceProviders(WidgetRef ref) {
-    final supabase = Supabase.instance.client;
-
-    // Listen for changes in the base view or table
-    final subscription = supabase
-        .from('service_provider_with_categories_and_sentiment_mv')
-        .stream(primaryKey: ['sp_id']).listen((event) {
-      // Invalidate all category providers when the view updates
-      for (final category in categories) {
-        ref.invalidate(serviceProviderFutureProvider(category));
-      }
-      // Invalidate the provider without category
-      ref.invalidate(serviceProviderFutureProviderWithoutCategory);
-    });
-
-    // Add to subscriptions for cleanup
-    _streamSubscriptions.add(subscription);
-  }
-
-  // Not sure yet
-  void _listenToServices() {
-    final supabase = Supabase.instance.client;
-    final subscription = supabase
-        .from('service')
-        .stream(primaryKey: ['service_id']).listen((event) {
-      ref.invalidate(searchResultsServiceProviderServices);
-    });
 
     _streamSubscriptions.add(subscription);
   }

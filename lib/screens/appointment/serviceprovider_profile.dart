@@ -20,6 +20,7 @@ import 'package:pamfurred/providers/button_pressed_provider.dart';
 import 'package:pamfurred/providers/cart_provider.dart';
 import 'package:pamfurred/providers/global_providers.dart';
 import 'package:pamfurred/providers/pet_profile_provider.dart';
+import 'package:pamfurred/providers/ratings_and_reviews_provider.dart';
 import 'package:pamfurred/providers/serviceprovider_provider.dart';
 import 'package:pamfurred/providers/sp_profile_provider_packages.dart';
 import 'package:pamfurred/providers/sp_profile_provider_services.dart';
@@ -34,6 +35,7 @@ import 'package:quickalert/models/quickalert_animtype.dart';
 import 'package:quickalert/models/quickalert_type.dart';
 import 'package:quickalert/widgets/quickalert_dialog.dart';
 import 'package:shimmer/shimmer.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 // Function to reset providers to null/blank when willBookProvider is false
@@ -57,6 +59,18 @@ class ServiceproviderProfileScreenState
     extends ConsumerState<ServiceproviderProfileScreen> {
   @override
   Widget build(BuildContext context) {
+    final supabase = Supabase.instance.client;
+
+    final spId = ref.watch(selectedSpIndexProvider);
+
+    supabase.from('feedback').stream(primaryKey: ['feedback_id']).listen(
+        (List<Map<String, dynamic>> data) {
+      ref.invalidate(ratingsSummaryWithReviewsProvider(spId));
+      final refreshFeedback =
+          ref.refresh(ratingsSummaryWithReviewsProvider(spId));
+      print('Refresh provider: $refreshFeedback');
+    });
+
     final selectedIndex = ref.watch(selectedTabProvider).toInt();
     const defaultImage = 'https://tinyurl.com/3tnt6yyy';
 
@@ -661,6 +675,16 @@ final servicesTabProvider = FutureProvider<List<Widget>>((ref) async {
     // size: null,
   );
 
+  final supabase = Supabase.instance.client;
+
+  // Listen to realtime changes in db
+  supabase.from('service').stream(primaryKey: ['service_id']).listen(
+      (List<Map<String, dynamic>> data) {
+    ref.invalidate(allServicesProvider(filterCriteria));
+    final refreshServices = ref.refresh(allServicesProvider(filterCriteria));
+    print('Refresh provider: $refreshServices');
+  });
+
   return [
     Consumer(
       builder: (context, ref, child) {
@@ -846,6 +870,16 @@ final packagesTabProvider = FutureProvider<List<Widget>>((ref) async {
     packageCategory: ref.watch(selectedAppointmentCategoryProvider),
     size: null,
   );
+
+  final supabase = Supabase.instance.client;
+
+  // Listen to realtime changes in db
+  supabase.from('package').stream(primaryKey: ['package_id']).listen(
+      (List<Map<String, dynamic>> data) {
+    ref.invalidate(allPackagesProvider(filterCriteria));
+    final refreshPackages = ref.refresh(allPackagesProvider(filterCriteria));
+    print('Refresh provider: $refreshPackages');
+  });
 
   return [
     Consumer(

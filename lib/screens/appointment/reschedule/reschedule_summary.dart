@@ -1,14 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:pamfurred/backend_logic_files/insert_notification.dart';
 import 'package:pamfurred/components/custom_appbar.dart';
 import 'package:pamfurred/components/globals.dart';
 import 'package:pamfurred/components/regular_text.dart';
+import 'package:pamfurred/components/screen_transitions.dart';
 import 'package:pamfurred/components/time_and_date_formatter.dart';
 import 'package:pamfurred/components/title_text.dart';
 import 'package:pamfurred/components/width_expanded_button.dart';
 import 'package:pamfurred/providers/appointment_services_and_packages.dart';
 import 'package:pamfurred/providers/appointments_provider.dart';
+import 'package:pamfurred/providers/global_providers.dart';
 import 'package:pamfurred/providers/serviceprovider_provider.dart';
+import 'package:pamfurred/screens/appointment/appointment_components/components.dart';
+import 'package:pamfurred/screens/appointment/reschedule/reschedule_success.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 class RescheduleSummary extends ConsumerStatefulWidget {
   const RescheduleSummary({super.key});
@@ -18,6 +24,8 @@ class RescheduleSummary extends ConsumerStatefulWidget {
 }
 
 class RescheduleSummaryState extends ConsumerState<RescheduleSummary> {
+  bool isLoading = false;
+
   @override
   Widget build(BuildContext context) {
     final appointmentId = ref.watch(tappedSpAppointmentIdProvider);
@@ -33,200 +41,174 @@ class RescheduleSummaryState extends ConsumerState<RescheduleSummary> {
     final combinedDetails =
         ref.watch(appointmentServicesAndPackagesProvider(appointmentId));
 
-    return Scaffold(
-      backgroundColor: Colors.white,
-      appBar: customAppBarWithTitle(context, 'Appointment Summary'),
-      body: specificAppointmentDetails.when(
-        data: (details) {
-          // print(details);
-          return combinedDetails.when(
-            data: (combined) {
-              final services =
-                  (combined['services'] as List<AppointmentService>?) ?? [];
-              final packages =
-                  (combined['packages'] as List<AppointmentPackage>?) ?? [];
+    return Stack(
+      children: [
+        Scaffold(
+          backgroundColor: Colors.white,
+          appBar: customAppBarWithTitle(context, 'Appointment Summary'),
+          body: specificAppointmentDetails.when(
+            data: (details) {
+              return combinedDetails.when(
+                data: (combined) {
+                  final services =
+                      (combined['services'] as List<AppointmentService>?) ?? [];
+                  final packages =
+                      (combined['packages'] as List<AppointmentPackage>?) ?? [];
 
-              return SingleChildScrollView(
-                physics: BouncingScrollPhysics(),
-                child: Center(
-                  child: SizedBox(
-                    width: screenPadding(context),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const SizedBox(height: tertiarySizedBox),
-                        getAppointmentTitle(context, 'Service provider'),
-                        const SizedBox(height: primarySizedBox),
-                        getAppointmentDetail(
-                            context, details?['establishment_name']),
-                        const SizedBox(height: tertiarySizedBox),
-                        getAppointmentTitle(context, 'Pet name'),
-                        const SizedBox(height: primarySizedBox),
-                        getAppointmentDetail(context, details?['pet_name']),
-                        const SizedBox(height: tertiarySizedBox),
-                        getAppointmentTitle(context, 'Appointment type'),
-                        const SizedBox(height: primarySizedBox),
-                        getAppointmentDetail(
-                            context, details?['appointment_type']),
-                        const SizedBox(height: tertiarySizedBox),
-                        getAppointmentTitle(context, 'Address'),
-                        const SizedBox(height: primarySizedBox),
-                        wrappedText(
-                            context, details?['appointment_address'] ?? ''),
-                        const SizedBox(height: tertiarySizedBox),
-                        getAppointmentTitle(context, 'Date'),
-                        const SizedBox(height: primarySizedBox),
-                        getAppointmentDetail(
-                            context, secondaryFormatDate(rescheduleDate)),
-                        const SizedBox(height: tertiarySizedBox),
-                        getAppointmentTitle(context, 'Time'),
-                        const SizedBox(height: primarySizedBox),
-                        getAppointmentDetail(
-                            context, formatTime(rescheduleTime)),
-                        const SizedBox(height: secondarySizedBox),
-
-                        if (services.isNotEmpty) ...[
-                          getAppointmentTitle(context, 'Services'),
-                          const SizedBox(height: primarySizedBox),
-                          ...services.map((service) => buildCartItem(
-                              name: '${service.serviceName}',
-                              price: '${service.servicePrice.toString()}')),
-                        ],
-                        const SizedBox(height: primarySizedBox),
-                        if (packages.isNotEmpty) ...[
-                          getAppointmentTitle(context, 'Packages'),
-                          const SizedBox(height: primarySizedBox),
-                          ...packages.map((package) => buildCartItem(
-                              name: '${package.packageName}',
-                              price: '${package.packagePrice.toString()}')),
-                        ],
-                        const SizedBox(height: secondarySizedBox),
-
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  return SingleChildScrollView(
+                    physics: BouncingScrollPhysics(),
+                    child: Center(
+                      child: SizedBox(
+                        width: screenPadding(context),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            getAppointmentTotalTitle(context, 'Total'),
-                            regularPrimaryColoredBoldTextWidget(
-                                '₱${details?['total_amount']}')
+                            const SizedBox(height: tertiarySizedBox),
+                            getAppointmentTitle(context, 'Service provider'),
+                            const SizedBox(height: primarySizedBox),
+                            getAppointmentDetail(
+                                context, details?['establishment_name']),
+                            const SizedBox(height: tertiarySizedBox),
+                            getAppointmentTitle(context, 'Pet name'),
+                            const SizedBox(height: primarySizedBox),
+                            getAppointmentDetail(context, details?['pet_name']),
+                            const SizedBox(height: tertiarySizedBox),
+                            getAppointmentTitle(context, 'Appointment type'),
+                            const SizedBox(height: primarySizedBox),
+                            getAppointmentDetail(
+                                context, details?['appointment_type']),
+                            const SizedBox(height: tertiarySizedBox),
+                            getAppointmentTitle(context, 'Address'),
+                            const SizedBox(height: primarySizedBox),
+                            wrappedText(
+                                context, details?['appointment_address'] ?? ''),
+                            const SizedBox(height: tertiarySizedBox),
+                            getAppointmentTitle(context, 'Date and time'),
+                            const SizedBox(height: primarySizedBox),
+                            getAppointmentDetail(context,
+                                '${secondaryFormatDate(rescheduleDate)}, ${formatTime(rescheduleTime)}'),
+                            const SizedBox(height: tertiarySizedBox),
+                            if (services.isNotEmpty) ...[
+                              getAppointmentTitle(context, 'Services'),
+                              const SizedBox(height: primarySizedBox),
+                              ...services.map((service) => buildCartItem(
+                                  name: '${service.serviceName}',
+                                  price: '${service.servicePrice.toString()}')),
+                            ],
+                            const SizedBox(height: primarySizedBox),
+                            if (packages.isNotEmpty) ...[
+                              getAppointmentTitle(context, 'Packages'),
+                              const SizedBox(height: primarySizedBox),
+                              ...packages.map((package) => buildCartItem(
+                                  name: '${package.packageName}',
+                                  price: '${package.packagePrice.toString()}')),
+                            ],
+                            const SizedBox(height: secondarySizedBox),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                getAppointmentTotalTitle(context, 'Total'),
+                                regularPrimaryColoredBoldTextWidget(
+                                    '₱${details?['total_amount']}')
+                              ],
+                            ),
+                            const SizedBox(height: quaternarySizedBox),
+                            CustomWideButton(
+                              text: 'Confirm appointment',
+                              onPressed: () async {
+                                ref.read(totalAmountProvider.notifier).state =
+                                    details!['total_amount'].toString();
+
+                                final rescheduleAppointment =
+                                    await createRescheduledAppointment(
+                                  appointmentStatus: 'Pending',
+                                  date: formatDateToShort('$rescheduleDate'),
+                                  time: '$rescheduleTime',
+                                );
+
+                                if (rescheduleAppointment != null) {
+                                  final appointmentId =
+                                      ref.watch(appointmentIdProvider);
+
+                                  // Insert notification entry into the notification table
+                                  await insertNotification(
+                                      appointmentId: appointmentId,
+                                      appointmentNotifType: 'Rescheduled');
+
+                                  if (context.mounted) {
+                                    Navigator.push(
+                                      context,
+                                      crossFadeRoute(
+                                          const SuccessfulRescheduleAppointment()),
+                                    );
+                                  }
+                                }
+                              },
+                            ),
                           ],
                         ),
-                        const SizedBox(height: quaternarySizedBox),
-
-                        // _buildDetailRow('Service provider',
-                        //     details?['establishment_name'] ?? 'No name'),
-                        // _buildDetailRow(
-                        //     'Pet name', details?['pet_name'] ?? 'No pet name'),
-                        // _buildDetailRow('Appointment type',
-                        //     details?['appointment_type'] ?? 'Unknown'),
-                        // _buildDetailRow(
-                        //     'Address',
-                        //     details?['appointment_address'] ??
-                        //         'Address not available'),
-                        // _buildDetailRow(
-                        //     'Date', secondaryFormatDate(rescheduleDate)),
-                        // _buildDetailRow('Time', formatTime(rescheduleTime)),
-                        // const SizedBox(height: 20),
-                        // if (services.isNotEmpty) ...[
-                        //   const Text('Services',
-                        //       style: TextStyle(
-                        //           fontWeight: FontWeight.bold, fontSize: 16)),
-                        //   ...services.map((service) => _buildDetailRow(
-                        //       service.serviceName,
-                        //       '₱${service.servicePrice.toString()}')),
-                        //   const SizedBox(height: 10),
-                        // ],
-                        // if (packages.isNotEmpty) ...[
-                        //   const Text('Packages',
-                        //       style: TextStyle(
-                        //           fontWeight: FontWeight.bold, fontSize: 16)),
-                        //   ...packages.map((package) => _buildDetailRow(
-                        //       package.packageName,
-                        //       '₱${package.packagePrice.toString()}')),
-                        //   const SizedBox(height: 10),
-                        // ],
-                        // _buildDetailRow('Total',
-                        //     '₱${details?['total_amount']?.toString() ?? '0.0'}'),
-                        CustomWideButton(
-                          text: 'Confirm appointment',
-                          onPressed: () {},
-                        ),
-                      ],
+                      ),
                     ),
-                  ),
-                ),
+                  );
+                },
+                loading: () => const Center(child: CircularProgressIndicator()),
+                error: (error, stackTrace) =>
+                    Center(child: Text('Error: $error')),
               );
             },
-            loading: () => const Center(child: CircularProgressIndicator()),
+            loading: () => Container(
+              color: Colors.white,
+            ),
             error: (error, stackTrace) => Center(child: Text('Error: $error')),
-          );
-        },
-        loading: () => const Center(child: CircularProgressIndicator()),
-        error: (error, stackTrace) => Center(child: Text('Error: $error')),
-      ),
-    );
-  }
-
-  getAppointmentTitle(BuildContext context, String title) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.start,
-      children: [
-        customTitleText(context, title),
-        const SizedBox(width: primarySizedBox),
-      ],
-    );
-  }
-
-  getAppointmentDetail(BuildContext context, String title) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.start,
-      children: [
-        customRegularWeightTitleText(context, title),
-        const SizedBox(width: primarySizedBox),
-      ],
-    );
-  }
-
-  Widget buildCartItem({required dynamic name, required String price}) {
-    return Row(
-      children: [
-        Expanded(
-          child: Text(
-            name,
-            overflow: TextOverflow.ellipsis,
-            style: const TextStyle(fontSize: 16),
           ),
         ),
-        getPrice(price),
+        if (isLoading)
+          Container(
+            color: Colors.black54, // Semi-transparent background
+            child: const Center(
+              child: CircularProgressIndicator(),
+            ),
+          ),
       ],
     );
   }
 
-  getPrice(String s) {
-    return Text(
-      '₱$s',
-      style: const TextStyle(fontWeight: FontWeight.bold),
-    );
-  }
+  createRescheduledAppointment(
+      {required String date,
+      required String time,
+      required String appointmentStatus}) async {
+    setState(() {
+      isLoading =
+          true; // Set loading to true before starting the appointment creation
+    });
+    final supabase = Supabase.instance.client;
 
-  getAppointmentTotalTitle(BuildContext context, String title) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.start,
-      children: [
-        customTitleTextWithPrimaryColor(context, title),
-        const SizedBox(width: primarySizedBox),
-      ],
-    );
-  }
+    // Get the current time in UTC
+    DateTime timestamp = DateTime.now().toUtc();
 
-  // Widget _buildDetailRow(String title, String value) {
-  //   return Padding(
-  //     padding: const EdgeInsets.symmetric(vertical: 4.0),
-  //     child: Row(
-  //       children: [
-  //         Text('$title: ', style: const TextStyle(fontWeight: FontWeight.bold)),
-  //         Text(value),
-  //       ],
-  //     ),
-  //   );
-  // }
+    final appointmentId = ref.watch(tappedSpAppointmentIdProvider);
+
+    final response = await supabase
+        .from('appointment')
+        .update({
+          'appointment_date': date,
+          'appointment_time': time,
+          'appointment_type': appointmentStatus,
+          'created_at': timestamp.toString(),
+        })
+        .eq('appointment_id', appointmentId)
+        .select('appointment_id')
+        .single();
+
+    final fetchedAppointmentId = response['appointment_id'];
+    print('Appointment created with ID: $appointmentId');
+    ref.read(appointmentIdProvider.notifier).state = appointmentId.toString();
+
+    setState(() {
+      isLoading =
+          false; // Set loading to false once the appointment creation is done
+    });
+
+    return fetchedAppointmentId;
+  }
 }

@@ -14,11 +14,29 @@ import 'package:pamfurred/screens/appointment/reschedule/reschedule_summary.dart
 import 'package:shimmer/shimmer.dart';
 import 'package:table_calendar/table_calendar.dart';
 
-class RescheduleAppointmentScreen extends ConsumerWidget {
+class RescheduleAppointmentScreen extends ConsumerStatefulWidget {
   const RescheduleAppointmentScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<RescheduleAppointmentScreen> createState() =>
+      RescheduleAppointmentScreenState();
+}
+
+class RescheduleAppointmentScreenState
+    extends ConsumerState<RescheduleAppointmentScreen> {
+  @override
+  void initState() {
+    super.initState();
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      // Set date and time providers to null
+      ref.read(selectedTimeslotProvider.notifier).state = null;
+      ref.read(selectedDateProvider.notifier).state = null;
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final selectedDate = ref.watch(selectedDateProvider);
     final selectedTimeslot = ref.watch(selectedTimeslotProvider);
 

@@ -287,8 +287,18 @@ class ChooseDateAndTimeScreen extends ConsumerWidget {
                     const SizedBox(height: quaternarySizedBox),
 
                     // Timeslot Selector Section
-                    const Text('Select time:',
-                        style: TextStyle(fontSize: titleFont)),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        const Text('Select time:',
+                            style: TextStyle(fontSize: titleFont)),
+                        IconButton(
+                          icon:
+                              const Icon(Icons.help_outline_outlined, size: 25),
+                          onPressed: () => showTimeslotsColorLegend(context),
+                        ),
+                      ],
+                    ),
                     const SizedBox(height: 8),
                     if (selectedDate == null)
                       const Text(
@@ -367,10 +377,17 @@ class ChooseDateAndTimeScreen extends ConsumerWidget {
                                             }
                                           },
                                           selectedColor: secondaryColor,
-                                          backgroundColor:
-                                              isBooked || isPastTime
-                                                  ? lighterGreyColor
-                                                  : Colors.transparent,
+                                          backgroundColor: isBooked
+                                              ? const Color.fromARGB(
+                                                  255,
+                                                  255,
+                                                  176,
+                                                  170) // Booked timeslots are red
+                                              : isPastTime
+                                                  ? lighterGreyColor // Past timeslots are lighter grey
+                                                  : Colors
+                                                      .transparent, // Available timeslots are transparent
+
                                           labelStyle: TextStyle(
                                             color: isBooked || isPastTime
                                                 ? disabledButtonTextColor

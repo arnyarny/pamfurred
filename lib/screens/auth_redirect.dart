@@ -1,14 +1,14 @@
 import 'dart:async';
+
 import 'package:flutter/material.dart';
-import 'package:pamfurred/backend_logic_files/realtime_service.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart'; // Import Riverpod package
+import 'package:pamfurred/backend_logic_files/realtime_service.dart';
 import 'package:pamfurred/components/connectivity_wrapper.dart';
 import 'package:pamfurred/components/screen_transitions.dart';
 import 'package:pamfurred/providers/appointments_provider.dart';
 import 'package:pamfurred/providers/available_timeslots_provider.dart';
 import 'package:pamfurred/providers/global_providers.dart';
 import 'package:pamfurred/providers/notifications_provider.dart';
-import 'package:pamfurred/providers/pet_profile_provider.dart';
 import 'package:pamfurred/providers/ratings_and_reviews_provider.dart';
 import 'package:pamfurred/providers/search_results_provider.dart';
 import 'package:pamfurred/providers/serviceprovider_provider.dart';
@@ -51,14 +51,13 @@ class AuthRedirectState extends ConsumerState<AuthRedirect>
     _checkSession();
     _listenToAppointments();
     _listenToSpAvailability();
-    _listenToPetProfiles();
     _listenToNotifications();
     _listenToFeedback();
-    _listenToServiceProviders(ref);
     _listenToServices;
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _listenToAVailableTimes(ref);
+      _listenToServiceProviders(ref);
     });
   }
 
@@ -116,16 +115,6 @@ class AuthRedirectState extends ConsumerState<AuthRedirect>
     _streamSubscriptions.add(subscription);
   }
 
-  void _listenToPetProfiles() {
-    final supabase = Supabase.instance.client;
-    final subscription = supabase
-        .from('pet_profile')
-        .stream(primaryKey: ['pet_profile_id']).listen((event) {
-      ref.invalidate(petProfileProvider);
-    });
-
-    _streamSubscriptions.add(subscription);
-  }
 
   void _listenToNotifications() {
     final supabase = Supabase.instance.client;
@@ -146,7 +135,6 @@ class AuthRedirectState extends ConsumerState<AuthRedirect>
         .from('appointment')
         .stream(primaryKey: ['appointment_id'])
         .eq('appointment_date', selectedDate)
-        .eq('sp_id', ref.watch(selectedSpIndexProvider))
         .listen((event) {
           ref.invalidate(fetchAppointmentsPerDateProvider(selectedDate!));
         });

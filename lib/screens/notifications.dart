@@ -97,68 +97,72 @@ class NotificationsScreenState extends ConsumerState<NotificationsScreen> {
         yesterdayNotifications.isNotEmpty ||
         olderNotifications.isNotEmpty;
 
-    return SafeArea(
-      child: ConnectivityWrapper(
-        child: Scaffold(
-          backgroundColor: Colors.white,
-          body: !hasNotifications
-              ? Center(
-                  child: emptyListWidget(Icons.notifications_off,
-                      'All caught up!', 'You have no new notifications.'))
-              : Center(
-                  child: Padding(
-                    padding:
-                        const EdgeInsets.symmetric(vertical: primarySizedBox),
-                    child: SizedBox(
-                      width: screenPadding(context),
-                      child: Column(
-                        children: [
-                          const SizedBox(height: secondarySizedBox),
-                          Expanded(
-                            child: PullToRefresh(
-                              providersToRefresh: [
-                                notificationDetailsProvider(userId)
-                              ],
-                              child: ListView(
-                                children: [
-                                  if (todayNotifications.isNotEmpty) ...[
-                                    buildSectionHeader("Today"),
-                                    ...todayNotifications.map((notification) {
-                                      int index =
-                                          notifications.indexOf(notification);
-                                      return reusableNotificationCard(
-                                          index, notification);
-                                    }),
-                                  ],
-                                  const SizedBox(height: primarySizedBox),
-                                  if (yesterdayNotifications.isNotEmpty) ...[
-                                    buildSectionHeader("Yesterday"),
-                                    ...yesterdayNotifications.map((notification) {
-                                      int index =
-                                          notifications.indexOf(notification);
-                                      return reusableNotificationCard(
-                                          index, notification);
-                                    }),
-                                  ],
-                                  const SizedBox(height: primarySizedBox),
-                                  if (olderNotifications.isNotEmpty) ...[
-                                    buildSectionHeader("Earlier"),
-                                    ...olderNotifications.map((notification) {
-                                      int index =
-                                          notifications.indexOf(notification);
-                                      return reusableNotificationCard(
-                                          index, notification);
-                                    }),
-                                  ],
+    return PopScope(
+      canPop: false,
+      child: SafeArea(
+        child: ConnectivityWrapper(
+          child: Scaffold(
+            backgroundColor: Colors.white,
+            body: !hasNotifications
+                ? Center(
+                    child: emptyListWidget(Icons.notifications_off,
+                        'All caught up!', 'You have no new notifications.'))
+                : Center(
+                    child: Padding(
+                      padding:
+                          const EdgeInsets.symmetric(vertical: primarySizedBox),
+                      child: SizedBox(
+                        width: screenPadding(context),
+                        child: Column(
+                          children: [
+                            const SizedBox(height: secondarySizedBox),
+                            Expanded(
+                              child: PullToRefresh(
+                                providersToRefresh: [
+                                  notificationDetailsProvider(userId)
                                 ],
+                                child: ListView(
+                                  children: [
+                                    if (todayNotifications.isNotEmpty) ...[
+                                      buildSectionHeader("Today"),
+                                      ...todayNotifications.map((notification) {
+                                        int index =
+                                            notifications.indexOf(notification);
+                                        return reusableNotificationCard(
+                                            index, notification);
+                                      }),
+                                    ],
+                                    const SizedBox(height: primarySizedBox),
+                                    if (yesterdayNotifications.isNotEmpty) ...[
+                                      buildSectionHeader("Yesterday"),
+                                      ...yesterdayNotifications
+                                          .map((notification) {
+                                        int index =
+                                            notifications.indexOf(notification);
+                                        return reusableNotificationCard(
+                                            index, notification);
+                                      }),
+                                    ],
+                                    const SizedBox(height: primarySizedBox),
+                                    if (olderNotifications.isNotEmpty) ...[
+                                      buildSectionHeader("Earlier"),
+                                      ...olderNotifications.map((notification) {
+                                        int index =
+                                            notifications.indexOf(notification);
+                                        return reusableNotificationCard(
+                                            index, notification);
+                                      }),
+                                    ],
+                                  ],
+                                ),
                               ),
                             ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
                     ),
                   ),
-                ),
+          ),
         ),
       ),
     );

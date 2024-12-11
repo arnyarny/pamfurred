@@ -51,6 +51,7 @@ class PetProfileScreenState extends ConsumerState<PetProfileScreen> {
             const double descWidth = 331;
             return Center(
               child: SingleChildScrollView(
+                physics: BouncingScrollPhysics(),
                 child: SizedBox(
                   width: screenPadding(context),
                   child: Column(

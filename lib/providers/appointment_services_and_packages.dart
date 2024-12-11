@@ -107,3 +107,5 @@ final appointmentServicesAndPackagesProvider =
     throw Exception('Failed to fetch combined details');
   }
 });
+
+final totalAmountProvider = StateProvider<String>((ref) => '');

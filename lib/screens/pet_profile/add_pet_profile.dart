@@ -232,8 +232,11 @@ class AddPetProfileScreenState extends ConsumerState<AddPetProfileScreen> {
                         String petName = controllers['petName']!.text;
                         double petWeight =
                             double.parse(controllers['petWeight']!.text);
-                        String description = controllers['description']!.text;
-                        String dateOfBirth = DateFormat('yyyy-MM-dd')
+                        String description =
+                            controllers['description']!.text.isEmpty
+                                ? 'No description provided'
+                                : controllers['description']!.text;
+                        String? dateOfBirth = DateFormat('yyyy-MM-dd')
                             .format(selectedDateOfBirth!);
                         String sex = selectedSex.name;
                         String petType = selectedPetType.name;
@@ -330,7 +333,8 @@ class AddPetProfileScreenState extends ConsumerState<AddPetProfileScreen> {
             ),
             // Validation
             validator: (value) {
-              if (controllerKey == 'description') {
+              if (controllerKey == 'description' ||
+                  controllerKey == 'dateOfBirth') {
                 return null; // No validation for optional field
               }
               if (value == null || value.isEmpty) {

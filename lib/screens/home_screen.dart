@@ -486,6 +486,7 @@ class HomeScreenState extends ConsumerState<HomeScreen> {
               onPressed: () {
                 ref.read(selectedCategoryIndexProvider.notifier).state =
                     selectedIndex;
+
                 Navigator.push(
                     context, crossFadeRoute(const SearchResultsScreen()));
               }),

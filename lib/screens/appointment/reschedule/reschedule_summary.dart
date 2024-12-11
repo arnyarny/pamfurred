@@ -83,16 +83,19 @@ class RescheduleSummaryState extends ConsumerState<RescheduleSummary> {
                         const SizedBox(height: primarySizedBox),
                         getAppointmentDetail(
                             context, formatTime(rescheduleTime)),
-                        const SizedBox(height: tertiarySizedBox),
-                        getAppointmentTitle(context, 'Services'),
-                        const SizedBox(height: primarySizedBox),
+                        const SizedBox(height: secondarySizedBox),
+
                         if (services.isNotEmpty) ...[
+                          getAppointmentTitle(context, 'Services'),
+                          const SizedBox(height: primarySizedBox),
                           ...services.map((service) => buildCartItem(
                               name: '${service.serviceName}',
                               price: '${service.servicePrice.toString()}')),
                         ],
                         const SizedBox(height: primarySizedBox),
                         if (packages.isNotEmpty) ...[
+                          getAppointmentTitle(context, 'Packages'),
+                          const SizedBox(height: primarySizedBox),
                           ...packages.map((package) => buildCartItem(
                               name: '${package.packageName}',
                               price: '${package.packagePrice.toString()}')),

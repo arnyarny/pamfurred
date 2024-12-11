@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:pamfurred/backend_logic_files/realtime_service.dart';
 import 'package:pamfurred/providers/global_providers.dart';
 import 'package:pamfurred/screens/home_screen.dart';
 import 'package:pamfurred/screens/appointment_details/appointments.dart';
@@ -16,19 +17,38 @@ class MainScreen extends ConsumerStatefulWidget {
   MainScreenState createState() => MainScreenState();
 }
 
-class MainScreenState extends ConsumerState<MainScreen> {
+class MainScreenState extends ConsumerState<MainScreen>
+    with WidgetsBindingObserver {
   late PageController _pageController;
+  late RealtimeService realtimeService;
 
   @override
   void initState() {
     super.initState();
+    // If there is an active session, start listening to appointments
+    final realtimeService = RealtimeService();
+    realtimeService.listenToAppointments(); // Start listening to notifications
+    print("LISTEN TO APPOINTMENTS LET'S GO!");
+
     _pageController = PageController(initialPage: widget.initialPage);
+    WidgetsBinding.instance.addObserver(this); // Add lifecycle observer
   }
 
   @override
   void dispose() {
     _pageController.dispose();
+    WidgetsBinding.instance
+        .removeObserver(this); // Remove observer when disposing
     super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      // Restart listener on resume
+      print("App resumed, restarting real-time listener...");
+      realtimeService.listenToAppointments();
+    }
   }
 
   @override

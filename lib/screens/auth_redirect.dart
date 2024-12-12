@@ -15,6 +15,7 @@ import 'package:pamfurred/providers/search_results_provider.dart';
 import 'package:pamfurred/providers/serviceprovider_provider.dart';
 import 'package:pamfurred/providers/sp_profile_provider_packages.dart';
 import 'package:pamfurred/providers/sp_profile_provider_services.dart';
+import 'package:pamfurred/screens/appointment/serviceprovider_profile.dart';
 import 'package:pamfurred/screens/login.dart';
 import 'package:pamfurred/screens/main_screen.dart';
 import 'package:pamfurred/screens/search_results/methods/check_selected_category.dart';
@@ -60,6 +61,7 @@ class AuthRedirectState extends ConsumerState<AuthRedirect>
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _listenToAVailableTimes(ref);
+      _listenToAddress();
       _listenToPackages();
       _listenToServices();
       _listenToServiceProviderServiceTable();
@@ -161,6 +163,31 @@ class AuthRedirectState extends ConsumerState<AuthRedirect>
       final refreshVetServices =
           ref.refresh(serviceProviderFutureProvider('veterinary service'));
       print('Refresh provider: $refreshVetServices');
+
+      ref.invalidate(aboutTabProvider);
+    });
+
+    _streamSubscriptions.add(subscription);
+  }
+
+  void _listenToAddress() {
+    // Listen to realtime changes in db
+    final subscription = supabase.from('address').stream(
+        primaryKey: ['address_id']).listen((List<Map<String, dynamic>> data) {
+      ref.invalidate(serviceProviderFutureProvider('pet grooming'));
+      final refreshPetGrooming =
+          ref.refresh(serviceProviderFutureProvider('pet grooming'));
+      print('Refresh provider: $refreshPetGrooming');
+
+      ref.invalidate(serviceProviderFutureProvider('pet boarding'));
+      final refreshPetBoarding =
+          ref.refresh(serviceProviderFutureProvider('pet boarding'));
+      print('Refresh provider: $refreshPetBoarding');
+
+      ref.invalidate(serviceProviderFutureProvider('veterinary service'));
+      final refreshVetServices =
+          ref.refresh(serviceProviderFutureProvider('veterinary service'));
+      print('Refresh provider: $refreshVetServices');
     });
 
     _streamSubscriptions.add(subscription);
@@ -211,6 +238,8 @@ class AuthRedirectState extends ConsumerState<AuthRedirect>
           searchResultsServiceProviderPackages(
               checkSelectedServiceCategory(selectedIndex)));
       print('Refresh provider: $refreshSearchResultsPackages');
+
+      ref.invalidate(packagesTabProvider);
     });
 
     _streamSubscriptions.add(subscription);
@@ -260,6 +289,8 @@ class AuthRedirectState extends ConsumerState<AuthRedirect>
       final refreshServices = ref.refresh(searchResultsServiceProviderServices(
           checkSelectedServiceCategory(selectedIndex)));
       print('Refresh provider: $refreshServices');
+
+      ref.invalidate(servicesTabProvider);
     });
 
     _streamSubscriptions.add(subscription);
@@ -311,6 +342,8 @@ class AuthRedirectState extends ConsumerState<AuthRedirect>
       final refreshServices = ref.refresh(searchResultsServiceProviderServices(
           checkSelectedServiceCategory(selectedIndex)));
       print('Refresh provider: $refreshServices');
+
+      ref.invalidate(servicesTabProvider);
     });
 
     _streamSubscriptions.add(subscription);
@@ -363,6 +396,8 @@ class AuthRedirectState extends ConsumerState<AuthRedirect>
           checkSelectedServiceCategory(selectedIndex)));
       print('Refresh provider: $refreshPackages');
     });
+
+    ref.invalidate(packagesTabProvider);
 
     _streamSubscriptions.add(subscription);
   }

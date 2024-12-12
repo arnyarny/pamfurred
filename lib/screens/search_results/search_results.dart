@@ -1,6 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:pamfurred/backend_logic_files/store_location.dart';
 import 'package:pamfurred/components/globals.dart';
 import 'package:pamfurred/components/screen_transitions.dart';
 import 'package:pamfurred/providers/global_providers.dart';
@@ -310,32 +311,15 @@ class SearchResultsScreenState extends ConsumerState<SearchResultsScreen> {
                           setState(() {
                             selectedFilter = value!;
                             ref.read(sortResultsProvider.notifier).state =
-                                'Nearby pinned location';
+                                'Nearest';
                             ref.read(isInputLocationProvider.notifier).state =
                                 true;
-                          });
-                          Navigator.push(
-                            context,
-                            slideUpRoute(
-                                const PinLocationNew(searchResult: true)),
-                          ).then((result) {
-                            if (result != null) {
-                              if (result is Map &&
-                                  result.containsKey('latitude') &&
-                                  result.containsKey('longitude')) {
-                                // Set the selected full address in the provider
-                                ref
-                                    .read(inputFullAddressProvider.notifier)
-                                    .state = result['addressName'].toString();
-                                // Set the selected location in the providers
 
-                                print(
-                                    'Selected location: ${result['latitude']}, ${result['longitude']}');
-                                print(result['addressName'].toString());
-                              } else {
-                                print('Address: $result');
-                              }
-                            }
+                            ref.read(inputLatProvider.notifier).state =
+                                ref.watch(locationProvider).latitude;
+
+                            ref.read(inputLongProvider.notifier).state =
+                                ref.watch(locationProvider).longitude;
                           });
                         },
                       ),
@@ -364,46 +348,7 @@ class SearchResultsScreenState extends ConsumerState<SearchResultsScreen> {
                             ref.read(isInputPriceProvider.notifier).state =
                                 true;
                             ref.read(sortResultsProvider.notifier).state =
-                                'Inputted price range';
-
-                            // Navigate to the price range input screen
-                            Navigator.push(
-                                context,
-                                slideUpRoute(
-                                  PriceRangeInputScreen(
-                                    inputMinPriceController:
-                                        inputMinPriceController,
-                                    inputMaxPriceController:
-                                        inputMaxPriceController,
-                                  ),
-                                )).then(
-                              (result) {
-                                if (result != null) {
-                                  if (result is Map &&
-                                      result.containsKey('inputMinPrice') &&
-                                      result.containsKey('inputMaxPrice')) {
-                                    setState(() {
-                                      // Set input price provider to true to watch changes during price range inputting
-                                      ref
-                                          .read(isInputPriceProvider.notifier)
-                                          .state = true;
-                                      // Set the selected location in the providers
-                                      ref
-                                          .read(inputMinPriceProvider.notifier)
-                                          .state = result['inputMinPrice'];
-                                      ref
-                                          .read(inputMaxPriceProvider.notifier)
-                                          .state = result['inputMaxPrice'];
-                                    });
-                                    print(
-                                        'Inputted prices: ${result['inputMinPrice']} and ${result['inputMaxPrice']}');
-                                    print(result['inputMinPrice'].toString());
-                                  } else {
-                                    print('Prices: $result');
-                                  }
-                                }
-                              },
-                            );
+                                'Price';
                           });
                         },
                       ),
@@ -470,19 +415,54 @@ class SearchResultsScreenState extends ConsumerState<SearchResultsScreen> {
               Column(
                 children: [
                   Row(
-                    mainAxisAlignment: MainAxisAlignment.start,
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Text(
                         'Pinned location',
                         style: TextStyle(
                             fontSize: titleFont, fontWeight: boldWeight),
                       ),
+                      IconButton(
+                          onPressed: () {
+                            Navigator.push(
+                              context,
+                              slideUpRoute(
+                                  const PinLocationNew(searchResult: true)),
+                            ).then((result) {
+                              if (result != null) {
+                                if (result is Map &&
+                                    result.containsKey('latitude') &&
+                                    result.containsKey('longitude')) {
+                                  // Set the selected full address in the provider
+                                  ref
+                                      .read(inputFullAddressProvider.notifier)
+                                      .state = result['addressName'].toString();
+                                  // Set the selected location in the providers
+
+                                  ref.read(inputLatProvider.notifier).state =
+                                      result['latitude'];
+
+                                  ref.read(inputLongProvider.notifier).state =
+                                      result['longitude'];
+
+                                  print(
+                                      'Selected location: ${result['latitude']}, ${result['longitude']}');
+                                  print(result['addressName'].toString());
+                                } else {
+                                  print('Address: $result');
+                                }
+                              }
+                            });
+                          },
+                          icon: Icon(Icons.edit))
                     ],
                   ),
                   const SizedBox(
-                    height: secondarySizedBox,
+                    height: primarySizedBox,
                   ),
-                  Text(ref.watch(inputFullAddressProvider).toString()),
+                  ref.watch(inputFullAddressProvider) == ''
+                      ? Text('No address pinned.')
+                      : Text(ref.watch(inputFullAddressProvider).toString()),
                 ],
               )
             ],
@@ -490,17 +470,59 @@ class SearchResultsScreenState extends ConsumerState<SearchResultsScreen> {
               Column(
                 children: [
                   Row(
-                    mainAxisAlignment: MainAxisAlignment.start,
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Text(
                         'Price (₱)',
                         style: TextStyle(
                             fontSize: titleFont, fontWeight: boldWeight),
                       ),
+                      IconButton(
+                          onPressed: () {
+                            // Navigate to the price range input screen
+                            Navigator.push(
+                                context,
+                                slideUpRoute(
+                                  PriceRangeInputScreen(
+                                    inputMinPriceController:
+                                        inputMinPriceController,
+                                    inputMaxPriceController:
+                                        inputMaxPriceController,
+                                  ),
+                                )).then(
+                              (result) {
+                                if (result != null) {
+                                  if (result is Map &&
+                                      result.containsKey('inputMinPrice') &&
+                                      result.containsKey('inputMaxPrice')) {
+                                    setState(() {
+                                      // Set input price provider to true to watch changes during price range inputting
+                                      ref
+                                          .read(isInputPriceProvider.notifier)
+                                          .state = true;
+                                      // Set the selected location in the providers
+                                      ref
+                                          .read(inputMinPriceProvider.notifier)
+                                          .state = result['inputMinPrice'];
+                                      ref
+                                          .read(inputMaxPriceProvider.notifier)
+                                          .state = result['inputMaxPrice'];
+                                    });
+                                    print(
+                                        'Inputted prices: ${result['inputMinPrice']} and ${result['inputMaxPrice']}');
+                                    print(result['inputMinPrice'].toString());
+                                  } else {
+                                    print('Prices: $result');
+                                  }
+                                }
+                              },
+                            );
+                          },
+                          icon: Icon(Icons.edit))
                     ],
                   ),
                   const SizedBox(
-                    height: secondarySizedBox,
+                    height: primarySizedBox,
                   ),
                   Row(
                     children: [

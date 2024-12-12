@@ -266,7 +266,8 @@ class HomeScreenState extends ConsumerState<HomeScreen> {
                                   slideUpRoute(
                                       const AppointmentDetailsScreen()));
                             },
-                            child: SizedBox(
+                            child: Container(
+                              color: Colors.transparent,
                               width: double.infinity,
                               height: 95,
                               child: Padding(

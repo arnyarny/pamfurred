@@ -186,7 +186,7 @@ class NotificationsScreenState extends ConsumerState<NotificationsScreen> {
       child: Card(
         color:
             // isTapped[index] ? Colors.white :
-            lighterGreyColor,
+            Colors.white,
         child: Padding(
           padding: const EdgeInsets.all(16.0),
           child: Row(
@@ -338,15 +338,15 @@ class NotificationsScreenState extends ConsumerState<NotificationsScreen> {
   Color _getContainerColor(String appointmentNotifType) {
     switch (appointmentNotifType) {
       case 'Pending':
-        return darkGreyColor; // Example color for pending
+        return darkGreyColor;
       case 'Done':
-        return Colors.green; // Example color for done
+        return Colors.green;
       case 'Rescheduled':
-        return Colors.blue; // Example color for rescheduled
+        return Colors.blue;
       case 'Cancelled':
-        return primaryColor; // Example color for cancelled
+        return primaryColor;
       default:
-        return Colors.grey; // Fallback color
+        return Colors.grey;
     }
   }
 

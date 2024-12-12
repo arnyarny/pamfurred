@@ -45,6 +45,7 @@ void resetProviders(WidgetRef ref) {
   ref.read(selectedAppointmentPetTypeProvider.notifier).state = '';
   ref.read(selectedAppointmentPetTypeIndexProvider.notifier).state = '';
   ref.read(selectedPetProfileIdProvider.notifier).state = null;
+  ref.read(selectedAppointmentPetWeightProvider.notifier).state = null;
 }
 
 class ServiceproviderProfileScreen extends ConsumerStatefulWidget {
@@ -675,15 +676,15 @@ final servicesTabProvider = FutureProvider<List<Widget>>((ref) async {
     // size: null,
   );
 
-  final supabase = Supabase.instance.client;
+  // final supabase = Supabase.instance.client;
 
-  // Listen to realtime changes in db
-  supabase.from('service').stream(primaryKey: ['service_id']).listen(
-      (List<Map<String, dynamic>> data) {
-    ref.invalidate(allServicesProvider(filterCriteria));
-    final refreshServices = ref.refresh(allServicesProvider(filterCriteria));
-    print('Refresh provider: $refreshServices');
-  });
+  // // Listen to realtime changes in db
+  // supabase.from('service').stream(primaryKey: ['service_id']).listen(
+  //     (List<Map<String, dynamic>> data) {
+  //   ref.invalidate(allServicesProvider(filterCriteria));
+  //   final refreshServices = ref.refresh(allServicesProvider(filterCriteria));
+  //   print('Refresh provider: $refreshServices');
+  // });
 
   return [
     Consumer(
@@ -871,15 +872,15 @@ final packagesTabProvider = FutureProvider<List<Widget>>((ref) async {
     size: null,
   );
 
-  final supabase = Supabase.instance.client;
+  // final supabase = Supabase.instance.client;
 
-  // Listen to realtime changes in db
-  supabase.from('package').stream(primaryKey: ['package_id']).listen(
-      (List<Map<String, dynamic>> data) {
-    ref.invalidate(allPackagesProvider(filterCriteria));
-    final refreshPackages = ref.refresh(allPackagesProvider(filterCriteria));
-    print('Refresh provider: $refreshPackages');
-  });
+  // // Listen to realtime changes in db
+  // supabase.from('package').stream(primaryKey: ['package_id']).listen(
+  //     (List<Map<String, dynamic>> data) {
+  //   ref.invalidate(allPackagesProvider(filterCriteria));
+  //   final refreshPackages = ref.refresh(allPackagesProvider(filterCriteria));
+  //   print('Refresh provider: $refreshPackages');
+  // });
 
   return [
     Consumer(

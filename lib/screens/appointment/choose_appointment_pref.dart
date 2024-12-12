@@ -141,6 +141,10 @@ class ChooseAppointmentPreferencesScreenState
                         ref
                             .read(selectedAppointmentPetTypeProvider.notifier)
                             .state = firstPet['pet_type'];
+
+                        ref
+                            .read(selectedAppointmentPetWeightProvider.notifier)
+                            .state = firstPet['pet_weight'];
                       });
                     }
 
@@ -188,13 +192,13 @@ class ChooseAppointmentPreferencesScreenState
                                                   .notifier)
                                           .state = pet[index]['pet_type'];
                                       // Selected pet weight
-                                      final selectedPetWeight = ref
+                                      final selectedAppointmentPrefPetWeight = ref
                                           .read(
                                               selectedAppointmentPetWeightProvider
                                                   .notifier)
                                           .state = pet[index]['pet_weight'];
                                       print(
-                                          'Selected pet weight: $selectedPetWeight');
+                                          'Selected pet weight: $selectedAppointmentPrefPetWeight');
 
                                       ref
                                           .read(

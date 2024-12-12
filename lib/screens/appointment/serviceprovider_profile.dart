@@ -337,10 +337,12 @@ class ServiceproviderProfileScreenState
                 width: double.infinity,
                 height: 200,
                 child: CachedNetworkImage(
-                  imageUrl: sp['service_provider_image'] ?? defaultImage,
+                  imageUrl: sp['service_provider_image'].isEmpty
+                      ? defaultImage
+                      : sp['service_provider_image'],
                   width: double.infinity,
                   height: 200,
-                  fit: sp['service_provider_image'] == null
+                  fit: sp['service_provider_image'].isEmpty
                       ? BoxFit.fitWidth
                       : BoxFit.cover,
                   placeholder: (context, url) {
@@ -675,7 +677,6 @@ final servicesTabProvider = FutureProvider<List<Widget>>((ref) async {
     weight: ref.watch(selectedAppointmentPetWeightProvider),
   );
 
-
   return [
     Consumer(
       builder: (context, ref, child) {
@@ -721,10 +722,15 @@ final servicesTabProvider = FutureProvider<List<Widget>>((ref) async {
                                             borderRadius: BorderRadius.circular(
                                                 primaryBorderRadius),
                                             child: CachedNetworkImage(
-                                              imageUrl: service.serviceImage,
+                                              imageUrl: service
+                                                      .serviceImage.isEmpty
+                                                  ? 'https://tinyurl.com/55w8ht23'
+                                                  : service.serviceImage,
                                               width: 90,
                                               height: 85,
-                                              fit: BoxFit.cover,
+                                              fit: service.serviceImage.isEmpty
+                                                  ? BoxFit.fitHeight
+                                                  : BoxFit.cover,
                                               placeholder: (context, url) {
                                                 // Shimmer effect while loading
                                                 return Shimmer.fromColors(
@@ -862,7 +868,6 @@ final packagesTabProvider = FutureProvider<List<Widget>>((ref) async {
     weight: ref.watch(selectedAppointmentPetWeightProvider),
   );
 
-
   return [
     Consumer(
       builder: (context, ref, child) {
@@ -908,10 +913,15 @@ final packagesTabProvider = FutureProvider<List<Widget>>((ref) async {
                                           borderRadius: BorderRadius.circular(
                                               primaryBorderRadius),
                                           child: CachedNetworkImage(
-                                            imageUrl: package.packageImage,
+                                            imageUrl: package
+                                                    .packageImage.isEmpty
+                                                ? 'https://tinyurl.com/55w8ht23'
+                                                : package.packageImage,
                                             width: 90,
                                             height: 85,
-                                            fit: BoxFit.cover,
+                                            fit: package.packageImage.isEmpty
+                                                ? BoxFit.fitHeight
+                                                : BoxFit.cover,
                                             placeholder: (context, url) {
                                               // Shimmer effect while loading
                                               return Shimmer.fromColors(

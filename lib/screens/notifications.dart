@@ -11,6 +11,7 @@ import 'package:pamfurred/components/title_text.dart';
 import 'package:pamfurred/providers/notifications_provider.dart';
 import 'package:pamfurred/providers/user_id.dart';
 import 'package:pamfurred/components/connectivity_wrapper.dart';
+import 'package:shimmer/shimmer.dart';
 
 class NotificationsScreen extends ConsumerStatefulWidget {
   const NotificationsScreen({super.key});
@@ -200,22 +201,46 @@ class NotificationsScreenState extends ConsumerState<NotificationsScreen> {
                     child: Stack(
                       clipBehavior: Clip.none, // Allow overflowing children
                       children: [
-                        ClipRRect(
-                          borderRadius: BorderRadius.circular(100),
-                          child: CachedNetworkImage(
-                            imageUrl: notification['sp_image'],
-                            width: 50,
-                            height: 50,
-                            fit: BoxFit.cover,
-                            placeholder: (context, url) {
-                              print("Loading image...");
-                              return const Center(
-                                  child: CircularProgressIndicator());
-                            },
-                            errorWidget: (context, url, error) {
-                              print("Error loading image: $error");
-                              return const Icon(Icons.error, size: 48);
-                            },
+                        Container(
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(100),
+                            color: lightGreyColor,
+                          ),
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(100),
+                            child: CachedNetworkImage(
+                              imageUrl: notification['sp_image'].isEmpty
+                                  ? 'https://tinyurl.com/357z4usj'
+                                  : notification['sp_image'],
+                              width: 50,
+                              height: 50,
+                              fit: notification['sp_image'].isEmpty
+                                  ? BoxFit.contain
+                                  : BoxFit.cover,
+                              placeholder: (context, url) {
+                                print("Loading image...");
+                                return Center(
+                                  child: // Image placeholder
+                                      Shimmer.fromColors(
+                                    baseColor: Colors.grey[300]!,
+                                    highlightColor: Colors.grey[100]!,
+                                    child: Container(
+                                      width: 50,
+                                      height: 50,
+                                      decoration: BoxDecoration(
+                                        color: Colors.white,
+                                        borderRadius:
+                                            BorderRadius.circular(100),
+                                      ),
+                                    ),
+                                  ),
+                                );
+                              },
+                              errorWidget: (context, url, error) {
+                                print("Error loading image: $error");
+                                return const Icon(Icons.error, size: 48);
+                              },
+                            ),
                           ),
                         ),
                         Positioned(

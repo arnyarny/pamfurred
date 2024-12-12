@@ -673,18 +673,8 @@ final servicesTabProvider = FutureProvider<List<Widget>>((ref) async {
     serviceType: ref.watch(selectedAppointmentPackageServiceTypeProvider),
     serviceCategory: ref.watch(selectedAppointmentCategoryProvider),
     weight: ref.watch(selectedAppointmentPetWeightProvider),
-    // size: null,
   );
 
-  // final supabase = Supabase.instance.client;
-
-  // // Listen to realtime changes in db
-  // supabase.from('service').stream(primaryKey: ['service_id']).listen(
-  //     (List<Map<String, dynamic>> data) {
-  //   ref.invalidate(allServicesProvider(filterCriteria));
-  //   final refreshServices = ref.refresh(allServicesProvider(filterCriteria));
-  //   print('Refresh provider: $refreshServices');
-  // });
 
   return [
     Consumer(
@@ -872,15 +862,6 @@ final packagesTabProvider = FutureProvider<List<Widget>>((ref) async {
     weight: ref.watch(selectedAppointmentPetWeightProvider),
   );
 
-  // final supabase = Supabase.instance.client;
-
-  // // Listen to realtime changes in db
-  // supabase.from('package').stream(primaryKey: ['package_id']).listen(
-  //     (List<Map<String, dynamic>> data) {
-  //   ref.invalidate(allPackagesProvider(filterCriteria));
-  //   final refreshPackages = ref.refresh(allPackagesProvider(filterCriteria));
-  //   print('Refresh provider: $refreshPackages');
-  // });
 
   return [
     Consumer(

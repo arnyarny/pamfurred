@@ -116,7 +116,7 @@ class AddPetProfileScreenState extends ConsumerState<AddPetProfileScreen> {
                             child: IconButton(
                                 onPressed: changeImage,
                                 icon: Icon(
-                                  Icons.edit,
+                                  Icons.camera_alt,
                                   color: Colors.white,
                                 )),
                           ),
@@ -234,7 +234,7 @@ class AddPetProfileScreenState extends ConsumerState<AddPetProfileScreen> {
                             double.parse(controllers['petWeight']!.text);
                         String description =
                             controllers['description']!.text.isEmpty
-                                ? 'No description provided'
+                                ? 'No description provided.'
                                 : controllers['description']!.text;
                         String? dateOfBirth = DateFormat('yyyy-MM-dd')
                             .format(selectedDateOfBirth!);

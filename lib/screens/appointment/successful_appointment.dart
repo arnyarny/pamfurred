@@ -11,6 +11,7 @@ import 'package:pamfurred/providers/cart_provider.dart';
 import 'package:pamfurred/providers/global_providers.dart';
 import 'package:pamfurred/providers/serviceprovider_provider.dart';
 import 'package:pamfurred/screens/main_screen.dart';
+
 import '../../components/globals.dart';
 
 class SuccessfulAppointment extends ConsumerStatefulWidget {
@@ -80,23 +81,23 @@ class SuccessfulAppointmentState extends ConsumerState<SuccessfulAppointment> {
                 Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    customTitleText(context, 'Appointment Submitted!'),
+                    customTitleText(context, 'Appointment Booked!'),
                     const SizedBox(
                       height: primarySizedBox,
                     ),
-                    const Row(
+                    Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         SizedBox(
                           width: 350,
                           child: Text(
-                            'Please wait for the service provider\'s approval of your appointment.',
+                            'You have made an appointment with ${sp!['service_provider_name']}.',
                             style: TextStyle(
                                 fontSize: regularText,
                                 fontWeight: regularWeight,
                                 color: Colors.black,
                                 overflow: TextOverflow.visible),
-                                textAlign: TextAlign.center,
+                            textAlign: TextAlign.center,
                           ),
                         )
                       ],
@@ -120,7 +121,7 @@ class SuccessfulAppointmentState extends ConsumerState<SuccessfulAppointment> {
                       getAppointmentTitle(context, 'Service provider'),
                       const SizedBox(height: primarySizedBox),
                       getAppointmentDetail(
-                          context, sp!['service_provider_name']),
+                          context, sp['service_provider_name']),
 
                       const SizedBox(height: secondarySizedBox),
 

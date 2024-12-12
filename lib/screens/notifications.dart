@@ -4,6 +4,7 @@ import 'package:pamfurred/components/empty_list_widget.dart';
 import 'package:pamfurred/components/globals.dart';
 import 'package:pamfurred/components/header.dart';
 import 'package:pamfurred/components/pull_to_refresh.dart';
+import 'package:pamfurred/components/time_and_date_formatter.dart';
 import 'package:pamfurred/components/title_text.dart';
 import 'package:pamfurred/providers/notifications_provider.dart';
 import 'package:pamfurred/providers/user_id.dart';
@@ -204,8 +205,10 @@ class NotificationsScreenState extends ConsumerState<NotificationsScreen> {
               RichText(
                 text: TextSpan(
                   children: [
-                    const TextSpan(
-                      text: 'Your appointment with',
+                    TextSpan(
+                      text: notification['appointment_notif_type'] == "Pending"
+                          ? 'You have a pending appointment with'
+                          : 'Your appointment with',
                       style:
                           TextStyle(fontSize: regularText, color: Colors.black),
                     ),
@@ -214,18 +217,37 @@ class NotificationsScreenState extends ConsumerState<NotificationsScreen> {
                       style: const TextStyle(
                           fontSize: regularText, color: primaryColor),
                     ),
-                    const TextSpan(
-                      text: ' has been ',
+                    TextSpan(
+                      text: notification['appointment_notif_type'] != "Pending"
+                          ? ' has been '
+                          : null,
                       style:
                           TextStyle(fontSize: regularText, color: Colors.black),
                     ),
                     TextSpan(
                       text: notification['appointment_notif_type'] == 'Done'
                           ? 'completed'
-                          : toLowercase(notification['appointment_notif_type']),
+                          : notification['appointment_notif_type'] != "Pending"
+                              ? toLowercase(
+                                  notification['appointment_notif_type'])
+                              : null,
                       style: const TextStyle(
                           fontSize: regularText, color: primaryColor),
                     ),
+                    if (notification['appointment_notif_type'] ==
+                        "Rescheduled") ...[
+                      TextSpan(
+                        text: ' on',
+                        style: const TextStyle(
+                            fontSize: regularText, color: Colors.black),
+                      ),
+                      TextSpan(
+                        text:
+                            ' ${secondaryFormatDate(notification['appointment_date'])}, ${formatTime(notification['appointment_time'])}',
+                        style: const TextStyle(
+                            fontSize: regularText, color: primaryColor),
+                      )
+                    ],
                     const TextSpan(
                       text: ".",
                       style:

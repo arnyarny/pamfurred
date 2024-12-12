@@ -63,6 +63,11 @@ class AppointmentDetailsScreenState
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             const SizedBox(height: tertiarySizedBox),
+                            getAppointmentTitle(context, 'Appointment ID'),
+                            const SizedBox(height: primarySizedBox),
+                            getAppointmentDetail(
+                                context, details?['appointment_id']),
+                            const SizedBox(height: tertiarySizedBox),
                             getAppointmentTitle(context, 'Service provider'),
                             const SizedBox(height: primarySizedBox),
                             getAppointmentDetail(
@@ -102,7 +107,7 @@ class AppointmentDetailsScreenState
                                   name: '${package.packageName}',
                                   price: '${package.packagePrice.toString()}')),
                             ],
-                            const SizedBox(height: secondarySizedBox),
+                            const SizedBox(height: tertiarySizedBox),
                             Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [

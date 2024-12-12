@@ -27,6 +27,7 @@ import 'package:pamfurred/providers/sp_profile_provider_packages.dart';
 import 'package:pamfurred/providers/sp_profile_provider_services.dart';
 import 'package:pamfurred/providers/user_id.dart';
 import 'package:pamfurred/screens/appointment/serviceprovider_profile.dart';
+import 'package:pamfurred/screens/appointment_details/appointment_details.dart';
 import 'package:pamfurred/screens/location_permission.dart';
 import 'package:pamfurred/screens/search_results/search_results.dart';
 import 'package:pamfurred/screens/service_providers.dart';
@@ -104,29 +105,6 @@ class HomeScreenState extends ConsumerState<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    // final supabase = Supabase.instance.client;
-
-    // // Listen to realtime changes in db
-    // supabase
-    //     .from('service_provider')
-    //     .stream(primaryKey: ['service_provider_id']).listen(
-    //         (List<Map<String, dynamic>> data) {
-    //   ref.invalidate(serviceProviderFutureProvider('pet grooming'));
-    //   final refreshPetGrooming =
-    //       ref.refresh(serviceProviderFutureProvider('pet grooming'));
-    //   print('Refresh provider: $refreshPetGrooming');
-
-    //   ref.invalidate(serviceProviderFutureProvider('pet boarding'));
-    //   final refreshPetBoarding =
-    //       ref.refresh(serviceProviderFutureProvider('pet boarding'));
-    //   print('Refresh provider: $refreshPetBoarding');
-
-    //   ref.invalidate(serviceProviderFutureProvider('veterinary service'));
-    //   final refreshVetServices =
-    //       ref.refresh(serviceProviderFutureProvider('veterinary service'));
-    //   print('Refresh provider: $refreshVetServices');
-    // });
-
     final isVisible = ref.watch(visibilityProvider);
     const appBarHeight = 60.0;
 
@@ -277,47 +255,59 @@ class HomeScreenState extends ConsumerState<HomeScreen> {
                     items: upcomingAppointments.map((appointment) {
                       return Builder(
                         builder: (BuildContext context) {
-                          return SizedBox(
-                            width: double.infinity,
-                            height: 95,
-                            child: Padding(
-                              padding: const EdgeInsets.fromLTRB(
-                                  tertiarySizedBox,
-                                  tertiarySizedBox,
-                                  tertiarySizedBox,
-                                  0),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    capitalizeFirstLetter(
-                                        appointment['establishment_name']),
-                                    style: const TextStyle(
-                                        color: Colors.black,
-                                        fontSize: regularText,
-                                        fontWeight: boldWeight),
-                                  ),
-                                  const SizedBox(height: secondarySizedBox),
-                                  Text(
-                                      secondaryFormatDate(
-                                          appointment['appointment_date'] ??
-                                              'N/A'),
+                          return GestureDetector(
+                            onTap: () {
+                              ref
+                                  .read(tappedSpAppointmentIdProvider.notifier)
+                                  .state = appointment['appointment_id'];
+
+                              Navigator.push(
+                                  context,
+                                  slideUpRoute(
+                                      const AppointmentDetailsScreen()));
+                            },
+                            child: SizedBox(
+                              width: double.infinity,
+                              height: 95,
+                              child: Padding(
+                                padding: const EdgeInsets.fromLTRB(
+                                    tertiarySizedBox,
+                                    tertiarySizedBox,
+                                    tertiarySizedBox,
+                                    0),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      capitalizeFirstLetter(
+                                          appointment['establishment_name']),
                                       style: const TextStyle(
-                                        color: Colors.black,
-                                        fontSize: regularText,
-                                      )),
-                                  const SizedBox(height: secondarySizedBox),
-                                  Text(
-                                    appointment['appointment_time'] == null
-                                        ? 'N/A'
-                                        : formatTime(
-                                            appointment['appointment_time']),
-                                    style: const TextStyle(
-                                      color: darkGreyColor,
-                                      fontSize: smallText,
+                                          color: Colors.black,
+                                          fontSize: regularText,
+                                          fontWeight: boldWeight),
                                     ),
-                                  ),
-                                ],
+                                    const SizedBox(height: secondarySizedBox),
+                                    Text(
+                                        secondaryFormatDate(
+                                            appointment['appointment_date'] ??
+                                                'N/A'),
+                                        style: const TextStyle(
+                                          color: Colors.black,
+                                          fontSize: regularText,
+                                        )),
+                                    const SizedBox(height: secondarySizedBox),
+                                    Text(
+                                      appointment['appointment_time'] == null
+                                          ? 'N/A'
+                                          : formatTime(
+                                              appointment['appointment_time']),
+                                      style: const TextStyle(
+                                        color: darkGreyColor,
+                                        fontSize: smallText,
+                                      ),
+                                    ),
+                                  ],
+                                ),
                               ),
                             ),
                           );

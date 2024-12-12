@@ -1,5 +1,5 @@
 class PackageFilterCriteria {
-  final String spId;
+  final String? spId;
   final String? packageId;
   final String? serviceProviderServicePackageId;
   final String? petType;
@@ -9,7 +9,7 @@ class PackageFilterCriteria {
   final double? weight;
 
   PackageFilterCriteria(
-      {required this.spId,
+      {this.spId,
       this.packageId,
       this.serviceProviderServicePackageId,
       this.petType,

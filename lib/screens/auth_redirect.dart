@@ -5,11 +5,15 @@ import 'package:flutter_riverpod/flutter_riverpod.dart'; // Import Riverpod pack
 import 'package:pamfurred/backend_logic_files/realtime_service.dart';
 import 'package:pamfurred/components/connectivity_wrapper.dart';
 import 'package:pamfurred/components/screen_transitions.dart';
+import 'package:pamfurred/models/package_filter_criteria.dart';
+import 'package:pamfurred/models/service_filter_criteria.dart';
 import 'package:pamfurred/providers/appointments_provider.dart';
 import 'package:pamfurred/providers/available_timeslots_provider.dart';
 import 'package:pamfurred/providers/global_providers.dart';
 import 'package:pamfurred/providers/notifications_provider.dart';
 import 'package:pamfurred/providers/serviceprovider_provider.dart';
+import 'package:pamfurred/providers/sp_profile_provider_packages.dart';
+import 'package:pamfurred/providers/sp_profile_provider_services.dart';
 import 'package:pamfurred/screens/login.dart';
 import 'package:pamfurred/screens/main_screen.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -50,9 +54,14 @@ class AuthRedirectState extends ConsumerState<AuthRedirect>
     _listenToAppointments();
     _listenToSpAvailability();
     _listenToNotifications();
+    _listenToServiceProviders();
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _listenToAVailableTimes(ref);
+      _listenToPackages();
+      _listenToServices();
+      _listenToServiceProviderServiceTable();
+      _listenToServiceProviderPackageTable();
     });
   }
 
@@ -128,6 +137,173 @@ class AuthRedirectState extends ConsumerState<AuthRedirect>
         .listen((event) {
           ref.invalidate(fetchAppointmentsPerDateProvider(selectedDate!));
         });
+
+    _streamSubscriptions.add(subscription);
+  }
+
+  void _listenToServiceProviders() {
+    // Listen to realtime changes in db
+    final subscription = supabase.from('service_provider').stream(
+        primaryKey: ['sp_id']).listen((List<Map<String, dynamic>> data) {
+      ref.invalidate(serviceProviderFutureProvider('pet grooming'));
+      final refreshPetGrooming =
+          ref.refresh(serviceProviderFutureProvider('pet grooming'));
+      print('Refresh provider: $refreshPetGrooming');
+
+      ref.invalidate(serviceProviderFutureProvider('pet boarding'));
+      final refreshPetBoarding =
+          ref.refresh(serviceProviderFutureProvider('pet boarding'));
+      print('Refresh provider: $refreshPetBoarding');
+
+      ref.invalidate(serviceProviderFutureProvider('veterinary service'));
+      final refreshVetServices =
+          ref.refresh(serviceProviderFutureProvider('veterinary service'));
+      print('Refresh provider: $refreshVetServices');
+    });
+
+    _streamSubscriptions.add(subscription);
+  }
+
+  void _listenToPackages() {
+    // Define filter criteria
+    final filterCriteria = PackageFilterCriteria(
+      spId: null,
+      petType: null,
+      packageType: null,
+      packageCategory: null,
+      size: null,
+    );
+
+    // Listen to realtime changes in db
+    final subscription = supabase.from('package').stream(
+        primaryKey: ['package_id']).listen((List<Map<String, dynamic>> data) {
+      ref.invalidate(allPackagesProvider(filterCriteria));
+      final refreshPackages = ref.refresh(allPackagesProvider(filterCriteria));
+      print('Refresh provider: $refreshPackages');
+      ref.invalidate(serviceProviderFutureProvider('pet grooming'));
+      final refreshPetGrooming =
+          ref.refresh(serviceProviderFutureProvider('pet grooming'));
+      print('Refresh provider: $refreshPetGrooming');
+
+      ref.invalidate(serviceProviderFutureProvider('pet boarding'));
+      final refreshPetBoarding =
+          ref.refresh(serviceProviderFutureProvider('pet boarding'));
+      print('Refresh provider: $refreshPetBoarding');
+
+      ref.invalidate(serviceProviderFutureProvider('veterinary service'));
+      final refreshVetServices =
+          ref.refresh(serviceProviderFutureProvider('veterinary service'));
+      print('Refresh provider: $refreshVetServices');
+    });
+
+    _streamSubscriptions.add(subscription);
+  }
+
+  void _listenToServices() {
+    // Define filter criteria
+    final filterCriteria = ServiceFilterCriteria(
+      spId: null,
+      petType: null,
+      serviceType: null,
+      serviceCategory: null,
+      size: null,
+    );
+
+    // Listen to realtime changes in db
+    final subscription = supabase.from('service').stream(
+        primaryKey: ['service_id']).listen((List<Map<String, dynamic>> data) {
+      ref.invalidate(allServicesProvider(filterCriteria));
+      final refreshservices = ref.refresh(allServicesProvider(filterCriteria));
+      print('Refresh provider: $refreshservices');
+      ref.invalidate(serviceProviderFutureProvider('pet grooming'));
+      final refreshPetGrooming =
+          ref.refresh(serviceProviderFutureProvider('pet grooming'));
+      print('Refresh provider: $refreshPetGrooming');
+
+      ref.invalidate(serviceProviderFutureProvider('pet boarding'));
+      final refreshPetBoarding =
+          ref.refresh(serviceProviderFutureProvider('pet boarding'));
+      print('Refresh provider: $refreshPetBoarding');
+
+      ref.invalidate(serviceProviderFutureProvider('veterinary service'));
+      final refreshVetServices =
+          ref.refresh(serviceProviderFutureProvider('veterinary service'));
+      print('Refresh provider: $refreshVetServices');
+    });
+
+    _streamSubscriptions.add(subscription);
+  }
+
+  void _listenToServiceProviderServiceTable() {
+    // Define filter criteria
+    final filterCriteria = ServiceFilterCriteria(
+      spId: null,
+      petType: null,
+      serviceType: null,
+      serviceCategory: null,
+      size: null,
+    );
+
+    // Listen to realtime changes in db
+    final subscription = supabase
+        .from('serviceprovider_service')
+        .stream(primaryKey: ['serviceprovider_service_id']).listen(
+            (List<Map<String, dynamic>> data) {
+      ref.invalidate(allServicesProvider(filterCriteria));
+      final refreshservices = ref.refresh(allServicesProvider(filterCriteria));
+      print('Refresh provider: $refreshservices');
+      ref.invalidate(serviceProviderFutureProvider('pet grooming'));
+      final refreshPetGrooming =
+          ref.refresh(serviceProviderFutureProvider('pet grooming'));
+      print('Refresh provider: $refreshPetGrooming');
+
+      ref.invalidate(serviceProviderFutureProvider('pet boarding'));
+      final refreshPetBoarding =
+          ref.refresh(serviceProviderFutureProvider('pet boarding'));
+      print('Refresh provider: $refreshPetBoarding');
+
+      ref.invalidate(serviceProviderFutureProvider('veterinary service'));
+      final refreshVetServices =
+          ref.refresh(serviceProviderFutureProvider('veterinary service'));
+      print('Refresh provider: $refreshVetServices');
+    });
+
+    _streamSubscriptions.add(subscription);
+  }
+
+  void _listenToServiceProviderPackageTable() {
+    // Define filter criteria
+    final filterCriteria = PackageFilterCriteria(
+      spId: null,
+      petType: null,
+      packageType: null,
+      packageCategory: null,
+      size: null,
+    );
+
+    // Listen to realtime changes in db
+    final subscription = supabase
+        .from('serviceprovider_package')
+        .stream(primaryKey: ['serviceprovider_package_id']).listen(
+            (List<Map<String, dynamic>> data) {
+      ref.invalidate(allPackagesProvider(filterCriteria));
+      final refreshservices = ref.refresh(allPackagesProvider(filterCriteria));
+      print('Refresh provider: $refreshservices');
+      ref.invalidate(serviceProviderFutureProvider('pet grooming'));
+      final refreshPetGrooming =
+          ref.refresh(serviceProviderFutureProvider('pet grooming'));
+      print('Refresh provider: $refreshPetGrooming');
+
+      ref.invalidate(serviceProviderFutureProvider('pet boarding'));
+      final refreshPetBoarding =
+          ref.refresh(serviceProviderFutureProvider('pet boarding'));
+      print('Refresh provider: $refreshPetBoarding');
+
+      ref.invalidate(serviceProviderFutureProvider('veterinary service'));
+      final refreshVetServices =
+          ref.refresh(serviceProviderFutureProvider('veterinary service'));
+      print('Refresh provider: $refreshVetServices');
+    });
 
     _streamSubscriptions.add(subscription);
   }

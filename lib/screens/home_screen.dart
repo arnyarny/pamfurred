@@ -31,7 +31,6 @@ import 'package:pamfurred/screens/location_permission.dart';
 import 'package:pamfurred/screens/search_results/search_results.dart';
 import 'package:pamfurred/screens/service_providers.dart';
 import 'package:shimmer/shimmer.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
@@ -105,28 +104,28 @@ class HomeScreenState extends ConsumerState<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final supabase = Supabase.instance.client;
+    // final supabase = Supabase.instance.client;
 
-    // Listen to realtime changes in db
-    supabase
-        .from('service_provider')
-        .stream(primaryKey: ['service_provider_id']).listen(
-            (List<Map<String, dynamic>> data) {
-      ref.invalidate(serviceProviderFutureProvider('pet grooming'));
-      final refreshPetGrooming =
-          ref.refresh(serviceProviderFutureProvider('pet grooming'));
-      print('Refresh provider: $refreshPetGrooming');
+    // // Listen to realtime changes in db
+    // supabase
+    //     .from('service_provider')
+    //     .stream(primaryKey: ['service_provider_id']).listen(
+    //         (List<Map<String, dynamic>> data) {
+    //   ref.invalidate(serviceProviderFutureProvider('pet grooming'));
+    //   final refreshPetGrooming =
+    //       ref.refresh(serviceProviderFutureProvider('pet grooming'));
+    //   print('Refresh provider: $refreshPetGrooming');
 
-      ref.invalidate(serviceProviderFutureProvider('pet boarding'));
-      final refreshPetBoarding =
-          ref.refresh(serviceProviderFutureProvider('pet boarding'));
-      print('Refresh provider: $refreshPetBoarding');
+    //   ref.invalidate(serviceProviderFutureProvider('pet boarding'));
+    //   final refreshPetBoarding =
+    //       ref.refresh(serviceProviderFutureProvider('pet boarding'));
+    //   print('Refresh provider: $refreshPetBoarding');
 
-      ref.invalidate(serviceProviderFutureProvider('veterinary service'));
-      final refreshVetServices =
-          ref.refresh(serviceProviderFutureProvider('veterinary service'));
-      print('Refresh provider: $refreshVetServices');
-    });
+    //   ref.invalidate(serviceProviderFutureProvider('veterinary service'));
+    //   final refreshVetServices =
+    //       ref.refresh(serviceProviderFutureProvider('veterinary service'));
+    //   print('Refresh provider: $refreshVetServices');
+    // });
 
     final isVisible = ref.watch(visibilityProvider);
     const appBarHeight = 60.0;

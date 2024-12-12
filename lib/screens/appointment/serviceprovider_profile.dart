@@ -869,7 +869,7 @@ final packagesTabProvider = FutureProvider<List<Widget>>((ref) async {
     petType: ref.watch(selectedAppointmentPetTypeProvider),
     packageType: ref.watch(selectedAppointmentPackageServiceTypeProvider),
     packageCategory: ref.watch(selectedAppointmentCategoryProvider),
-    size: null,
+    weight: ref.watch(selectedAppointmentPetWeightProvider),
   );
 
   // final supabase = Supabase.instance.client;

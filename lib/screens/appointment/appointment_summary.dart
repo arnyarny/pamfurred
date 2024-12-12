@@ -214,15 +214,10 @@ class AppointmentSummaryScreenState
                         wrappedText(context, sp['full_address']),
                       ],
                       const SizedBox(height: secondarySizedBox),
-                      getAppointmentTitle(context, 'Date'),
+                      getAppointmentTitle(context, 'Date and time'),
                       const SizedBox(height: primarySizedBox),
                       getAppointmentDetail(context,
-                          secondaryFormatDate(appointmentDate.toString())),
-                      const SizedBox(height: secondarySizedBox),
-                      getAppointmentTitle(context, 'Time'),
-                      const SizedBox(height: primarySizedBox),
-                      getAppointmentDetail(
-                          context, formatTime(appointmentTime.toString())),
+                          '${secondaryFormatDate(appointmentDate.toString())}, ${formatTime(appointmentTime.toString())}'),
                       const SizedBox(height: secondarySizedBox),
                       if (services.isNotEmpty)
                         getAppointmentTitle(context, 'Services'),

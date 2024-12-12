@@ -356,7 +356,7 @@ class AppointmentsScreenState extends ConsumerState<AppointmentsScreen>
                                               const RescheduleAppointmentScreen()));
                                     });
                               },
-                              backgroundColor: Colors.green,
+                              backgroundColor: Colors.blue,
                               textColor: Colors.white),
                         ],
                       ),

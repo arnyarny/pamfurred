@@ -1,3 +1,5 @@
+import 'package:cached_network_image/cached_network_image.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pamfurred/components/empty_list_widget.dart';
@@ -187,87 +189,180 @@ class NotificationsScreenState extends ConsumerState<NotificationsScreen> {
             lighterGreyColor,
         child: Padding(
           padding: const EdgeInsets.all(16.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+          child: Row(
+            crossAxisAlignment:
+                CrossAxisAlignment.start, // Align start for consistency
             children: [
-              Row(
+              Column(
                 children: [
-                  customTitleText(context, "Appointment"),
-                  customTitleText(
-                    context,
-                    toLowercase(notification['appointment_notif_type'] == "Done"
-                        ? " completed"
-                        : " ${notification['appointment_notif_type']}"),
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 10),
+                    child: Stack(
+                      clipBehavior: Clip.none, // Allow overflowing children
+                      children: [
+                        ClipRRect(
+                          borderRadius: BorderRadius.circular(100),
+                          child: CachedNetworkImage(
+                            imageUrl: notification['sp_image'],
+                            width: 50,
+                            height: 50,
+                            fit: BoxFit.cover,
+                            placeholder: (context, url) {
+                              print("Loading image...");
+                              return const Center(
+                                  child: CircularProgressIndicator());
+                            },
+                            errorWidget: (context, url, error) {
+                              print("Error loading image: $error");
+                              return const Icon(Icons.error, size: 48);
+                            },
+                          ),
+                        ),
+                        Positioned(
+                          bottom: -10,
+                          right: 0,
+                          child: Container(
+                            width: 30,
+                            height: 30,
+                            decoration: BoxDecoration(
+                              color: _getContainerColor(
+                                  notification['appointment_notif_type']),
+                              borderRadius: BorderRadius.circular(100),
+                            ),
+                            child: Icon(
+                              _getIcon(notification['appointment_notif_type']),
+                              color: Colors.white,
+                              size: 17,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ],
               ),
-              const SizedBox(height: primarySizedBox),
-              RichText(
-                text: TextSpan(
+              const SizedBox(width: tertiarySizedBox),
+              Expanded(
+                // Ensure the text area can adjust to the available space
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    TextSpan(
-                      text: notification['appointment_notif_type'] == "Pending"
-                          ? 'You have a pending appointment with'
-                          : 'Your appointment with',
-                      style:
-                          TextStyle(fontSize: regularText, color: Colors.black),
+                    Row(
+                      children: [
+                        customTitleText(context, "Appointment"),
+                        customTitleText(
+                          context,
+                          toLowercase(notification['appointment_notif_type'] ==
+                                  "Done"
+                              ? " completed"
+                              : " ${notification['appointment_notif_type']}"),
+                        ),
+                      ],
                     ),
-                    TextSpan(
-                      text: ' ${notification['establishment_name']}',
-                      style: const TextStyle(
-                          fontSize: regularText, color: primaryColor),
-                    ),
-                    TextSpan(
-                      text: notification['appointment_notif_type'] != "Pending"
-                          ? ' has been '
-                          : null,
-                      style:
-                          TextStyle(fontSize: regularText, color: Colors.black),
-                    ),
-                    TextSpan(
-                      text: notification['appointment_notif_type'] == 'Done'
-                          ? 'completed'
-                          : notification['appointment_notif_type'] != "Pending"
-                              ? toLowercase(
-                                  notification['appointment_notif_type'])
-                              : null,
-                      style: const TextStyle(
-                          fontSize: regularText, color: primaryColor),
-                    ),
-                    if (notification['appointment_notif_type'] ==
-                        "Rescheduled") ...[
-                      TextSpan(
-                        text: ' on',
-                        style: const TextStyle(
-                            fontSize: regularText, color: Colors.black),
+                    const SizedBox(height: primarySizedBox),
+                    RichText(
+                      text: TextSpan(
+                        children: [
+                          TextSpan(
+                            text: notification['appointment_notif_type'] ==
+                                    "Pending"
+                                ? 'You have a pending appointment with'
+                                : 'Your appointment with',
+                            style: TextStyle(
+                                fontSize: regularText, color: Colors.black),
+                          ),
+                          TextSpan(
+                            text: ' ${notification['establishment_name']}',
+                            style: const TextStyle(
+                                fontSize: regularText, color: primaryColor),
+                          ),
+                          TextSpan(
+                            text: notification['appointment_notif_type'] !=
+                                    "Pending"
+                                ? ' has been '
+                                : null,
+                            style: TextStyle(
+                                fontSize: regularText, color: Colors.black),
+                          ),
+                          TextSpan(
+                            text: notification['appointment_notif_type'] ==
+                                    'Done'
+                                ? 'completed'
+                                : notification['appointment_notif_type'] !=
+                                        "Pending"
+                                    ? toLowercase(
+                                        notification['appointment_notif_type'])
+                                    : null,
+                            style: const TextStyle(
+                                fontSize: regularText, color: primaryColor),
+                          ),
+                          if (notification['appointment_notif_type'] ==
+                              "Rescheduled") ...[
+                            TextSpan(
+                              text: ' on',
+                              style: const TextStyle(
+                                  fontSize: regularText, color: Colors.black),
+                            ),
+                            TextSpan(
+                              text:
+                                  ' ${secondaryFormatDate(notification['appointment_date'])}, ${formatTime(notification['appointment_time'])}',
+                              style: const TextStyle(
+                                  fontSize: regularText, color: primaryColor),
+                            )
+                          ],
+                          const TextSpan(
+                            text: ".",
+                            style: TextStyle(
+                                fontSize: regularText, color: Colors.black),
+                          ),
+                        ],
                       ),
-                      TextSpan(
-                        text:
-                            ' ${secondaryFormatDate(notification['appointment_date'])}, ${formatTime(notification['appointment_time'])}',
-                        style: const TextStyle(
-                            fontSize: regularText, color: primaryColor),
-                      )
-                    ],
-                    const TextSpan(
-                      text: ".",
-                      style:
-                          TextStyle(fontSize: regularText, color: Colors.black),
+                    ),
+                    const SizedBox(height: primarySizedBox),
+                    Text(
+                      timeElapsed(DateTime.parse(notification['created_at'] ??
+                          DateTime.now().toString())),
+                      style: const TextStyle(
+                          fontSize: smallText, color: Colors.black),
                     ),
                   ],
                 ),
-              ),
-              const SizedBox(height: primarySizedBox),
-              Text(
-                timeElapsed(DateTime.parse(
-                    notification['created_at'] ?? DateTime.now().toString())),
-                style:
-                    const TextStyle(fontSize: smallText, color: Colors.black),
               ),
             ],
           ),
         ),
       ),
     );
+  }
+
+  Color _getContainerColor(String appointmentNotifType) {
+    switch (appointmentNotifType) {
+      case 'Pending':
+        return darkGreyColor; // Example color for pending
+      case 'Done':
+        return Colors.green; // Example color for done
+      case 'Rescheduled':
+        return Colors.blue; // Example color for rescheduled
+      case 'Cancelled':
+        return primaryColor; // Example color for cancelled
+      default:
+        return Colors.grey; // Fallback color
+    }
+  }
+
+  IconData _getIcon(String appointmentNotifType) {
+    switch (appointmentNotifType) {
+      case 'Pending':
+        return CupertinoIcons.clock;
+      case 'Done':
+        return CupertinoIcons.check_mark_circled;
+      case 'Rescheduled':
+        return CupertinoIcons.arrow_2_circlepath;
+      case 'Cancelled':
+        return CupertinoIcons.xmark_circle;
+      default:
+        return CupertinoIcons.question_circle; // Fallback icon
+    }
   }
 }
 

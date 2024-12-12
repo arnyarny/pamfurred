@@ -11,11 +11,13 @@ import 'package:pamfurred/providers/appointments_provider.dart';
 import 'package:pamfurred/providers/available_timeslots_provider.dart';
 import 'package:pamfurred/providers/global_providers.dart';
 import 'package:pamfurred/providers/notifications_provider.dart';
+import 'package:pamfurred/providers/search_results_provider.dart';
 import 'package:pamfurred/providers/serviceprovider_provider.dart';
 import 'package:pamfurred/providers/sp_profile_provider_packages.dart';
 import 'package:pamfurred/providers/sp_profile_provider_services.dart';
 import 'package:pamfurred/screens/login.dart';
 import 'package:pamfurred/screens/main_screen.dart';
+import 'package:pamfurred/screens/search_results/methods/check_selected_category.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class AuthRedirect extends ConsumerStatefulWidget {
@@ -194,6 +196,21 @@ class AuthRedirectState extends ConsumerState<AuthRedirect>
       final refreshVetServices =
           ref.refresh(serviceProviderFutureProvider('veterinary service'));
       print('Refresh provider: $refreshVetServices');
+
+      final selectedIndex = ref.watch(selectedCategoryIndexProvider);
+
+      ref.invalidate(combinedSearchResultsProvider(
+          checkSelectedServiceCategory(selectedIndex)));
+      final refreshCombined = ref.refresh(combinedSearchResultsProvider(
+          checkSelectedServiceCategory(selectedIndex)));
+      print('Refresh provider: $refreshCombined');
+
+      ref.invalidate(searchResultsServiceProviderPackages(
+          checkSelectedServiceCategory(selectedIndex)));
+      final refreshSearchResultsPackages = ref.refresh(
+          searchResultsServiceProviderPackages(
+              checkSelectedServiceCategory(selectedIndex)));
+      print('Refresh provider: $refreshSearchResultsPackages');
     });
 
     _streamSubscriptions.add(subscription);
@@ -229,6 +246,20 @@ class AuthRedirectState extends ConsumerState<AuthRedirect>
       final refreshVetServices =
           ref.refresh(serviceProviderFutureProvider('veterinary service'));
       print('Refresh provider: $refreshVetServices');
+
+      final selectedIndex = ref.watch(selectedCategoryIndexProvider);
+
+      ref.invalidate(combinedSearchResultsProvider(
+          checkSelectedServiceCategory(selectedIndex)));
+      final refreshCombined = ref.refresh(combinedSearchResultsProvider(
+          checkSelectedServiceCategory(selectedIndex)));
+      print('Refresh provider: $refreshCombined');
+
+      ref.invalidate(searchResultsServiceProviderServices(
+          checkSelectedServiceCategory(selectedIndex)));
+      final refreshServices = ref.refresh(searchResultsServiceProviderServices(
+          checkSelectedServiceCategory(selectedIndex)));
+      print('Refresh provider: $refreshServices');
     });
 
     _streamSubscriptions.add(subscription);
@@ -266,6 +297,20 @@ class AuthRedirectState extends ConsumerState<AuthRedirect>
       final refreshVetServices =
           ref.refresh(serviceProviderFutureProvider('veterinary service'));
       print('Refresh provider: $refreshVetServices');
+
+      final selectedIndex = ref.watch(selectedCategoryIndexProvider);
+
+      ref.invalidate(combinedSearchResultsProvider(
+          checkSelectedServiceCategory(selectedIndex)));
+      final refreshCombined = ref.refresh(combinedSearchResultsProvider(
+          checkSelectedServiceCategory(selectedIndex)));
+      print('Refresh provider: $refreshCombined');
+
+      ref.invalidate(searchResultsServiceProviderServices(
+          checkSelectedServiceCategory(selectedIndex)));
+      final refreshServices = ref.refresh(searchResultsServiceProviderServices(
+          checkSelectedServiceCategory(selectedIndex)));
+      print('Refresh provider: $refreshServices');
     });
 
     _streamSubscriptions.add(subscription);
@@ -303,6 +348,20 @@ class AuthRedirectState extends ConsumerState<AuthRedirect>
       final refreshVetServices =
           ref.refresh(serviceProviderFutureProvider('veterinary service'));
       print('Refresh provider: $refreshVetServices');
+
+      final selectedIndex = ref.watch(selectedCategoryIndexProvider);
+
+      ref.invalidate(combinedSearchResultsProvider(
+          checkSelectedServiceCategory(selectedIndex)));
+      final refreshCombined = ref.refresh(combinedSearchResultsProvider(
+          checkSelectedServiceCategory(selectedIndex)));
+      print('Refresh provider: $refreshCombined');
+
+      ref.invalidate(searchResultsServiceProviderPackages(
+          checkSelectedServiceCategory(selectedIndex)));
+      final refreshPackages = ref.refresh(searchResultsServiceProviderPackages(
+          checkSelectedServiceCategory(selectedIndex)));
+      print('Refresh provider: $refreshPackages');
     });
 
     _streamSubscriptions.add(subscription);

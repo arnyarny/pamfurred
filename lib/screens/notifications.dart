@@ -57,7 +57,7 @@ class NotificationsScreenState extends ConsumerState<NotificationsScreen> {
             data['notifications'] as List<Map<String, dynamic>>? ?? [];
         final filteredNotifications = fetchedNotifications
             .where((notification) =>
-                notification['appointment_notif_type'] != "Upcoming")
+                notification['appointment_notif_type'] != "Pending")
             .toList();
         // if (isTapped.length != filteredNotifications.length) {
         //   isTapped = List<bool>.filled(filteredNotifications.length, false);
@@ -290,8 +290,8 @@ class NotificationsScreenState extends ConsumerState<NotificationsScreen> {
                         children: [
                           TextSpan(
                             text: notification['appointment_notif_type'] ==
-                                    "Pending"
-                                ? 'You have a pending appointment with'
+                                    "Upcoming"
+                                ? 'You have an upcoming appointment with'
                                 : 'Your appointment with',
                             style: TextStyle(
                                 fontSize: regularText, color: Colors.black),
@@ -303,7 +303,7 @@ class NotificationsScreenState extends ConsumerState<NotificationsScreen> {
                           ),
                           TextSpan(
                             text: notification['appointment_notif_type'] !=
-                                    "Pending"
+                                    "Upcoming"
                                 ? ' has been '
                                 : null,
                             style: TextStyle(
@@ -314,7 +314,7 @@ class NotificationsScreenState extends ConsumerState<NotificationsScreen> {
                                     'Done'
                                 ? 'completed'
                                 : notification['appointment_notif_type'] !=
-                                        "Pending"
+                                        "Upcoming"
                                     ? toLowercase(
                                         notification['appointment_notif_type'])
                                     : null,
@@ -362,7 +362,7 @@ class NotificationsScreenState extends ConsumerState<NotificationsScreen> {
 
   Color _getContainerColor(String appointmentNotifType) {
     switch (appointmentNotifType) {
-      case 'Pending':
+      case 'Upcoming':
         return darkGreyColor;
       case 'Done':
         return Colors.green;
@@ -377,7 +377,7 @@ class NotificationsScreenState extends ConsumerState<NotificationsScreen> {
 
   IconData _getIcon(String appointmentNotifType) {
     switch (appointmentNotifType) {
-      case 'Pending':
+      case 'Upcoming':
         return CupertinoIcons.clock;
       case 'Done':
         return CupertinoIcons.check_mark_circled;

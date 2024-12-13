@@ -352,7 +352,8 @@ class HomeScreenState extends ConsumerState<HomeScreen> {
             ),
         error: (error, _) {
           print(error);
-          return const ErrorMessage();
+          return Container(
+              height: 115, child: Center(child: const ErrorMessage()));
         });
   }
 
@@ -382,7 +383,7 @@ class HomeScreenState extends ConsumerState<HomeScreen> {
         loading: () => const Center(child: SizedBox.shrink()),
         error: (error, _) {
           print(error);
-          return const ErrorMessage();
+          return const SizedBox.shrink();
         });
   }
 
@@ -679,7 +680,8 @@ class ServiceProvidersWidget extends ConsumerWidget {
             ),
         error: (error, _) {
           print(error);
-          return const ErrorMessage();
+          return Container(
+              height: 225, child: Center(child: const ErrorMessage()));
         },
         data: (serviceProviders) {
           if (serviceProviders.isEmpty) {

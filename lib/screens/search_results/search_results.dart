@@ -6,6 +6,7 @@ import 'package:pamfurred/components/globals.dart';
 import 'package:pamfurred/components/screen_transitions.dart';
 import 'package:pamfurred/providers/global_providers.dart';
 import 'package:pamfurred/providers/search_results_provider.dart';
+import 'package:pamfurred/screens/main_screen.dart';
 import 'package:pamfurred/screens/pin_location.dart';
 import 'package:pamfurred/screens/search_results/input_price.dart';
 import 'package:pamfurred/screens/search_results/methods/check_selected_category.dart';
@@ -54,41 +55,6 @@ class SearchResultsScreenState extends ConsumerState<SearchResultsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    // final supabase = Supabase.instance.client;
-
-    // final selectedIndex = ref.watch(selectedCategoryIndexProvider);
-
-    // // Listen to realtime changes in db
-    // supabase.from('service').stream(primaryKey: ['service_id']).listen(
-    //     (List<Map<String, dynamic>> data) {
-    //   ref.invalidate(combinedSearchResultsProvider(
-    //       checkSelectedServiceCategory(selectedIndex)));
-    //   final refreshCombined = ref.refresh(combinedSearchResultsProvider(
-    //       checkSelectedServiceCategory(selectedIndex)));
-    //   print('Refresh provider: $refreshCombined');
-
-    //   ref.invalidate(searchResultsServiceProviderServices(
-    //       checkSelectedServiceCategory(selectedIndex)));
-    //   final refreshServices = ref.refresh(searchResultsServiceProviderServices(
-    //       checkSelectedServiceCategory(selectedIndex)));
-    //   print('Refresh provider: $refreshServices');
-    // });
-
-    // supabase.from('package').stream(primaryKey: ['package_id']).listen(
-    //     (List<Map<String, dynamic>> data) {
-    //   ref.invalidate(combinedSearchResultsProvider(
-    //       checkSelectedServiceCategory(selectedIndex)));
-    //   final refreshCombined = ref.refresh(combinedSearchResultsProvider(
-    //       checkSelectedServiceCategory(selectedIndex)));
-    //   print('Refresh provider: $refreshCombined');
-
-    //   ref.invalidate(searchResultsServiceProviderPackages(
-    //       checkSelectedServiceCategory(selectedIndex)));
-    //   final refreshPackages = ref.refresh(searchResultsServiceProviderPackages(
-    //       checkSelectedServiceCategory(selectedIndex)));
-    //   print('Refresh provider: $refreshPackages');
-    // });
-
     return Scaffold(
       key: scaffoldKey, // Pass the key here
       backgroundColor: Colors.white,
@@ -101,8 +67,7 @@ class SearchResultsScreenState extends ConsumerState<SearchResultsScreen> {
             child: Center(
               child: GestureDetector(
                 onTap: () {
-                  // Navigate to a new screen with an actual TextField
-                  Navigator.push(context, crossFadeRoute(SearchScreen()));
+                  Navigator.of(context).push(noTransitionRoute(SearchScreen()));
                 },
                 child: Container(
                   width: 350, // Adjust width as needed
@@ -161,7 +126,11 @@ class SearchResultsScreenState extends ConsumerState<SearchResultsScreen> {
           child: IconButton(
             icon: const Icon(Icons.arrow_back_ios, color: Colors.black),
             onPressed: () {
-              Navigator.pop(context);
+              Navigator.pushReplacement(
+                  context,
+                  leftToRightRoute(MainScreen(
+                    initialPage: 0,
+                  )));
               ref.read(searchedServicePackageProvider.notifier).state = '';
             },
           ),
@@ -316,10 +285,12 @@ class SearchResultsScreenState extends ConsumerState<SearchResultsScreen> {
                                 true;
 
                             ref.read(inputLatProvider.notifier).state =
-                                ref.watch(locationProvider).latitude;
+                                ref.watch(inputLatProvider) ??
+                                    ref.watch(locationProvider).latitude;
 
                             ref.read(inputLongProvider.notifier).state =
-                                ref.watch(locationProvider).longitude;
+                                ref.watch(inputLongProvider) ??
+                                    ref.watch(locationProvider).longitude;
                           });
                         },
                       ),
@@ -479,17 +450,18 @@ class SearchResultsScreenState extends ConsumerState<SearchResultsScreen> {
                       ),
                       IconButton(
                           onPressed: () {
-                            // Navigate to the price range input screen
-                            Navigator.push(
-                                context,
-                                slideUpRoute(
-                                  PriceRangeInputScreen(
-                                    inputMinPriceController:
-                                        inputMinPriceController,
-                                    inputMaxPriceController:
-                                        inputMaxPriceController,
-                                  ),
-                                )).then(
+                            showModalBottomSheet(
+                              context: context,
+                              builder: (context) => SizedBox(
+                                height: 500,
+                                child: PriceRangeInputScreen(
+                                  inputMinPriceController:
+                                      inputMinPriceController,
+                                  inputMaxPriceController:
+                                      inputMaxPriceController,
+                                ),
+                              ),
+                            ).then(
                               (result) {
                                 if (result != null) {
                                   if (result is Map &&

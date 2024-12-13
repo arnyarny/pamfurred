@@ -4,6 +4,7 @@ import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:pamfurred/components/connectivity_wrapper.dart';
 import 'package:pamfurred/components/globals.dart';
 import 'package:pamfurred/screens/main_screen.dart';
 import 'package:pamfurred/screens/splash_screen.dart';
@@ -100,7 +101,8 @@ class MyApp extends StatelessWidget {
               Theme.of(context).colorScheme.copyWith(primary: primaryColor),
           splashFactory: NoSplash.splashFactory, // Disable splash colors
         ),
-        home: const SplashScreen(), // Initial screen
+        home:
+            ConnectivityWrapper(child: const SplashScreen()), // Initial screen
       ),
     );
   }

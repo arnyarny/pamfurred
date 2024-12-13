@@ -2,8 +2,10 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pamfurred/components/globals.dart';
+import 'package:pamfurred/components/screen_transitions.dart';
 import 'package:pamfurred/providers/search_results_provider.dart';
 import 'package:pamfurred/providers/serviceprovider_provider.dart';
+import 'package:pamfurred/screens/search_results/search_results.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class SearchScreen extends ConsumerStatefulWidget {
@@ -109,7 +111,8 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
                         ref
                             .read(searchedServicePackageProvider.notifier)
                             .state = query;
-                        Navigator.pop(context);
+                        Navigator.pushReplacement(
+                            context, rightToLeftRoute(SearchResultsScreen()));
                       },
                       onChanged: (query) => _filterSuggestions(
                           query, selectedCategory), // Filter suggestions
@@ -148,8 +151,9 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
                         // Update the selected service/package name in Riverpod
                         ref
                             .read(searchedServicePackageProvider.notifier)
-                            .state = _searchController.text;
-                        Navigator.pop(context);
+                            .state = _searchController.text.toLowerCase();
+                        Navigator.pushReplacement(
+                            context, rightToLeftRoute(SearchResultsScreen()));
                       },
                       child: Text(
                         'Search',
@@ -177,17 +181,36 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
                 itemCount: filteredSuggestions.length,
                 itemBuilder: (context, index) {
                   return ListTile(
-                    title: Text(filteredSuggestions[index]),
+                    leading: Icon(
+                      Icons.search,
+                      color: Colors.grey[600],
+                    ),
+                    title: Text(
+                      filteredSuggestions[index].toLowerCase(),
+                      style: TextStyle(
+                        fontSize: 16,
+                        color: Colors.black87,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
                     onTap: () {
                       // Handle suggestion tap, e.g., navigate to details or show results
                       print('Tapped on ${filteredSuggestions[index]}');
-                      _searchController.text = filteredSuggestions[index];
+                      _searchController.text =
+                          filteredSuggestions[index].toLowerCase();
 
                       // Update the selected service/package name in Riverpod
                       ref.read(searchedServicePackageProvider.notifier).state =
-                          filteredSuggestions[index];
-                      Navigator.pop(context);
+                          filteredSuggestions[index].toLowerCase();
+                      Navigator.pushReplacement(
+                          context, rightToLeftRoute(SearchResultsScreen()));
                     },
+                    contentPadding:
+                        EdgeInsets.symmetric(horizontal: 15, vertical: 10),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    hoverColor: Colors.grey[100],
                   );
                 },
               ),

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:pamfurred/components/connectivity_wrapper.dart';
 import 'package:pamfurred/components/globals.dart';
 import 'package:pamfurred/screens/auth_redirect.dart';
 
@@ -45,13 +46,15 @@ class SplashScreenState extends State<SplashScreen>
   @override
   Widget build(BuildContext context) {
     double deviceWidth = deviceWidthDivideOnePointFive(context);
-    return Scaffold(
-      body: FadeTransition(
-        opacity: _animation,
-        child: Center(
-          child: Image.asset(
-            'assets/pamfurred_logo.png',
-            width: deviceWidth + 20,
+    return ConnectivityWrapper(
+      child: Scaffold(
+        body: FadeTransition(
+          opacity: _animation,
+          child: Center(
+            child: Image.asset(
+              'assets/pamfurred_logo.png',
+              width: deviceWidth + 20,
+            ),
           ),
         ),
       ),

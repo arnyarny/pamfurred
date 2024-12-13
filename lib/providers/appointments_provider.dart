@@ -6,8 +6,8 @@ import 'package:supabase_flutter/supabase_flutter.dart' as supabase_flutter;
 Future<Map<String, dynamic>> fetchAppointmentDetails(String petOwnerId) async {
   final supabase = supabase_flutter.Supabase.instance.client;
 
-  final response = await supabase
-      .rpc('get_appointment_details_with_services_and_packages', params: {
+  final response =
+      await supabase.rpc('get_appointment_details_by_pet_owner_id', params: {
     'pet_owner_id_param': petOwnerId, // Pass petOwnerId as a parameter
   });
 

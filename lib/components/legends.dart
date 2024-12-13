@@ -89,3 +89,65 @@ void showColorLegend(BuildContext context) {
     },
   );
 }
+
+void showTimeslotsColorLegend(BuildContext context) {
+  showDialog(
+    context: context,
+    builder: (BuildContext context) {
+      return AlertDialog(
+        backgroundColor: Colors.white, // White background for a clean look
+        shape: RoundedRectangleBorder(
+          borderRadius:
+              BorderRadius.circular(16), // Rounded corners for elegance
+        ),
+        elevation: 8, // Adding some elevation to create a floating effect
+        title: const Text(
+          'Color Legend',
+          style: TextStyle(
+            fontSize: 20,
+            fontWeight: FontWeight.bold,
+            color: Colors.black, // Dark title for contrast
+          ),
+        ),
+        content: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              getLegendWidget(Colors.grey, 'Past the current time of day'),
+              const SizedBox(height: 12),
+              getLegendWidget(Color.fromARGB(255, 255, 176, 170), 'Booked'),
+            ],
+          ),
+        ),
+        actions: [
+          Padding(
+            padding: const EdgeInsets.only(bottom: 8.0), // Padding for spacing
+            child: ElevatedButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor:
+                    Colors.blue, // Correct property to set background color
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12), // Rounded button
+                ),
+                padding: const EdgeInsets.symmetric(
+                    horizontal: 20, vertical: 10), // Button padding
+              ),
+              child: const Text(
+                'OK',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+          ),
+        ],
+      );
+    },
+  );
+}

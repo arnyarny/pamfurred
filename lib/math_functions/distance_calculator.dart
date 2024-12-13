@@ -26,7 +26,7 @@ Future<String?> getDistanceToTarget(
 
   // Ensure latitude and longitude are non-null
   if (myLat == null || myLon == null) {
-    return 'Location not available'; // Handle null cases gracefully
+    return 'Location unavailable'; // Handle null cases gracefully
   }
 
   // Calculate the distance between the two points

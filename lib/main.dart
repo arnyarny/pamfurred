@@ -45,7 +45,7 @@ Future<void> initializeNotifications() async {
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // Initialize Supabase
+  // Initialize Supabasez
   try {
     await Supabase.initialize(
       url: 'https://gfrbuvjfnlpfqkylbnxb.supabase.co',

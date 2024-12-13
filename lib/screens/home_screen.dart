@@ -27,6 +27,7 @@ import 'package:pamfurred/providers/sp_profile_provider_packages.dart';
 import 'package:pamfurred/providers/sp_profile_provider_services.dart';
 import 'package:pamfurred/providers/user_id.dart';
 import 'package:pamfurred/screens/appointment/serviceprovider_profile.dart';
+import 'package:pamfurred/screens/appointment_details/appointment_details.dart';
 import 'package:pamfurred/screens/location_permission.dart';
 import 'package:pamfurred/screens/search_results/search_results.dart';
 import 'package:pamfurred/screens/service_providers.dart';
@@ -254,47 +255,60 @@ class HomeScreenState extends ConsumerState<HomeScreen> {
                     items: upcomingAppointments.map((appointment) {
                       return Builder(
                         builder: (BuildContext context) {
-                          return SizedBox(
-                            width: double.infinity,
-                            height: 95,
-                            child: Padding(
-                              padding: const EdgeInsets.fromLTRB(
-                                  tertiarySizedBox,
-                                  tertiarySizedBox,
-                                  tertiarySizedBox,
-                                  0),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    capitalizeFirstLetter(
-                                        appointment['establishment_name']),
-                                    style: const TextStyle(
-                                        color: Colors.black,
-                                        fontSize: regularText,
-                                        fontWeight: boldWeight),
-                                  ),
-                                  const SizedBox(height: secondarySizedBox),
-                                  Text(
-                                      secondaryFormatDate(
-                                          appointment['appointment_date'] ??
-                                              'N/A'),
+                          return GestureDetector(
+                            onTap: () {
+                              ref
+                                  .read(tappedSpAppointmentIdProvider.notifier)
+                                  .state = appointment['appointment_id'];
+
+                              Navigator.push(
+                                  context,
+                                  slideUpRoute(
+                                      const AppointmentDetailsScreen()));
+                            },
+                            child: Container(
+                              color: Colors.transparent,
+                              width: double.infinity,
+                              height: 95,
+                              child: Padding(
+                                padding: const EdgeInsets.fromLTRB(
+                                    tertiarySizedBox,
+                                    tertiarySizedBox,
+                                    tertiarySizedBox,
+                                    0),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      capitalizeFirstLetter(
+                                          appointment['establishment_name']),
                                       style: const TextStyle(
-                                        color: Colors.black,
-                                        fontSize: regularText,
-                                      )),
-                                  const SizedBox(height: secondarySizedBox),
-                                  Text(
-                                    appointment['appointment_time'] == null
-                                        ? 'N/A'
-                                        : formatTime(
-                                            appointment['appointment_time']),
-                                    style: const TextStyle(
-                                      color: darkGreyColor,
-                                      fontSize: smallText,
+                                          color: Colors.black,
+                                          fontSize: regularText,
+                                          fontWeight: boldWeight),
                                     ),
-                                  ),
-                                ],
+                                    const SizedBox(height: secondarySizedBox),
+                                    Text(
+                                        secondaryFormatDate(
+                                            appointment['appointment_date'] ??
+                                                'N/A'),
+                                        style: const TextStyle(
+                                          color: Colors.black,
+                                          fontSize: regularText,
+                                        )),
+                                    const SizedBox(height: secondarySizedBox),
+                                    Text(
+                                      appointment['appointment_time'] == null
+                                          ? 'N/A'
+                                          : formatTime(
+                                              appointment['appointment_time']),
+                                      style: const TextStyle(
+                                        color: darkGreyColor,
+                                        fontSize: smallText,
+                                      ),
+                                    ),
+                                  ],
+                                ),
                               ),
                             ),
                           );
@@ -486,6 +500,7 @@ class HomeScreenState extends ConsumerState<HomeScreen> {
               onPressed: () {
                 ref.read(selectedCategoryIndexProvider.notifier).state =
                     selectedIndex;
+
                 Navigator.push(
                     context, crossFadeRoute(const SearchResultsScreen()));
               }),

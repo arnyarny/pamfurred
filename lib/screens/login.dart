@@ -260,24 +260,6 @@ class LoginScreenState extends ConsumerState<LoginScreen> {
                                 ],
                               ),
                             ),
-
-                            const SizedBox(height: 24),
-                            Container(
-                              width: deviceWidth,
-                              alignment: Alignment.centerRight,
-                              child: TextButton(
-                                onPressed: () {},
-                                child: const Text(
-                                  "Forgot password?",
-                                  style: TextStyle(
-                                    fontSize: regularText,
-                                    color: secondaryColor,
-                                    decoration: TextDecoration.underline,
-                                    decorationColor: secondaryColor,
-                                  ),
-                                ),
-                              ),
-                            ),
                             const SizedBox(height: 24),
                             SizedBox(
                               width: deviceWidth,

@@ -7,6 +7,7 @@ import 'package:pamfurred/components/rating_widget.dart';
 import 'package:pamfurred/providers/ratings_and_reviews_provider.dart';
 import 'package:pamfurred/providers/serviceprovider_provider.dart';
 import 'package:rating_summary/rating_summary.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 class RatingsAndReviewsScreen extends ConsumerStatefulWidget {
   const RatingsAndReviewsScreen({super.key});
@@ -28,6 +29,16 @@ class RatingsAndReviewsScreenState
     // Watch the provider and automatically rebuild when data changes
     final ratingsSummaryWithReviews =
         ref.watch(ratingsSummaryWithReviewsProvider(spId));
+
+    final supabase = Supabase.instance.client;
+
+    supabase.from('feedback').stream(primaryKey: ['feedback_id']).listen(
+        (List<Map<String, dynamic>> data) {
+      ref.invalidate(ratingsSummaryWithReviewsProvider(spId));
+      final refreshFeedback =
+          ref.refresh(ratingsSummaryWithReviewsProvider(spId));
+      print('Refresh provider: $refreshFeedback');
+    });
 
     return Scaffold(
       appBar: customAppBarWithTitle(context, 'Ratings & Reviews'),

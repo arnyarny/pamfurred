@@ -40,19 +40,20 @@ AppBar customAppBar(BuildContext context, {VoidCallback? onBackPressed}) {
       padding: const EdgeInsets.all(10.0),
       child: IconButton(
         icon: const Icon(Icons.arrow_back_ios, color: Colors.black),
-        onPressed: onBackPressed ?? () {
-          // Default action if no callback is provided
-          Navigator.pop(context);
-        },
+        onPressed: onBackPressed ??
+            () {
+              // Default action if no callback is provided
+              Navigator.pop(context);
+            },
       ),
     ),
   );
 }
 
-
 // 3) customAppBar with Title
 // This is for other screens but homescreen
-AppBar customAppBarWithTitle(BuildContext context, String title) {
+AppBar customAppBarWithTitle(BuildContext context, String title,
+    {VoidCallback? onBackPressed}) {
   return AppBar(
     backgroundColor: Colors.white,
     toolbarHeight: 70,
@@ -64,10 +65,11 @@ AppBar customAppBarWithTitle(BuildContext context, String title) {
       padding: const EdgeInsets.fromLTRB(20, 20, 0, 20),
       child: IconButton(
         icon: const Icon(Icons.arrow_back_ios, color: Colors.black),
-        onPressed: () {
-          // Custom action on back button press
-          Navigator.pop(context);
-        },
+        onPressed: onBackPressed ??
+            () {
+              // Custom action on back button press
+              Navigator.pop(context);
+            },
       ),
     ),
   );
@@ -75,7 +77,8 @@ AppBar customAppBarWithTitle(BuildContext context, String title) {
 
 // 4) customAppBar with action
 AppBar customAppBarWithTitleAndWidget(
-    BuildContext context, String title, List<Widget> actions) {
+    BuildContext context, String title, List<Widget> actions,
+    {VoidCallback? onBackPressed}) {
   return AppBar(
     backgroundColor: Colors.white,
     toolbarHeight: 70,
@@ -87,10 +90,11 @@ AppBar customAppBarWithTitleAndWidget(
       padding: const EdgeInsets.fromLTRB(20, 20, 0, 20),
       child: IconButton(
         icon: const Icon(Icons.arrow_back_ios, color: Colors.black),
-        onPressed: () {
-          // Custom action on back button press
-          Navigator.pop(context);
-        },
+        onPressed: onBackPressed ??
+            () {
+              // Custom action on back button press
+              Navigator.pop(context);
+            },
       ),
     ),
     actions: [

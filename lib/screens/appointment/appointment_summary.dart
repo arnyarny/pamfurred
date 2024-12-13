@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:pamfurred/backend_logic_files/insert_notification.dart';
 import 'package:pamfurred/components/custom_appbar.dart';
 import 'package:pamfurred/components/regular_text.dart';
 import 'package:pamfurred/components/screen_transitions.dart';
@@ -15,6 +16,7 @@ import 'package:pamfurred/providers/serviceprovider_provider.dart';
 import 'package:pamfurred/providers/user_id.dart';
 import 'package:pamfurred/screens/appointment/successful_appointment.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+
 import '../../components/globals.dart';
 
 class AppointmentSummaryScreen extends ConsumerStatefulWidget {
@@ -27,11 +29,12 @@ class AppointmentSummaryScreen extends ConsumerStatefulWidget {
 
 class AppointmentSummaryScreenState
     extends ConsumerState<AppointmentSummaryScreen> {
-  Map<String, dynamic>? mapAppointmentDetails;
   bool isLoading = false;
+
+  Map<String, dynamic>? mapUserAddress;
   Future<String?> createAppointment(
       {required String petOwnerId,
-      String? address,
+      required String address,
       required String petProfileId,
       required String date,
       required String time,
@@ -143,21 +146,6 @@ class AppointmentSummaryScreenState
     return response;
   }
 
-  // Function to insert a new notification into the notification table
-  Future<void> insertNotification(String appointmentId) async {
-    final supabase = Supabase.instance.client;
-
-    final response = await supabase.from('notification').insert({
-      'appointment_id': appointmentId,
-      'appointment_notif_type': 'Pending', // Or any type based on your logic
-      'created_at':
-          DateTime.now().toUtc().toIso8601String(), // Current timestamp in UTC
-    });
-    if (response != null) {
-      print('Notification inserted successfully');
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     final sp = ref.watch(spIndexProvider);
@@ -171,7 +159,9 @@ class AppointmentSummaryScreenState
     final servicePackageType =
         ref.watch(selectedAppointmentPackageServiceTypeProvider);
 
-    final appointmentAddress = ref.watch(appointmentAddressProvider);
+    final appointmentAddress = servicePackageType == 'In-clinic'
+        ? sp!['full_address']
+        : ref.watch(appointmentAddressProvider);
 
     final appointmentDate = ref.watch(selectedDateProvider);
 
@@ -202,16 +192,7 @@ class AppointmentSummaryScreenState
                       const SizedBox(height: primarySizedBox),
                       getAppointmentDetail(
                           context, sp!['service_provider_name']),
-                      const SizedBox(height: secondarySizedBox),
-                      if (services.isNotEmpty)
-                        getAppointmentTitle(context, 'Services'),
-                      const SizedBox(height: primarySizedBox),
-                      ...services.map((service) => _buildCartItem(service)),
-                      const SizedBox(height: primarySizedBox),
-                      if (packages.isNotEmpty)
-                        getAppointmentTitle(context, 'Packages'),
-                      const SizedBox(height: primarySizedBox),
-                      ...packages.map((package) => _buildCartItem(package)),
+
                       const SizedBox(height: secondarySizedBox),
                       getAppointmentTitle(context, 'Pet name'),
                       const SizedBox(height: primarySizedBox),
@@ -225,7 +206,7 @@ class AppointmentSummaryScreenState
                       // Conditional rendering for Home service or In-clinic
                       if (servicePackageType == 'Home Service') ...[
                         getAppointmentTitle(context, 'Address'),
-                        wrappedText(context, appointmentAddress),
+                        wrappedText(context, appointmentAddress.toString()),
                       ] else if (servicePackageType == 'In-clinic') ...[
                         getAppointmentTitle(
                             context, 'Service provider address'),
@@ -233,15 +214,20 @@ class AppointmentSummaryScreenState
                         wrappedText(context, sp['full_address']),
                       ],
                       const SizedBox(height: secondarySizedBox),
-                      getAppointmentTitle(context, 'Date'),
+                      getAppointmentTitle(context, 'Date and time'),
                       const SizedBox(height: primarySizedBox),
                       getAppointmentDetail(context,
-                          secondaryFormatDate(appointmentDate.toString())),
+                          '${secondaryFormatDate(appointmentDate.toString())}, ${formatTime(appointmentTime.toString())}'),
                       const SizedBox(height: secondarySizedBox),
-                      getAppointmentTitle(context, 'Time'),
+                      if (services.isNotEmpty)
+                        getAppointmentTitle(context, 'Services'),
                       const SizedBox(height: primarySizedBox),
-                      getAppointmentDetail(
-                          context, formatTime(appointmentTime.toString())),
+                      ...services.map((service) => _buildCartItem(service)),
+                      const SizedBox(height: primarySizedBox),
+                      if (packages.isNotEmpty)
+                        getAppointmentTitle(context, 'Packages'),
+                      const SizedBox(height: primarySizedBox),
+                      ...packages.map((package) => _buildCartItem(package)),
                       const SizedBox(height: secondarySizedBox),
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -265,7 +251,7 @@ class AppointmentSummaryScreenState
                                   date: formatDateToShort('$appointmentDate'),
                                   time: '$appointmentTime',
                                   appointmentType: servicePackageType,
-                                  address: appointmentAddress,
+                                  address: appointmentAddress.toString(),
                                   petProfileId: appointmentPetId,
                                 );
 
@@ -278,7 +264,9 @@ class AppointmentSummaryScreenState
                                       ref.watch(appointmentIdProvider);
 
                                   // Insert notification entry into the notification table
-                                  await insertNotification(appointmentId);
+                                  await insertNotification(
+                                      appointmentId: appointmentId,
+                                      appointmentNotifType: 'Pending');
 
                                   if (context.mounted) {
                                     Navigator.push(
@@ -333,16 +321,6 @@ class AppointmentSummaryScreenState
       mainAxisAlignment: MainAxisAlignment.start,
       children: [
         customRegularWeightTitleText(context, title),
-        const SizedBox(width: primarySizedBox),
-      ],
-    );
-  }
-
-  getAppointmentAddressDetail(BuildContext context, String title) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.start,
-      children: [
-        customRegularWeightTitleTextForAddress(context, title),
         const SizedBox(width: primarySizedBox),
       ],
     );

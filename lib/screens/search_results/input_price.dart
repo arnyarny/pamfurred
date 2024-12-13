@@ -86,6 +86,9 @@ class PriceRangeInputScreen extends ConsumerWidget {
             CustomWideButton(
               text: 'Set price',
               onPressed: () {
+                // Set input price provider to true to watch changes during price range inputting
+                ref.read(isInputPriceProvider.notifier).state = true;
+
                 final num minPrice =
                     num.tryParse(inputMinPriceController.text) ??
                         ref.watch(inputMinPriceProvider);
@@ -104,7 +107,12 @@ class PriceRangeInputScreen extends ConsumerWidget {
                 }
 
                 // Close the screen and return to the previous one
-                Navigator.pop(context);
+                Navigator.pop(context, {
+                  'inputMinPrice':
+                      ref.read(inputMinPriceProvider.notifier).state = minPrice,
+                  'inputMaxPrice':
+                      ref.read(inputMaxPriceProvider.notifier).state = maxPrice
+                });
               },
             ),
           ],

@@ -1,13 +1,17 @@
+import 'package:cached_network_image/cached_network_image.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pamfurred/components/empty_list_widget.dart';
 import 'package:pamfurred/components/globals.dart';
 import 'package:pamfurred/components/header.dart';
 import 'package:pamfurred/components/pull_to_refresh.dart';
+import 'package:pamfurred/components/time_and_date_formatter.dart';
 import 'package:pamfurred/components/title_text.dart';
 import 'package:pamfurred/providers/notifications_provider.dart';
 import 'package:pamfurred/providers/user_id.dart';
 import 'package:pamfurred/components/connectivity_wrapper.dart';
+import 'package:shimmer/shimmer.dart';
 
 class NotificationsScreen extends ConsumerStatefulWidget {
   const NotificationsScreen({super.key});
@@ -97,68 +101,72 @@ class NotificationsScreenState extends ConsumerState<NotificationsScreen> {
         yesterdayNotifications.isNotEmpty ||
         olderNotifications.isNotEmpty;
 
-    return SafeArea(
-      child: ConnectivityWrapper(
-        child: Scaffold(
-          backgroundColor: Colors.white,
-          body: !hasNotifications
-              ? Center(
-                  child: emptyListWidget(Icons.notifications_off,
-                      'All caught up!', 'You have no new notifications.'))
-              : Center(
-                  child: Padding(
-                    padding:
-                        const EdgeInsets.symmetric(vertical: primarySizedBox),
-                    child: SizedBox(
-                      width: screenPadding(context),
-                      child: Column(
-                        children: [
-                          const SizedBox(height: secondarySizedBox),
-                          Expanded(
-                            child: PullToRefresh(
-                              providersToRefresh: [
-                                notificationDetailsProvider(userId)
-                              ],
-                              child: ListView(
-                                children: [
-                                  if (todayNotifications.isNotEmpty) ...[
-                                    buildSectionHeader("Today"),
-                                    ...todayNotifications.map((notification) {
-                                      int index =
-                                          notifications.indexOf(notification);
-                                      return reusableNotificationCard(
-                                          index, notification);
-                                    }),
-                                  ],
-                                  const SizedBox(height: primarySizedBox),
-                                  if (yesterdayNotifications.isNotEmpty) ...[
-                                    buildSectionHeader("Yesterday"),
-                                    ...yesterdayNotifications.map((notification) {
-                                      int index =
-                                          notifications.indexOf(notification);
-                                      return reusableNotificationCard(
-                                          index, notification);
-                                    }),
-                                  ],
-                                  const SizedBox(height: primarySizedBox),
-                                  if (olderNotifications.isNotEmpty) ...[
-                                    buildSectionHeader("Earlier"),
-                                    ...olderNotifications.map((notification) {
-                                      int index =
-                                          notifications.indexOf(notification);
-                                      return reusableNotificationCard(
-                                          index, notification);
-                                    }),
-                                  ],
+    return PopScope(
+      canPop: false,
+      child: SafeArea(
+        child: ConnectivityWrapper(
+          child: Scaffold(
+            backgroundColor: Colors.white,
+            body: !hasNotifications
+                ? Center(
+                    child: emptyListWidget(Icons.notifications_off,
+                        'All caught up!', 'You have no new notifications.'))
+                : Center(
+                    child: Padding(
+                      padding:
+                          const EdgeInsets.symmetric(vertical: primarySizedBox),
+                      child: SizedBox(
+                        width: screenPadding(context),
+                        child: Column(
+                          children: [
+                            const SizedBox(height: secondarySizedBox),
+                            Expanded(
+                              child: PullToRefresh(
+                                providersToRefresh: [
+                                  notificationDetailsProvider(userId)
                                 ],
+                                child: ListView(
+                                  children: [
+                                    if (todayNotifications.isNotEmpty) ...[
+                                      buildSectionHeader("Today"),
+                                      ...todayNotifications.map((notification) {
+                                        int index =
+                                            notifications.indexOf(notification);
+                                        return reusableNotificationCard(
+                                            index, notification);
+                                      }),
+                                    ],
+                                    const SizedBox(height: primarySizedBox),
+                                    if (yesterdayNotifications.isNotEmpty) ...[
+                                      buildSectionHeader("Yesterday"),
+                                      ...yesterdayNotifications
+                                          .map((notification) {
+                                        int index =
+                                            notifications.indexOf(notification);
+                                        return reusableNotificationCard(
+                                            index, notification);
+                                      }),
+                                    ],
+                                    const SizedBox(height: primarySizedBox),
+                                    if (olderNotifications.isNotEmpty) ...[
+                                      buildSectionHeader("Earlier"),
+                                      ...olderNotifications.map((notification) {
+                                        int index =
+                                            notifications.indexOf(notification);
+                                        return reusableNotificationCard(
+                                            index, notification);
+                                      }),
+                                    ],
+                                  ],
+                                ),
                               ),
                             ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
                     ),
                   ),
-                ),
+          ),
         ),
       ),
     );
@@ -179,69 +187,207 @@ class NotificationsScreenState extends ConsumerState<NotificationsScreen> {
       child: Card(
         color:
             // isTapped[index] ? Colors.white :
-            lighterGreyColor,
+            Colors.white,
         child: Padding(
           padding: const EdgeInsets.all(16.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+          child: Row(
+            crossAxisAlignment:
+                CrossAxisAlignment.start, // Align start for consistency
             children: [
-              Row(
+              Column(
                 children: [
-                  customTitleText(context, "Appointment"),
-                  customTitleText(
-                    context,
-                    toLowercase(notification['appointment_notif_type'] == "Done"
-                        ? " completed"
-                        : " ${notification['appointment_notif_type']}"),
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 10),
+                    child: Stack(
+                      clipBehavior: Clip.none, // Allow overflowing children
+                      children: [
+                        Container(
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(100),
+                            color: lightGreyColor,
+                          ),
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(100),
+                            child: CachedNetworkImage(
+                              imageUrl: notification['sp_image'].isEmpty
+                                  ? 'https://tinyurl.com/357z4usj'
+                                  : notification['sp_image'],
+                              width: 50,
+                              height: 50,
+                              fit: notification['sp_image'].isEmpty
+                                  ? BoxFit.contain
+                                  : BoxFit.cover,
+                              placeholder: (context, url) {
+                                print("Loading image...");
+                                return Center(
+                                  child: // Image placeholder
+                                      Shimmer.fromColors(
+                                    baseColor: Colors.grey[300]!,
+                                    highlightColor: Colors.grey[100]!,
+                                    child: Container(
+                                      width: 50,
+                                      height: 50,
+                                      decoration: BoxDecoration(
+                                        color: Colors.white,
+                                        borderRadius:
+                                            BorderRadius.circular(100),
+                                      ),
+                                    ),
+                                  ),
+                                );
+                              },
+                              errorWidget: (context, url, error) {
+                                print("Error loading image: $error");
+                                return const Icon(Icons.error, size: 48);
+                              },
+                            ),
+                          ),
+                        ),
+                        Positioned(
+                          bottom: -10,
+                          right: 0,
+                          child: Container(
+                            width: 30,
+                            height: 30,
+                            decoration: BoxDecoration(
+                              color: _getContainerColor(
+                                  notification['appointment_notif_type']),
+                              borderRadius: BorderRadius.circular(100),
+                            ),
+                            child: Icon(
+                              _getIcon(notification['appointment_notif_type']),
+                              color: Colors.white,
+                              size: 17,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ],
               ),
-              const SizedBox(height: primarySizedBox),
-              RichText(
-                text: TextSpan(
+              const SizedBox(width: tertiarySizedBox),
+              Expanded(
+                // Ensure the text area can adjust to the available space
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const TextSpan(
-                      text: 'Your appointment with',
-                      style:
-                          TextStyle(fontSize: regularText, color: Colors.black),
+                    Row(
+                      children: [
+                        customTitleText(context, "Appointment"),
+                        customTitleText(
+                          context,
+                          toLowercase(notification['appointment_notif_type'] ==
+                                  "Done"
+                              ? " completed"
+                              : " ${notification['appointment_notif_type']}"),
+                        ),
+                      ],
                     ),
-                    TextSpan(
-                      text: ' ${notification['establishment_name']}',
+                    const SizedBox(height: primarySizedBox),
+                    RichText(
+                      text: TextSpan(
+                        children: [
+                          TextSpan(
+                            text: notification['appointment_notif_type'] ==
+                                    "Pending"
+                                ? 'You have a pending appointment with'
+                                : 'Your appointment with',
+                            style: TextStyle(
+                                fontSize: regularText, color: Colors.black),
+                          ),
+                          TextSpan(
+                            text: ' ${notification['establishment_name']}',
+                            style: const TextStyle(
+                                fontSize: regularText, color: primaryColor),
+                          ),
+                          TextSpan(
+                            text: notification['appointment_notif_type'] !=
+                                    "Pending"
+                                ? ' has been '
+                                : null,
+                            style: TextStyle(
+                                fontSize: regularText, color: Colors.black),
+                          ),
+                          TextSpan(
+                            text: notification['appointment_notif_type'] ==
+                                    'Done'
+                                ? 'completed'
+                                : notification['appointment_notif_type'] !=
+                                        "Pending"
+                                    ? toLowercase(
+                                        notification['appointment_notif_type'])
+                                    : null,
+                            style: const TextStyle(
+                                fontSize: regularText, color: primaryColor),
+                          ),
+                          if (notification['appointment_notif_type'] ==
+                              "Rescheduled") ...[
+                            TextSpan(
+                              text: ' on',
+                              style: const TextStyle(
+                                  fontSize: regularText, color: Colors.black),
+                            ),
+                            TextSpan(
+                              text:
+                                  ' ${secondaryFormatDate(notification['appointment_date'])}, ${formatTime(notification['appointment_time'])}',
+                              style: const TextStyle(
+                                  fontSize: regularText, color: primaryColor),
+                            )
+                          ],
+                          const TextSpan(
+                            text: ".",
+                            style: TextStyle(
+                                fontSize: regularText, color: Colors.black),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: primarySizedBox),
+                    Text(
+                      timeElapsed(DateTime.parse(notification['created_at'] ??
+                          DateTime.now().toString())),
                       style: const TextStyle(
-                          fontSize: regularText, color: primaryColor),
-                    ),
-                    const TextSpan(
-                      text: ' has been ',
-                      style:
-                          TextStyle(fontSize: regularText, color: Colors.black),
-                    ),
-                    TextSpan(
-                      text: notification['appointment_notif_type'] == 'Done'
-                          ? 'completed'
-                          : toLowercase(notification['appointment_notif_type']),
-                      style: const TextStyle(
-                          fontSize: regularText, color: primaryColor),
-                    ),
-                    const TextSpan(
-                      text: ".",
-                      style:
-                          TextStyle(fontSize: regularText, color: Colors.black),
+                          fontSize: smallText, color: Colors.black),
                     ),
                   ],
                 ),
-              ),
-              const SizedBox(height: primarySizedBox),
-              Text(
-                timeElapsed(DateTime.parse(
-                    notification['created_at'] ?? DateTime.now().toString())),
-                style:
-                    const TextStyle(fontSize: smallText, color: Colors.black),
               ),
             ],
           ),
         ),
       ),
     );
+  }
+
+  Color _getContainerColor(String appointmentNotifType) {
+    switch (appointmentNotifType) {
+      case 'Pending':
+        return darkGreyColor;
+      case 'Done':
+        return Colors.green;
+      case 'Rescheduled':
+        return Colors.blue;
+      case 'Cancelled':
+        return primaryColor;
+      default:
+        return Colors.grey;
+    }
+  }
+
+  IconData _getIcon(String appointmentNotifType) {
+    switch (appointmentNotifType) {
+      case 'Pending':
+        return CupertinoIcons.clock;
+      case 'Done':
+        return CupertinoIcons.check_mark_circled;
+      case 'Rescheduled':
+        return CupertinoIcons.arrow_2_circlepath;
+      case 'Cancelled':
+        return CupertinoIcons.xmark_circle;
+      default:
+        return CupertinoIcons.question_circle; // Fallback icon
+    }
   }
 }
 

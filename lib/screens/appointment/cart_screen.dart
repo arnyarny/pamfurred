@@ -57,27 +57,29 @@ class _CartScreenState extends ConsumerState<CartScreen> {
             mainAxisSize: MainAxisSize.min,
             children: [
               // First Row: Total
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  const Text(
-                    'Total',
-                    style: TextStyle(
-                      fontSize: titleFont,
-                      fontWeight: boldWeight,
-                      color: Colors.black,
+              cartProducts.isEmpty
+                  ? SizedBox.shrink()
+                  : Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        const Text(
+                          'Total',
+                          style: TextStyle(
+                            fontSize: titleFont,
+                            fontWeight: boldWeight,
+                            color: Colors.black,
+                          ),
+                        ),
+                        Text(
+                          '₱$total',
+                          style: const TextStyle(
+                            fontSize: titleFont,
+                            fontWeight: boldWeight,
+                            color: Colors.black,
+                          ),
+                        ),
+                      ],
                     ),
-                  ),
-                  Text(
-                    '₱$total',
-                    style: const TextStyle(
-                      fontSize: titleFont,
-                      fontWeight: boldWeight,
-                      color: Colors.black,
-                    ),
-                  ),
-                ],
-              ),
               const SizedBox(height: secondarySizedBox),
 
               // Second Row: Order Now button

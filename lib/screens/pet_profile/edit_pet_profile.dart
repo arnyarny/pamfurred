@@ -92,21 +92,6 @@ class PetProfileScreenState extends ConsumerState<PetProfileScreen> {
                                   ),
                                 ),
                               ),
-                              Positioned(
-                                bottom: 10,
-                                right: 5,
-                                child: Container(
-                                  decoration: BoxDecoration(
-                                      color: primaryColor,
-                                      borderRadius: BorderRadius.circular(100)),
-                                  child: IconButton(
-                                      onPressed: () {},
-                                      icon: Icon(
-                                        Icons.camera_alt,
-                                        color: Colors.white,
-                                      )),
-                                ),
-                              ),
                             ],
                           ),
                         ],

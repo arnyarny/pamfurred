@@ -81,60 +81,64 @@ class AppointmentsScreenState extends ConsumerState<AppointmentsScreen>
   Widget build(BuildContext context) {
     final appointmentAsyncValue = ref.watch(appointmentDetailsProvider);
 
-    return Stack(
-      children: [
-        ConnectivityWrapper(
-          child: Scaffold(
-            backgroundColor: Colors.white,
-            appBar: AppBar(
+    return PopScope(
+      canPop: false,
+      child: Stack(
+        children: [
+          ConnectivityWrapper(
+            child: Scaffold(
               backgroundColor: Colors.white,
-              automaticallyImplyLeading: false,
-              toolbarHeight: 20,
-              elevation: 0,
-              bottom: TabBar(
-                isScrollable: true,
-                controller: _tabController,
-                tabs: [
-                  _buildTab('Today'),
-                  _buildTab('Pending'),
-                  _buildTab('Upcoming'),
-                  _buildTab('Done'),
-                  _buildTab('Cancelled'),
-                  _buildTab('All'),
-                ],
-                labelColor: tangerine,
-                indicatorColor: tangerine,
+              appBar: AppBar(
+                backgroundColor: Colors.white,
+                automaticallyImplyLeading: false,
+                toolbarHeight: 20,
+                elevation: 0,
+                bottom: TabBar(
+                  isScrollable: true,
+                  controller: _tabController,
+                  tabs: [
+                    _buildTab('Today'),
+                    _buildTab('Pending'),
+                    _buildTab('Upcoming'),
+                    _buildTab('Done'),
+                    _buildTab('Cancelled'),
+                    _buildTab('All'),
+                  ],
+                  labelColor: tangerine,
+                  indicatorColor: tangerine,
+                ),
               ),
-            ),
-            body: Center(
-              child: appointmentAsyncValue.when(
-                data: (appointmentData) {
-                  final appointmentList = appointmentData['appointments']
-                      as List<Map<String, dynamic>>;
+              body: Center(
+                child: appointmentAsyncValue.when(
+                  data: (appointmentData) {
+                    final appointmentList = appointmentData['appointments']
+                        as List<Map<String, dynamic>>;
 
-                  return TabBarView(
-                    controller: _tabController,
-                    physics: const BouncingScrollPhysics(),
-                    children: List.generate(6, (index) {
-                      return _buildAppointmentList(index, appointmentList);
-                    }),
-                  );
-                },
-                loading: () => const Center(child: CircularProgressIndicator()),
-                error: (error, stackTrace) =>
-                    Center(child: somethingWentWrong()),
+                    return TabBarView(
+                      controller: _tabController,
+                      physics: const BouncingScrollPhysics(),
+                      children: List.generate(6, (index) {
+                        return _buildAppointmentList(index, appointmentList);
+                      }),
+                    );
+                  },
+                  loading: () =>
+                      const Center(child: CircularProgressIndicator()),
+                  error: (error, stackTrace) =>
+                      Center(child: somethingWentWrong()),
+                ),
               ),
             ),
           ),
-        ),
-        if (isCancelling)
-          Container(
-            color: Colors.black54, // Semi-transparent background
-            child: Center(
-              child: CircularProgressIndicator(),
+          if (isCancelling)
+            Container(
+              color: Colors.black54, // Semi-transparent background
+              child: Center(
+                child: CircularProgressIndicator(),
+              ),
             ),
-          ),
-      ],
+        ],
+      ),
     );
   }
 
@@ -320,6 +324,13 @@ class AppointmentsScreenState extends ConsumerState<AppointmentsScreen>
                           customSmallPaddedTextButton(
                               text: 'Reschedule',
                               onPressed: () {
+                                ref
+                                    .read(
+                                        tappedSpAppointmentIdProvider.notifier)
+                                    .state = appointment['appointment_id'];
+                                ref
+                                    .read(selectedSpIndexProvider.notifier)
+                                    .state = appointment['sp_id'];
                                 QuickAlert.show(
                                     context: context,
                                     type: QuickAlertType.warning,
@@ -345,7 +356,7 @@ class AppointmentsScreenState extends ConsumerState<AppointmentsScreen>
                                               const RescheduleAppointmentScreen()));
                                     });
                               },
-                              backgroundColor: Colors.green,
+                              backgroundColor: Colors.blue,
                               textColor: Colors.white),
                         ],
                       ),
@@ -353,43 +364,33 @@ class AppointmentsScreenState extends ConsumerState<AppointmentsScreen>
                   : const SizedBox.shrink(),
               // Give feedback button
               Padding(
-                padding: const EdgeInsets.all(8.0),
+                padding: const EdgeInsets.only(left: tertiarySizedBox),
                 child: Row(
-                  mainAxisAlignment: MainAxisAlignment.end,
+                  mainAxisAlignment: MainAxisAlignment.start,
                   children: <Widget>[
-                    GestureDetector(
-                      onTap: () {
-                        ref.read(tappedSpAppointmentIdProvider.notifier).state =
-                            appointment['sp_id'];
-                        ref.read(selectedAppointmentIdProvider.notifier).state =
-                            appointment['appointment_id'];
-                        showModalBottomSheet(
-                          context: context,
-                          builder: (BuildContext context) {
-                            return const GiveFeedbackBottomSheet();
-                          },
-                        );
-                      },
-                      child: appointment['appointment_status'] == 'Done' &&
-                              appointment['is_reviewed'] == false
-                          ? const Text(
-                              'Give feedback',
-                              style: TextStyle(
-                                  color: secondaryColor,
-                                  shadows: <Shadow>[
-                                    Shadow(
-                                      offset:
-                                          Offset(1.0, 1.0), // Smaller offset
-                                      blurRadius: 2.0, // Reduced blur
-                                      color: lightGreyColor, // Softer color
-                                    ),
-                                  ],
-                                  decoration: TextDecoration.underline,
-                                  decorationColor: secondaryColor),
-                            )
-                          : const SizedBox
-                              .shrink(), // Show nothing if conditions are not met
-                    ),
+                    appointment['appointment_status'] == 'Done' &&
+                            appointment['is_reviewed'] == false
+                        ? customSmallPaddedTextButton(
+                            text: 'Give feedback',
+                            onPressed: () {
+                              ref
+                                  .read(tappedSpAppointmentIdProvider.notifier)
+                                  .state = appointment['sp_id'];
+                              ref
+                                  .read(selectedAppointmentIdProvider.notifier)
+                                  .state = appointment['appointment_id'];
+                              showModalBottomSheet(
+                                useSafeArea: true,
+                                isScrollControlled: true,
+                                context: context,
+                                builder: (BuildContext context) {
+                                  return const GiveFeedbackBottomSheet();
+                                },
+                              );
+                            },
+                            backgroundColor: secondaryColor,
+                            textColor: Colors.white)
+                        : const SizedBox.shrink(),
                     const SizedBox(width: quaternarySizedBox),
                   ],
                 ),

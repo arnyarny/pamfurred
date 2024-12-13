@@ -20,6 +20,7 @@ import 'package:pamfurred/providers/button_pressed_provider.dart';
 import 'package:pamfurred/providers/cart_provider.dart';
 import 'package:pamfurred/providers/global_providers.dart';
 import 'package:pamfurred/providers/pet_profile_provider.dart';
+import 'package:pamfurred/providers/ratings_and_reviews_provider.dart';
 import 'package:pamfurred/providers/serviceprovider_provider.dart';
 import 'package:pamfurred/providers/sp_profile_provider_packages.dart';
 import 'package:pamfurred/providers/sp_profile_provider_services.dart';
@@ -34,6 +35,7 @@ import 'package:quickalert/models/quickalert_animtype.dart';
 import 'package:quickalert/models/quickalert_type.dart';
 import 'package:quickalert/widgets/quickalert_dialog.dart';
 import 'package:shimmer/shimmer.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 // Function to reset providers to null/blank when willBookProvider is false
@@ -43,6 +45,7 @@ void resetProviders(WidgetRef ref) {
   ref.read(selectedAppointmentPetTypeProvider.notifier).state = '';
   ref.read(selectedAppointmentPetTypeIndexProvider.notifier).state = '';
   ref.read(selectedPetProfileIdProvider.notifier).state = null;
+  ref.read(selectedAppointmentPetWeightProvider.notifier).state = null;
 }
 
 class ServiceproviderProfileScreen extends ConsumerStatefulWidget {
@@ -57,6 +60,18 @@ class ServiceproviderProfileScreenState
     extends ConsumerState<ServiceproviderProfileScreen> {
   @override
   Widget build(BuildContext context) {
+    final supabase = Supabase.instance.client;
+
+    final spId = ref.watch(selectedSpIndexProvider);
+
+    supabase.from('feedback').stream(primaryKey: ['feedback_id']).listen(
+        (List<Map<String, dynamic>> data) {
+      ref.invalidate(ratingsSummaryWithReviewsProvider(spId));
+      final refreshFeedback =
+          ref.refresh(ratingsSummaryWithReviewsProvider(spId));
+      print('Refresh provider: $refreshFeedback');
+    });
+
     final selectedIndex = ref.watch(selectedTabProvider).toInt();
     const defaultImage = 'https://tinyurl.com/3tnt6yyy';
 
@@ -322,10 +337,12 @@ class ServiceproviderProfileScreenState
                 width: double.infinity,
                 height: 200,
                 child: CachedNetworkImage(
-                  imageUrl: sp['service_provider_image'] ?? defaultImage,
+                  imageUrl: sp['service_provider_image'].isEmpty
+                      ? defaultImage
+                      : sp['service_provider_image'],
                   width: double.infinity,
                   height: 200,
-                  fit: sp['service_provider_image'] == null
+                  fit: sp['service_provider_image'].isEmpty
                       ? BoxFit.fitWidth
                       : BoxFit.cover,
                   placeholder: (context, url) {
@@ -658,7 +675,6 @@ final servicesTabProvider = FutureProvider<List<Widget>>((ref) async {
     serviceType: ref.watch(selectedAppointmentPackageServiceTypeProvider),
     serviceCategory: ref.watch(selectedAppointmentCategoryProvider),
     weight: ref.watch(selectedAppointmentPetWeightProvider),
-    // size: null,
   );
 
   return [
@@ -706,10 +722,15 @@ final servicesTabProvider = FutureProvider<List<Widget>>((ref) async {
                                             borderRadius: BorderRadius.circular(
                                                 primaryBorderRadius),
                                             child: CachedNetworkImage(
-                                              imageUrl: service.serviceImage,
+                                              imageUrl: service
+                                                      .serviceImage.isEmpty
+                                                  ? 'https://tinyurl.com/55w8ht23'
+                                                  : service.serviceImage,
                                               width: 90,
                                               height: 85,
-                                              fit: BoxFit.cover,
+                                              fit: service.serviceImage.isEmpty
+                                                  ? BoxFit.fitHeight
+                                                  : BoxFit.cover,
                                               placeholder: (context, url) {
                                                 // Shimmer effect while loading
                                                 return Shimmer.fromColors(
@@ -844,7 +865,7 @@ final packagesTabProvider = FutureProvider<List<Widget>>((ref) async {
     petType: ref.watch(selectedAppointmentPetTypeProvider),
     packageType: ref.watch(selectedAppointmentPackageServiceTypeProvider),
     packageCategory: ref.watch(selectedAppointmentCategoryProvider),
-    size: null,
+    weight: ref.watch(selectedAppointmentPetWeightProvider),
   );
 
   return [
@@ -892,10 +913,15 @@ final packagesTabProvider = FutureProvider<List<Widget>>((ref) async {
                                           borderRadius: BorderRadius.circular(
                                               primaryBorderRadius),
                                           child: CachedNetworkImage(
-                                            imageUrl: package.packageImage,
+                                            imageUrl: package
+                                                    .packageImage.isEmpty
+                                                ? 'https://tinyurl.com/55w8ht23'
+                                                : package.packageImage,
                                             width: 90,
                                             height: 85,
-                                            fit: BoxFit.cover,
+                                            fit: package.packageImage.isEmpty
+                                                ? BoxFit.fitHeight
+                                                : BoxFit.cover,
                                             placeholder: (context, url) {
                                               // Shimmer effect while loading
                                               return Shimmer.fromColors(

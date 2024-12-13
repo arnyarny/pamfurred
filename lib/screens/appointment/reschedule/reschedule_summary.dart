@@ -1,26 +1,29 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:pamfurred/backend_logic_files/insert_notification.dart';
 import 'package:pamfurred/components/custom_appbar.dart';
 import 'package:pamfurred/components/globals.dart';
 import 'package:pamfurred/components/regular_text.dart';
+import 'package:pamfurred/components/screen_transitions.dart';
 import 'package:pamfurred/components/time_and_date_formatter.dart';
 import 'package:pamfurred/components/title_text.dart';
+import 'package:pamfurred/components/width_expanded_button.dart';
 import 'package:pamfurred/providers/appointment_services_and_packages.dart';
 import 'package:pamfurred/providers/appointments_provider.dart';
 import 'package:pamfurred/providers/global_providers.dart';
+import 'package:pamfurred/providers/serviceprovider_provider.dart';
 import 'package:pamfurred/screens/appointment/appointment_components/components.dart';
+import 'package:pamfurred/screens/appointment/reschedule/reschedule_success.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
-class AppointmentDetailsScreen extends ConsumerStatefulWidget {
-  const AppointmentDetailsScreen({super.key});
+class RescheduleSummary extends ConsumerStatefulWidget {
+  const RescheduleSummary({super.key});
 
   @override
-  ConsumerState<AppointmentDetailsScreen> createState() =>
-      AppointmentDetailsScreenState();
+  ConsumerState<RescheduleSummary> createState() => RescheduleSummaryState();
 }
 
-class AppointmentDetailsScreenState
-    extends ConsumerState<AppointmentDetailsScreen> {
+class RescheduleSummaryState extends ConsumerState<RescheduleSummary> {
   bool isLoading = false;
 
   @override
@@ -29,6 +32,9 @@ class AppointmentDetailsScreenState
     if (appointmentId.isEmpty) {
       return const Center(child: Text('No appointment selected.'));
     }
+
+    final rescheduleDate = ref.watch(selectedDateProvider).toString();
+    final rescheduleTime = ref.watch(selectedTimeslotProvider).toString();
 
     final specificAppointmentDetails =
         ref.watch(specificAppointmentDetailsProvider(appointmentId));
@@ -39,7 +45,7 @@ class AppointmentDetailsScreenState
       children: [
         Scaffold(
           backgroundColor: Colors.white,
-          appBar: customAppBarWithTitle(context, 'Appointment Details'),
+          appBar: customAppBarWithTitle(context, 'Appointment Summary'),
           body: specificAppointmentDetails.when(
             data: (details) {
               return combinedDetails.when(
@@ -49,11 +55,6 @@ class AppointmentDetailsScreenState
                   final packages =
                       (combined['packages'] as List<AppointmentPackage>?) ?? [];
 
-                  final appointmentDate =
-                      details?['appointment_date'].toString();
-                  final appointmentTime =
-                      details?['appointment_time'].toString();
-
                   return SingleChildScrollView(
                     physics: BouncingScrollPhysics(),
                     child: Center(
@@ -62,11 +63,6 @@ class AppointmentDetailsScreenState
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const SizedBox(height: tertiarySizedBox),
-                            getAppointmentTitle(context, 'Appointment ID'),
-                            const SizedBox(height: primarySizedBox),
-                            getAppointmentDetail(
-                                context, details?['appointment_id']),
                             const SizedBox(height: tertiarySizedBox),
                             getAppointmentTitle(context, 'Service provider'),
                             const SizedBox(height: primarySizedBox),
@@ -90,7 +86,7 @@ class AppointmentDetailsScreenState
                             getAppointmentTitle(context, 'Date and time'),
                             const SizedBox(height: primarySizedBox),
                             getAppointmentDetail(context,
-                                '${secondaryFormatDate(appointmentDate!)}, ${formatTime(appointmentTime!)}'),
+                                '${secondaryFormatDate(rescheduleDate)}, ${formatTime(rescheduleTime)}'),
                             const SizedBox(height: tertiarySizedBox),
                             if (services.isNotEmpty) ...[
                               getAppointmentTitle(context, 'Services'),
@@ -107,7 +103,7 @@ class AppointmentDetailsScreenState
                                   name: '${package.packageName}',
                                   price: '${package.packagePrice.toString()}')),
                             ],
-                            const SizedBox(height: tertiarySizedBox),
+                            const SizedBox(height: secondarySizedBox),
                             Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
@@ -117,6 +113,38 @@ class AppointmentDetailsScreenState
                               ],
                             ),
                             const SizedBox(height: quaternarySizedBox),
+                            CustomWideButton(
+                              text: 'Confirm appointment',
+                              onPressed: () async {
+                                ref.read(totalAmountProvider.notifier).state =
+                                    details!['total_amount'].toString();
+
+                                final rescheduleAppointment =
+                                    await createRescheduledAppointment(
+                                  appointmentStatus: 'Pending',
+                                  date: formatDateToShort('$rescheduleDate'),
+                                  time: '$rescheduleTime',
+                                );
+
+                                if (rescheduleAppointment != null) {
+                                  final appointmentId =
+                                      ref.watch(appointmentIdProvider);
+
+                                  // Insert notification entry into the notification table
+                                  await insertNotification(
+                                      appointmentId: appointmentId,
+                                      appointmentNotifType: 'Rescheduled');
+
+                                  if (context.mounted) {
+                                    Navigator.push(
+                                      context,
+                                      crossFadeRoute(
+                                          const SuccessfulRescheduleAppointment()),
+                                    );
+                                  }
+                                }
+                              },
+                            ),
                           ],
                         ),
                       ),

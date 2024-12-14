@@ -15,3 +15,7 @@ final selectedSearchResultCategoryProvider = StateProvider<String>((ref) => '');
 
 // Provider to manage the selected service package type after search result
 final selectedSearchResultServicePackageTypeProvider = StateProvider<String>((ref) => '');
+
+final selectedSearchResultSpSentimentLabel = StateProvider<String>((ref) => '');
+
+final selectedSearchResultSpAvgRating = StateProvider<num?>((ref) => null);

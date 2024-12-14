@@ -25,10 +25,9 @@ class AppointmentService {
       final insertNotif = await supabaseClient
           .from('notification')
           .insert({
-            'appointment_status': 'Cancelled',
             'created_at': getFormattedDate(),
             'appointment_id': updatedAppointmentId,
-            'appoint_notif_type': 'Cancelled'
+            'appointment_notif_type': 'Cancelled'
           })
           .select('notification_id')
           .single();

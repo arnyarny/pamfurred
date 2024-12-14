@@ -4,9 +4,11 @@ class Service implements CartItem {
   const Service({
     required this.serviceServiceProviderId,
     required this.serviceProviderNameOfService,
+    required this.serviceServiceProviderImage,
     required this.serviceId,
     required this.serviceProviderServiceId,
     required this.serviceName,
+    this.serviceDesc,
     required this.category,
     required this.servicePrice,
     required this.serviceImage,
@@ -18,17 +20,19 @@ class Service implements CartItem {
   });
   final String serviceServiceProviderId;
   final String serviceProviderNameOfService;
+  final String serviceServiceProviderImage;
   final String serviceId;
   final String serviceProviderServiceId;
   final String serviceName;
+  final String? serviceDesc;
   final List<String> category;
   final int servicePrice;
   final String serviceImage;
   final List<String> serviceType;
   final List<String> servicePetType;
   final String serviceSize;
-  final double minWeight;
-  final double maxWeight;
+  final int minWeight;
+  final int maxWeight;
 
   // Override the CartItem getters
   @override
@@ -50,7 +54,13 @@ class Service implements CartItem {
   String get image => serviceImage;
 
   @override
+  List<String> get servicePackageType => serviceType;
+
+  @override
   String get name => serviceName;
+
+  @override
+  String get servicePackageDesc => serviceDesc!;
 
   @override
   List<String> get petType => servicePetType;

@@ -146,52 +146,59 @@ class _CartScreenState extends ConsumerState<CartScreen> {
                   ],
                 ),
               )
-            : Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.end,
-                    children: [
-                      TextButton.icon(
-                          label: const Text('Clear Cart'),
-                          onPressed: () {
-                            ref.read(cartNotifierProvider.notifier).clearCart();
-                          },
-                          icon: const Icon(
-                            Icons.delete,
-                          ))
-                    ],
-                  ),
-                  // Services Section
-                  if (services.isNotEmpty)
-                    const Padding(
-                      padding: EdgeInsets.symmetric(vertical: primarySizedBox),
-                      child: Text(
-                        'Services',
-                        style: TextStyle(
-                          fontSize: titleFont,
-                          fontWeight: boldWeight,
+            : SingleChildScrollView(
+                physics: BouncingScrollPhysics(),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: [
+                        TextButton.icon(
+                            label: const Text('Clear Cart'),
+                            onPressed: () {
+                              ref
+                                  .read(cartNotifierProvider.notifier)
+                                  .clearCart();
+                            },
+                            icon: const Icon(
+                              Icons.delete,
+                            ))
+                      ],
+                    ),
+                    // Services Section
+                    if (services.isNotEmpty)
+                      const Padding(
+                        padding:
+                            EdgeInsets.symmetric(vertical: primarySizedBox),
+                        child: Text(
+                          'Services',
+                          style: TextStyle(
+                            fontSize: titleFont,
+                            fontWeight: boldWeight,
+                          ),
                         ),
                       ),
-                    ),
-                  if (services.isNotEmpty)
-                    ...services.map((service) => _buildCartItem(service)),
+                    if (services.isNotEmpty)
+                      ...services.map((service) => _buildCartItem(service)),
 
-                  // Packages Section
-                  if (packages.isNotEmpty)
-                    const Padding(
-                      padding: EdgeInsets.symmetric(vertical: primarySizedBox),
-                      child: Text(
-                        'Packages',
-                        style: TextStyle(
-                          fontSize: titleFont,
-                          fontWeight: boldWeight,
+                    // Packages Section
+                    if (packages.isNotEmpty)
+                      const Padding(
+                        padding:
+                            EdgeInsets.symmetric(vertical: primarySizedBox),
+                        child: Text(
+                          'Packages',
+                          style: TextStyle(
+                            fontSize: titleFont,
+                            fontWeight: boldWeight,
+                          ),
                         ),
                       ),
-                    ),
-                  if (packages.isNotEmpty)
-                    ...packages.map((package) => _buildCartItem(package)),
-                ],
+                    if (packages.isNotEmpty)
+                      ...packages.map((package) => _buildCartItem(package)),
+                  ],
+                ),
               ),
       ),
     );
@@ -208,7 +215,7 @@ class _CartScreenState extends ConsumerState<CartScreen> {
               imageUrl: item.image,
               width: 90,
               height: 85,
-              fit: BoxFit.cover,
+              fit: BoxFit.fitHeight,
               placeholder: (context, url) {
                 // Shimmer effect while loading
                 return Shimmer.fromColors(

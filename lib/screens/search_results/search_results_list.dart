@@ -116,6 +116,18 @@ class ResultsListWidget extends ConsumerWidget {
                                   selectedSearchResultServicePackageTypeProvider
                                       .notifier)
                               .state = provider.type;
+
+                          // Service provider rating
+                          ref
+                              .read(selectedSearchResultSpAvgRating.notifier)
+                              .state = provider.averageRating;
+
+                          // Service provider sentiment label
+                          ref
+                              .read(
+                                  selectedSearchResultSpSentimentLabel.notifier)
+                              .state = provider.sentimentLabel;
+
                           print(
                               'selectedSearchResultServicePackageTypeProvider: ${ref.read(selectedSearchResultServicePackageTypeProvider)}');
                           showModalBottomSheet(
@@ -127,7 +139,7 @@ class ResultsListWidget extends ConsumerWidget {
                             ),
                             builder: (context) {
                               return SizedBox(
-                                  height: 500,
+                                  height: 700,
                                   child: const ServicePackageDetails());
                             },
                           );

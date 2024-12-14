@@ -23,9 +23,13 @@ final allPackagesProvider =
     return Package(
       packageServiceProviderId: package['sp_id'] as String? ?? '',
       serviceProviderNameOfPackage: package['sp_name'] as String? ?? '',
+      packageServiceProviderImage: package['sp_image'] as String? ?? '',
       packageId: package['package_id'] as String? ?? '',
       serviceProviderPackageId: package['serviceprovider_package_id'] ?? '',
       packageName: package['package_name'] as String? ?? '',
+      packageDesc: package['package_desc'] == null || package['package_desc'] == ''
+          ? 'No description provided.'
+          : package['package_desc'] as String,
       category: package['package_category'] is List<dynamic>
           ? List<String>.from(package['package_category'] as List<dynamic>)
           : [],
@@ -39,11 +43,11 @@ final allPackagesProvider =
           : [],
       packageSize: package['size'] as String? ?? '',
       minWeight: package['min_weight'] != null
-          ? double.tryParse(package['min_weight'].toString()) ?? 0.0
-          : 0.0,
+          ? int.tryParse(package['min_weight'].toString()) ?? 0
+          : 0,
       maxWeight: package['max_weight'] != null
-          ? double.tryParse(package['max_weight'].toString()) ?? 0.0
-          : 0.0,
+          ? int.tryParse(package['max_weight'].toString()) ?? 0
+          : 0,
     );
   }).toList();
 

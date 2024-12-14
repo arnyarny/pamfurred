@@ -34,8 +34,13 @@ final allServicesProvider =
       serviceServiceProviderId: service['sp_id'] as String? ?? '',
       serviceId: service['service_id'] as String? ?? '',
       serviceProviderNameOfService: service['sp_name'] as String? ?? '',
+      serviceServiceProviderImage: service['sp_image'] as String? ?? '',
       serviceProviderServiceId: service['serviceprovider_service_id'] ?? '',
       serviceName: service['service_name'] as String? ?? '',
+      serviceDesc:
+          service['service_desc'] == null || service['service_desc'] == ''
+              ? 'No description provided.'
+              : service['service_desc'] as String,
       category: service['service_category'] is List<dynamic>
           ? List<String>.from(service['service_category'] as List<dynamic>)
           : [],
@@ -49,11 +54,11 @@ final allServicesProvider =
           : [],
       serviceSize: service['size'] as String? ?? '',
       minWeight: service['min_weight'] != null
-          ? double.tryParse(service['min_weight'].toString()) ?? 0.0
-          : 0.0,
+          ? int.tryParse(service['min_weight'].toString()) ?? 0
+          : 0,
       maxWeight: service['max_weight'] != null
-          ? double.tryParse(service['max_weight'].toString()) ?? 0.0
-          : 0.0,
+          ? int.tryParse(service['max_weight'].toString()) ?? 0
+          : 0,
     );
   }).toList();
 

@@ -44,8 +44,7 @@ class HomeScreenState extends ConsumerState<HomeScreen> {
   final ScrollController _scrollController = ScrollController();
 
   bool isSelected = false;
-
-  int selectedIndex = 0;
+  late int selectedIndex;
 
   @override
   void initState() {
@@ -59,6 +58,8 @@ class HomeScreenState extends ConsumerState<HomeScreen> {
       // Handle errors appropriately
       print(error);
     });
+
+    selectedIndex = ref.read(selectedCategoryIndexProvider);
   }
 
   void _scrollListener() {
@@ -352,7 +353,8 @@ class HomeScreenState extends ConsumerState<HomeScreen> {
             ),
         error: (error, _) {
           print(error);
-          return const ErrorMessage();
+          return Container(
+              height: 115, child: Center(child: const ErrorMessage()));
         });
   }
 
@@ -382,7 +384,7 @@ class HomeScreenState extends ConsumerState<HomeScreen> {
         loading: () => const Center(child: SizedBox.shrink()),
         error: (error, _) {
           print(error);
-          return const ErrorMessage();
+          return const SizedBox.shrink();
         });
   }
 
@@ -679,7 +681,8 @@ class ServiceProvidersWidget extends ConsumerWidget {
             ),
         error: (error, _) {
           print(error);
-          return const ErrorMessage();
+          return Container(
+              height: 225, child: Center(child: const ErrorMessage()));
         },
         data: (serviceProviders) {
           if (serviceProviders.isEmpty) {
@@ -700,8 +703,9 @@ class ServiceProvidersWidget extends ConsumerWidget {
               itemBuilder: (context, index) {
                 final sp = serviceProviders[index];
 
-                final imageUrl = sp['service_provider_image'] ??
-                    'https://tinyurl.com/3tnt6yyy'; // Default image if null
+                final imageUrl = sp['service_provider_image'].isEmpty
+                    ? 'https://tinyurl.com/3tnt6yyy'
+                    : sp['service_provider_image']; // Default image if null
                 final name = capitalizeFirstLetter(sp['service_provider_name']);
                 final rating = (sp['average_rating'] is int
                         ? (sp['average_rating'] as int).toDouble()

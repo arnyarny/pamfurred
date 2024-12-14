@@ -50,122 +50,126 @@ class AddressDetailsScreenState extends ConsumerState<AddressDetailsScreen> {
       backgroundColor: Colors.white,
       body: Padding(
         padding: primaryPadding,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            buildSectionHeader("Home Address Details"),
-            const SizedBox(height: secondarySizedBox),
-            formDescription(context,
-                "Please enter your home address, as these details will be used by service providers to locate you for your home service appointment."),
-            const SizedBox(height: tertiarySizedBox),
-            RichText(
-              text: const TextSpan(
-                text: "Municipality ",
-                style: TextStyle(color: Colors.black, fontSize: regularText),
-                children: [
-                  TextSpan(text: "*", style: TextStyle(color: primaryColor)),
-                ],
-              ),
-            ),
-            const SizedBox(height: secondarySizedBox),
-            CustomDropdown<String>.search(
-              decoration: getDropdownDecoration(),
-              hintText: 'Select Municipality', // Label as a hint
-              items:
-                  predefinedProvince.municipalities.map((m) => m.name).toList(),
-              onChanged: (String? name) {
-                setState(() {
-                  municipality = predefinedProvince.municipalities.firstWhere(
-                    (m) => m.name == name,
-                  );
-                  barangay = null; // Reset barangay when municipality changes
-                  widget.controllers['city']?.text =
-                      name ?? ''; // Update controller
-                });
-              },
-            ),
-            const SizedBox(height: secondarySizedBox),
-            RichText(
-              text: const TextSpan(
-                text: "Barangay ",
-                style: TextStyle(color: Colors.black, fontSize: regularText),
-                children: [
-                  TextSpan(text: "*", style: TextStyle(color: primaryColor)),
-                ],
-              ),
-            ),
-            const SizedBox(height: secondarySizedBox),
-            CustomDropdown<String>.search(
-              decoration: getDropdownDecoration(),
-              hintText: 'Select Barangay', // Label as a hint
-              items: municipality?.barangays ?? [],
-              onChanged: (String? value) {
-                setState(() {
-                  barangay = value;
-                  widget.controllers['barangay']?.text =
-                      value ?? ''; // Update controller
-                });
-              },
-            ),
-            const SizedBox(height: secondarySizedBox),
-            Row(
-              children: [
-                Expanded(
-                  child: CustomTextField(
-                    label: "Floor/Unit/Room",
-                    controllerKey: "floorUnitRoom",
-                    controllers: widget.controllers,
-                    isRequired: false,
-                  ),
+        child: SingleChildScrollView(
+          physics: BouncingScrollPhysics(),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              buildSectionHeader("Home Address Details"),
+              const SizedBox(height: secondarySizedBox),
+              formDescription(context,
+                  "Please enter your home address, as these details will be used by service providers to locate you for your home service appointment."),
+              const SizedBox(height: tertiarySizedBox),
+              RichText(
+                text: const TextSpan(
+                  text: "Municipality ",
+                  style: TextStyle(color: Colors.black, fontSize: regularText),
+                  children: [
+                    TextSpan(text: "*", style: TextStyle(color: primaryColor)),
+                  ],
                 ),
-                const SizedBox(width: primarySizedBox),
-                Expanded(
-                  child: CustomTextField(
-                      label: "Street name",
-                      controllerKey: "street",
-                      controllers: widget.controllers),
+              ),
+              const SizedBox(height: secondarySizedBox),
+              CustomDropdown<String>.search(
+                decoration: getDropdownDecoration(),
+                hintText: 'Select Municipality', // Label as a hint
+                items: predefinedProvince.municipalities
+                    .map((m) => m.name)
+                    .toList(),
+                onChanged: (String? name) {
+                  setState(() {
+                    municipality = predefinedProvince.municipalities.firstWhere(
+                      (m) => m.name == name,
+                    );
+                    barangay = null; // Reset barangay when municipality changes
+                    widget.controllers['city']?.text =
+                        name ?? ''; // Update controller
+                  });
+                },
+              ),
+              const SizedBox(height: secondarySizedBox),
+              RichText(
+                text: const TextSpan(
+                  text: "Barangay ",
+                  style: TextStyle(color: Colors.black, fontSize: regularText),
+                  children: [
+                    TextSpan(text: "*", style: TextStyle(color: primaryColor)),
+                  ],
+                ),
+              ),
+              const SizedBox(height: secondarySizedBox),
+              CustomDropdown<String>.search(
+                decoration: getDropdownDecoration(),
+                hintText: 'Select Barangay', // Label as a hint
+                items: municipality?.barangays ?? [],
+                onChanged: (String? value) {
+                  setState(() {
+                    barangay = value;
+                    widget.controllers['barangay']?.text =
+                        value ?? ''; // Update controller
+                  });
+                },
+              ),
+              const SizedBox(height: secondarySizedBox),
+              Row(
+                children: [
+                  Expanded(
+                    child: CustomTextField(
+                      label: "Floor/Unit/Room",
+                      controllerKey: "floorUnitRoom",
+                      controllers: widget.controllers,
+                      isRequired: false,
+                    ),
+                  ),
+                  const SizedBox(width: primarySizedBox),
+                  Expanded(
+                    child: CustomTextField(
+                        label: "Street name",
+                        controllerKey: "street",
+                        controllers: widget.controllers),
+                  ),
+                ],
+              ),
+              if (_showError) ...[
+                const SizedBox(height: 8.0),
+                const Text(
+                  "Please fill out all required fields.",
+                  style: TextStyle(color: Colors.red),
                 ),
               ],
-            ),
-            if (_showError) ...[
-              const SizedBox(height: 8.0),
-              const Text(
-                "Please fill out all required fields.",
-                style: TextStyle(color: Colors.red),
+              const SizedBox(height: tertiarySizedBox),
+              CustomWideButton(
+                text: "Next",
+                onPressed: () {
+                  if (_validateFields()) {
+                    setState(() {
+                      _showError = false;
+                      ref.read(floorUnitRoomProvider.notifier).state =
+                          widget.controllers['floorUnitRoom']!.text.trim();
+                      ref.read(streetProvider.notifier).state =
+                          widget.controllers['street']!.text.trim();
+                      ref.read(barangayProvider.notifier).state =
+                          widget.controllers['barangay']!.text.trim();
+                      ref.read(cityProvider.notifier).state =
+                          widget.controllers['city']!.text.trim();
+                    });
+                    Navigator.push(
+                        context,
+                        rightToLeftRoute(CredentialsScreen(controllers: {
+                          'email': TextEditingController(),
+                          'password': TextEditingController(),
+                        })));
+                  } else {
+                    setState(() {
+                      _showError = true;
+                    });
+                  }
+                },
               ),
+              const SizedBox(height: quaternarySizedBox),
+              hasAnAccount(context)
             ],
-            const SizedBox(height: tertiarySizedBox),
-            CustomWideButton(
-              text: "Next",
-              onPressed: () {
-                if (_validateFields()) {
-                  setState(() {
-                    _showError = false;
-                    ref.read(floorUnitRoomProvider.notifier).state =
-                        widget.controllers['floorUnitRoom']!.text.trim();
-                    ref.read(streetProvider.notifier).state =
-                        widget.controllers['street']!.text.trim();
-                    ref.read(barangayProvider.notifier).state =
-                        widget.controllers['barangay']!.text.trim();
-                    ref.read(cityProvider.notifier).state =
-                        widget.controllers['city']!.text.trim();
-                  });
-                  Navigator.push(
-                      context,
-                      rightToLeftRoute(CredentialsScreen(controllers: {
-                        'email': TextEditingController(),
-                        'password': TextEditingController(),
-                      })));
-                } else {
-                  setState(() {
-                    _showError = true;
-                  });
-                }
-              },
-            ),
-            const SizedBox(height: quaternarySizedBox),
-            hasAnAccount(context)
-          ],
+          ),
         ),
       ),
     );

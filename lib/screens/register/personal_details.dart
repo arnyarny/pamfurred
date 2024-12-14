@@ -37,66 +37,68 @@ class PersonalInformationScreenState
       backgroundColor: Colors.white,
       body: Padding(
         padding: primaryPadding,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            buildSectionHeader("Personal Information"),
-            const SizedBox(height: secondaryBorderRadius),
-            formDescription(context,
-                "Please enter your first and last name to help us personalize your experience. This will ensure that we address you properly and tailor our services to your needs."),
-            const SizedBox(height: tertiarySizedBox),
-            Row(
-              children: [
-                Expanded(
-                  child: CustomTextField(
-                    label: "First name",
-                    controllerKey: "firstName",
-                    controllers: widget.controllers
+        child: SingleChildScrollView(
+          physics: BouncingScrollPhysics(),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              buildSectionHeader("Personal Information"),
+              const SizedBox(height: secondaryBorderRadius),
+              formDescription(context,
+                  "Please enter your first and last name to help us personalize your experience. This will ensure that we address you properly and tailor our services to your needs."),
+              const SizedBox(height: tertiarySizedBox),
+              Row(
+                children: [
+                  Expanded(
+                    child: CustomTextField(
+                        label: "First name",
+                        controllerKey: "firstName",
+                        controllers: widget.controllers),
                   ),
-                ),
-                const SizedBox(width: primarySizedBox),
-                Expanded(
-                  child: CustomTextField(
-                      label: "Last name",
-                      controllerKey: "lastName",
-                      controllers: widget.controllers),
+                  const SizedBox(width: primarySizedBox),
+                  Expanded(
+                    child: CustomTextField(
+                        label: "Last name",
+                        controllerKey: "lastName",
+                        controllers: widget.controllers),
+                  ),
+                ],
+              ),
+              if (_showError) ...[
+                const SizedBox(height: 8.0),
+                const Text(
+                  "Please fill out all required fields.",
+                  style: TextStyle(color: Colors.red),
                 ),
               ],
-            ),
-            if (_showError) ...[
-              const SizedBox(height: 8.0),
-              const Text(
-                "Please fill out all required fields.",
-                style: TextStyle(color: Colors.red),
+              const SizedBox(height: tertiarySizedBox),
+              CustomWideButton(
+                text: "Next",
+                validator: validateFields,
+                onValidationFailed: () {
+                  setState(() {
+                    _showError = true;
+                  });
+                },
+                onPressed: () {
+                  setState(() {
+                    _showError = false;
+                    ref.read(firstNameProvider.notifier).state =
+                        widget.controllers['firstName']!.text.trim();
+                    ref.read(lastNameProvider.notifier).state =
+                        widget.controllers['lastName']!.text.trim();
+                  });
+                  Navigator.push(
+                      context,
+                      rightToLeftRoute(PhoneNumberScreen(controllers: {
+                        'phoneNumber': TextEditingController(),
+                      })));
+                },
               ),
+              const SizedBox(height: quaternarySizedBox),
+              hasAnAccount(context)
             ],
-            const SizedBox(height: tertiarySizedBox),
-            CustomWideButton(
-              text: "Next",
-              validator: validateFields,
-              onValidationFailed: () {
-                setState(() {
-                  _showError = true;
-                });
-              },
-              onPressed: () {
-                setState(() {
-                  _showError = false;
-                  ref.read(firstNameProvider.notifier).state =
-                      widget.controllers['firstName']!.text.trim();
-                  ref.read(lastNameProvider.notifier).state =
-                      widget.controllers['lastName']!.text.trim();
-                });
-                Navigator.push(
-                    context,
-                    rightToLeftRoute(PhoneNumberScreen(controllers: {
-                      'phoneNumber': TextEditingController(),
-                    })));
-              },
-            ),
-            const SizedBox(height: quaternarySizedBox),
-            hasAnAccount(context)
-          ],
+          ),
         ),
       ),
     );

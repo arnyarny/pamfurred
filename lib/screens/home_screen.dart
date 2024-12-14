@@ -44,8 +44,7 @@ class HomeScreenState extends ConsumerState<HomeScreen> {
   final ScrollController _scrollController = ScrollController();
 
   bool isSelected = false;
-
-  int selectedIndex = 0;
+  late int selectedIndex;
 
   @override
   void initState() {
@@ -59,6 +58,8 @@ class HomeScreenState extends ConsumerState<HomeScreen> {
       // Handle errors appropriately
       print(error);
     });
+
+    selectedIndex = ref.read(selectedCategoryIndexProvider);
   }
 
   void _scrollListener() {
@@ -702,8 +703,9 @@ class ServiceProvidersWidget extends ConsumerWidget {
               itemBuilder: (context, index) {
                 final sp = serviceProviders[index];
 
-                final imageUrl = sp['service_provider_image'] ??
-                    'https://tinyurl.com/3tnt6yyy'; // Default image if null
+                final imageUrl = sp['service_provider_image'].isEmpty
+                    ? 'https://tinyurl.com/3tnt6yyy'
+                    : sp['service_provider_image']; // Default image if null
                 final name = capitalizeFirstLetter(sp['service_provider_name']);
                 final rating = (sp['average_rating'] is int
                         ? (sp['average_rating'] as int).toDouble()

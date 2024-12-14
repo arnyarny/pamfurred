@@ -4,9 +4,11 @@ class Package implements CartItem {
   const Package({
     required this.packageServiceProviderId,
     required this.serviceProviderNameOfPackage,
+    required this.packageServiceProviderImage,
     required this.packageId,
     required this.serviceProviderPackageId,
     required this.packageName,
+    this.packageDesc,
     required this.category,
     // required this.minSize,
     // required this.maxSize,
@@ -21,19 +23,19 @@ class Package implements CartItem {
 
   final String packageServiceProviderId;
   final String serviceProviderNameOfPackage;
+  final String packageServiceProviderImage;
   final String packageId;
   final String serviceProviderPackageId;
   final String packageName;
+  final String? packageDesc;
   final List<String> category;
-  // final int minSize;
-  // final dynamic maxSize;
   final int packagePrice;
   final String packageImage;
   final List<String> packageType;
   final List<String> packagePetType;
   final String packageSize;
-  final double minWeight;
-  final double maxWeight;
+  final int minWeight;
+  final int maxWeight;
 
   // Override the CartItem getters
   @override
@@ -55,7 +57,13 @@ class Package implements CartItem {
   String get image => packageImage;
 
   @override
+  List<String> get servicePackageType => packageType;
+
+  @override
   String get name => packageName;
+
+  @override
+  String get servicePackageDesc => packageDesc!;
 
   @override
   List<String> get petType => packagePetType;

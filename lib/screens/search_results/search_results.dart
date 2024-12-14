@@ -2,6 +2,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pamfurred/backend_logic_files/store_location.dart';
+import 'package:pamfurred/components/cart_icon.dart';
 import 'package:pamfurred/components/globals.dart';
 import 'package:pamfurred/components/screen_transitions.dart';
 import 'package:pamfurred/providers/global_providers.dart';
@@ -141,24 +142,32 @@ class SearchResultsScreenState extends ConsumerState<SearchResultsScreen> {
       body: Column(
         children: [
           Row(
-            mainAxisAlignment: MainAxisAlignment.end,
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              OutlinedButton.icon(
-                onPressed: () {
-                  scaffoldKey.currentState?.openEndDrawer(); // Open the drawer
-                },
-                icon: const Icon(Icons.settings, color: Colors.black),
-                label: const Text(
-                  'Preferences',
-                  style: TextStyle(color: Colors.black),
-                ),
-                style: OutlinedButton.styleFrom(
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(secondaryBorderRadius),
+              CartIcon(
+                  iconColor: primaryColor,
+                  borderColor: secondaryColor,
+                  badgeColor: Colors.white),
+              Padding(
+                padding: const EdgeInsets.only(right: tertiarySizedBox),
+                child: OutlinedButton.icon(
+                  onPressed: () {
+                    scaffoldKey.currentState
+                        ?.openEndDrawer(); // Open the drawer
+                  },
+                  icon: const Icon(Icons.settings, color: Colors.black),
+                  label: const Text(
+                    'Preferences',
+                    style: TextStyle(color: Colors.black),
+                  ),
+                  style: OutlinedButton.styleFrom(
+                    shape: RoundedRectangleBorder(
+                      borderRadius:
+                          BorderRadius.circular(secondaryBorderRadius),
+                    ),
                   ),
                 ),
               ),
-              const SizedBox(width: tertiarySizedBox),
             ],
           ),
           const SizedBox(height: primarySizedBox),

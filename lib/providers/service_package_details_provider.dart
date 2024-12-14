@@ -23,11 +23,11 @@ final servicePackageDetailsProvider =
     throw Exception('servicePackageId is empty!');
   }
 
-  print('Fetching details for servicePackageId: $servicePackageId');
-  print('isService: $isService');
-  print('spId: $spId');
-  print('servicePackageId: $servicePackageId');
-  print('serviceProviderServicePackageId: $serviceProviderServicePackageId');
+  // print('Fetching details for servicePackageId: $servicePackageId');
+  // print('isService: $isService');
+  // print('spId: $spId');
+  // print('servicePackageId: $servicePackageId');
+  // print('serviceProviderServicePackageId: $serviceProviderServicePackageId');
 
   if (isService) {
     print('Fetching service details...');
@@ -60,14 +60,18 @@ final servicePackageDetailsProvider =
       {
         'sp_id': service.serviceServiceProviderId,
         'sp_name': service.serviceProviderNameOfService,
+        'sp_image': service.serviceServiceProviderImage,
         'service_id': service.serviceId,
         'serviceprovider_service_id': service.serviceProviderServiceId,
         'service_name': service.serviceName,
+        'service_desc': service.serviceDesc,
         'service_image': service.serviceImage,
         'service_price': service.servicePrice,
-        'size': service.serviceSize,
+        'service_size': service.serviceSize,
         'min_weight': service.minWeight,
         'max_weight': service.maxWeight,
+        'service_type_service': service.serviceType,
+        'pet_type': service.servicePetType,
       },
       service.serviceId, // serviceId as the second argument
       service
@@ -104,14 +108,18 @@ final servicePackageDetailsProvider =
       {
         'sp_id': package.packageServiceProviderId,
         'sp_name': package.serviceProviderNameOfPackage,
+        'sp_image': package.packageServiceProviderImage,
         'package_id': package.packageId,
         'serviceprovider_package_id': package.serviceProviderPackageId,
         'package_name': package.packageName,
+        'package_desc': package.packageDesc,
         'package_image': package.packageImage,
         'package_price': package.packagePrice,
-        'size': package.packageSize,
+        'package_size': package.packageSize,
         'min_weight': package.minWeight,
         'max_weight': package.maxWeight,
+        'package_type': package.packageType,
+        'pet_type': package.packagePetType,
       },
       package.packageId, // packageId as the second argument
       package

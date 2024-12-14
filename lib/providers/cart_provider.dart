@@ -4,52 +4,93 @@ import 'package:pamfurred/models/cart_item.dart';
 import 'package:pamfurred/models/services.dart';
 import 'package:pamfurred/models/packages.dart';
 import 'package:pamfurred/providers/user_id.dart';
+import 'package:pamfurred/providers/serviceprovider_provider.dart';
 import 'package:quickalert/models/quickalert_animtype.dart';
 import 'package:quickalert/models/quickalert_type.dart';
 import 'package:quickalert/widgets/quickalert_dialog.dart';
 
 class CartNotifier extends StateNotifier<Set<CartItem>> {
-  CartNotifier(this.userId) : super({});
+  CartNotifier(this.ref, this.userId) : super({});
 
+  final Ref ref;
   final String? userId; // Store the userId for further use
+
+  // Watch selected service/package type, i.e., Home service or In-clinic
+  String get selectedServicePackageType =>
+      ref.watch(selectedAppointmentPackageServiceTypeProvider);
+
+  // Watch selected pet type and pet weight for appointment
+  String get selectedPetType => ref.watch(selectedAppointmentPetTypeProvider);
+  double? get selectedPetWeight => ref.watch(selectedAppointmentPetWeightProvider);
 
   // Helper to get a unique set of provider IDs in the cart
   Set<String> get uniqueProviderIds {
     return state.map((item) => item.serviceProviderId).toSet();
   }
 
-  // Check for conflicts based on service attributes
-  bool _isConflict(Service service) {
+  // Check for provider conflicts
+  bool _hasProviderConflict(Service service) {
     for (final item in state) {
       if (item.serviceProviderId != service.serviceProviderId) {
         return true; // Conflict found: Different service providers
       }
-      bool petTypeConflict =
-          item.petType.toSet().intersection(service.petType.toSet()).isEmpty;
-      if (petTypeConflict) {
-        return true; // Conflict found: No matching pet types
-      }
     }
-    return false; // No conflict found
+    return false;
   }
 
-  bool _isPackageConflict(Package package) {
+  bool _hasProviderPackageConflict(Package package) {
     for (final item in state) {
       if (item.serviceProviderId != package.serviceProviderId) {
         return true; // Conflict found: Different service providers
       }
-      bool petTypeConflict =
-          item.petType.toSet().intersection(package.petType.toSet()).isEmpty;
-      if (petTypeConflict) {
-        return true; // Conflict found: No matching pet types
-      }
     }
-    return false; // No conflict found
+    return false;
   }
 
+  // Check for size (weight) conflicts based on pet weight
+  bool _hasWeightConflict(Service service) {
+    if (selectedPetWeight == null) return false;
+
+    final minSize = service.minWeight;
+    final maxSize = service.maxWeight;
+
+    return selectedPetWeight! < minSize || selectedPetWeight! > maxSize;
+  }
+
+  bool _hasWeightPackageConflict(Package package) {
+    if (selectedPetWeight == null) return false;
+
+    final minSize = package.minWeight;
+    final maxSize = package.maxWeight;
+
+    return selectedPetWeight! < minSize || selectedPetWeight! > maxSize;
+  }
+
+  // Check for type conflicts
+  bool _hasTypeConflict(Service service) {
+    return !service.servicePackageType.any(
+      (type) => selectedServicePackageType.contains(type),
+    );
+  }
+
+  bool _hasTypePackageConflict(Package package) {
+    return !package.servicePackageType.any(
+      (type) => selectedServicePackageType.contains(type),
+    );
+  }
+
+  // Add a service to the cart
   void addService(Service service, BuildContext context) {
-    if (_isConflict(service)) {
+    if (_hasProviderConflict(service)) {
       _showProviderConflictDialog(context);
+      return;
+    }
+    if (_hasWeightConflict(service)) {
+      _showWeightConflictDialog(context);
+      return;
+    }
+    if (_hasTypeConflict(service)) {
+      _showTypeConflictDialog(context);
       return;
     }
     if (!state.any((item) =>
@@ -59,9 +100,18 @@ class CartNotifier extends StateNotifier<Set<CartItem>> {
     }
   }
 
+  // Add a package to the cart
   void addPackage(Package package, BuildContext context) {
-    if (_isPackageConflict(package)) {
+    if (_hasProviderPackageConflict(package)) {
       _showProviderConflictDialog(context);
+      return;
+    }
+    if (_hasWeightPackageConflict(package)) {
+      _showWeightConflictDialog(context);
+      return;
+    }
+    if (_hasTypePackageConflict(package)) {
+      _showTypeConflictDialog(context);
       return;
     }
     if (!state.any((item) =>
@@ -71,6 +121,7 @@ class CartNotifier extends StateNotifier<Set<CartItem>> {
     }
   }
 
+  // Show a provider conflict dialog
   void _showProviderConflictDialog(BuildContext context) {
     QuickAlert.show(
       context: context,
@@ -81,6 +132,29 @@ class CartNotifier extends StateNotifier<Set<CartItem>> {
     );
   }
 
+  // Show a weight conflict dialog
+  void _showWeightConflictDialog(BuildContext context) {
+    QuickAlert.show(
+      context: context,
+      type: QuickAlertType.error,
+      animType: QuickAlertAnimType.slideInUp,
+      title: 'Weight Conflict',
+      text: 'The selected pet weight is outside the allowed range for this service or package.',
+    );
+  }
+
+  // Show a type conflict dialog
+  void _showTypeConflictDialog(BuildContext context) {
+    QuickAlert.show(
+      context: context,
+      type: QuickAlertType.warning,
+      animType: QuickAlertAnimType.slideInUp,
+      title: 'Warning',
+      text: 'The service or package type must match the selected type.',
+    );
+  }
+
+  // Remove a service from the cart
   void removeService(Service service) {
     state = state
         .where((item) =>
@@ -89,6 +163,7 @@ class CartNotifier extends StateNotifier<Set<CartItem>> {
         .toSet();
   }
 
+  // Remove a package from the cart
   void removePackage(Package package) {
     state = state
         .where((item) =>
@@ -97,6 +172,7 @@ class CartNotifier extends StateNotifier<Set<CartItem>> {
         .toSet();
   }
 
+  // Clear the cart
   void clearCart() {
     state = {};
   }
@@ -106,7 +182,7 @@ class CartNotifier extends StateNotifier<Set<CartItem>> {
 final cartNotifierProvider =
     StateNotifierProvider<CartNotifier, Set<CartItem>>((ref) {
   final userId = ref.watch(userIdProvider); // Watch the current user ID
-  return CartNotifier(userId);
+  return CartNotifier(ref, userId);
 });
 
 // Provider to calculate the total price of all items in the cart

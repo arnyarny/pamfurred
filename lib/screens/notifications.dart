@@ -2,6 +2,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:pamfurred/components/capitalize_first_letter.dart';
 import 'package:pamfurred/components/empty_list_widget.dart';
 import 'package:pamfurred/components/globals.dart';
 import 'package:pamfurred/components/header.dart';
@@ -274,14 +275,25 @@ class NotificationsScreenState extends ConsumerState<NotificationsScreen> {
                   children: [
                     Row(
                       children: [
-                        customTitleText(context, "Appointment"),
-                        customTitleText(
-                          context,
-                          toLowercase(notification['appointment_notif_type'] ==
-                                  "Done"
-                              ? " completed"
-                              : " ${notification['appointment_notif_type']}"),
-                        ),
+                        if (notification['appointment_notif_type'] !=
+                            "Upcoming") ...[
+                          customTitleText(context, "Appointment"),
+                          customTitleText(
+                            context,
+                            toLowercase(notification[
+                                        'appointment_notif_type'] ==
+                                    "Done"
+                                ? " completed"
+                                : " ${notification['appointment_notif_type']}"),
+                          ),
+                        ] else ...[
+                          customTitleText(
+                            context,
+                            capitalizeFirstLetter(
+                                notification['appointment_notif_type']),
+                          ),
+                          customTitleText(context, " appointment"),
+                        ]
                       ],
                     ),
                     const SizedBox(height: primarySizedBox),

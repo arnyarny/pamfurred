@@ -41,9 +41,7 @@ final allServicesProvider =
           service['service_desc'] == null || service['service_desc'] == ''
               ? 'No description provided.'
               : service['service_desc'] as String,
-      category: service['service_category'] is List<dynamic>
-          ? List<String>.from(service['service_category'] as List<dynamic>)
-          : [],
+      category: service['service_category'] as String,
       servicePrice: service['price'] as int? ?? 0,
       serviceImage: service['service_image'] as String? ?? '',
       serviceType: service['service_type_service'] is List<dynamic>
@@ -83,7 +81,7 @@ final allServicesProvider =
   if (filterCriteria.serviceCategory != null &&
       filterCriteria.serviceCategory!.isNotEmpty) {
     serviceList = serviceList.where((service) {
-      return service.category.contains(filterCriteria.serviceCategory);
+      return service.category == filterCriteria.serviceCategory;
     }).toList();
     // print('After serviceCategory filter: $serviceList');
   }

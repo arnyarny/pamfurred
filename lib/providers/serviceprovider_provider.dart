@@ -53,6 +53,7 @@ final selectedAppointmentCategoryProvider = StateProvider<String>((ref) => '');
 final selectedAppointmentPackageServiceTypeProvider =
     StateProvider<String>((ref) => '');
 
+// Manages what pet types does the service/package caters
 // Provider to manage the selected pet type for booking appointment
 final selectedAppointmentPetTypeProvider = StateProvider<String>((ref) => '');
 

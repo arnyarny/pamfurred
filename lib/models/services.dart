@@ -25,7 +25,7 @@ class Service implements CartItem {
   final String serviceProviderServiceId;
   final String serviceName;
   final String? serviceDesc;
-  final List<String> category;
+  final String category;
   final int servicePrice;
   final String serviceImage;
   final List<String> serviceType;

@@ -7,6 +7,7 @@ import 'package:latlong2/latlong.dart';
 import 'package:pamfurred/components/capitalize_first_letter.dart';
 import 'package:pamfurred/components/cart_icon.dart';
 import 'package:pamfurred/components/custom_floating_action_button.dart';
+import 'package:pamfurred/components/custom_padded_button.dart';
 import 'package:pamfurred/components/globals.dart';
 import 'package:pamfurred/components/regular_text.dart';
 import 'package:pamfurred/components/screen_transitions.dart';
@@ -150,38 +151,33 @@ class ServiceproviderProfileScreenState
                 milliseconds: 300), // Duration for the fade effect
             child: willBook
                 ? Padding(
-                    padding: const EdgeInsets.only(right: 20),
-                    child: TextButton(
-                        onPressed: () {
-                          setState(() {
-                            // Clear the cart when this button is pressed
-                            ref.read(cartNotifierProvider.notifier).clearCart();
-                            ref.read(willBookProvider.notifier).state = false;
-                            // If willBook is false, reset the providers
-                            resetProviders(ref);
-                          });
-                        },
-                        style: ButtonStyle(
-                            shape:
-                                WidgetStateProperty.all<RoundedRectangleBorder>(
-                              RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(
-                                    secondaryBorderRadius),
-                              ),
-                            ),
-                            backgroundColor: WidgetStateProperty.all<Color>(
-                              primaryColor,
-                            )),
-                        child: const Padding(
-                          padding: EdgeInsets.all(.2),
-                          child: Text(
-                            'Cancel',
-                            style: TextStyle(
-                                color: Colors.white,
-                                fontSize: smallText,
-                                fontWeight: FontWeight.normal),
-                          ),
-                        )),
+                    padding: const EdgeInsets.only(right: 8.0),
+                    child: customSmallPaddedTextButton(
+                      text: 'Cancel',
+                      backgroundColor: Colors.red,
+                      onPressed: () {
+                        QuickAlert.show(
+                            context: context,
+                            type: QuickAlertType.warning,
+                            animType: QuickAlertAnimType.slideInUp,
+                            confirmBtnColor: Colors.red,
+                            showCancelBtn: true,
+                            onConfirmBtnTap: () {
+                              Navigator.pop(context);
+
+                              // Clear the cart when this button is pressed
+                              ref
+                                  .read(cartNotifierProvider.notifier)
+                                  .clearCart();
+                              ref.read(willBookProvider.notifier).state = false;
+                              // If willBook is false, reset the providers
+                              resetProviders(ref);
+                            },
+                            title: 'Cancel appointment?',
+                            text:
+                                'This will delete all your appointment preferences including all the services and packages currently in your cart.');
+                      },
+                    ),
                   )
                 : const SizedBox
                     .shrink(), // When `willBook` is false, the widget is hidden
@@ -781,7 +777,7 @@ final servicesTabProvider = FutureProvider<List<Widget>>((ref) async {
                                         ),
                                         willBook
                                             ? SizedBox(
-                                                width: 37,
+                                                width: 39,
                                                 child: Center(
                                                   child: CircleAvatar(
                                                     backgroundColor: isInCart
@@ -799,9 +795,10 @@ final servicesTabProvider = FutureProvider<List<Widget>>((ref) async {
                                                         icon: Icon(
                                                           isInCart
                                                               ? Icons.remove
-                                                              : Icons.add,
+                                                              : CupertinoIcons
+                                                                  .cart,
                                                           color: Colors.white,
-                                                          size: 23,
+                                                          size: 20,
                                                         ),
                                                         onPressed: () {
                                                           final cartNotifier =
@@ -989,9 +986,10 @@ final packagesTabProvider = FutureProvider<List<Widget>>((ref) async {
                                                         icon: Icon(
                                                           isInCart
                                                               ? Icons.remove
-                                                              : Icons.add,
+                                                              : CupertinoIcons
+                                                                  .cart,
                                                           color: Colors.white,
-                                                          size: 23,
+                                                          size: 20,
                                                         ),
                                                         onPressed: () {
                                                           final cartNotifier =

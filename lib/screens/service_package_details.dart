@@ -15,6 +15,7 @@ import 'package:pamfurred/components/title_text.dart';
 import 'package:pamfurred/models/packages.dart';
 import 'package:pamfurred/models/services.dart';
 import 'package:pamfurred/providers/cart_provider.dart';
+import 'package:pamfurred/providers/global_providers.dart';
 import 'package:pamfurred/providers/pet_profile_provider.dart';
 import 'package:pamfurred/providers/service_details_provider.dart';
 import 'package:pamfurred/providers/service_package_details_provider.dart';
@@ -80,7 +81,7 @@ class ServicePackageDetails extends ConsumerWidget {
             ref.watch(petProfileProvider(ref.watch(userIdProvider).toString()));
 
         return FractionallySizedBox(
-          heightFactor: 0.95, // Set maximum height of the sheet
+          heightFactor: 1, // Set maximum height of the sheet
           child: Column(
             children: [
               // Notch
@@ -149,7 +150,9 @@ class ServicePackageDetails extends ConsumerWidget {
                                         ),
                                       ),
                                       icon: Icon(
-                                        isInCart ? Icons.remove : Icons.add,
+                                        isInCart
+                                            ? Icons.remove
+                                            : CupertinoIcons.cart,
                                         color: Colors.white,
                                         size: 23,
                                         shadows: [
@@ -492,6 +495,13 @@ class ServicePackageDetails extends ConsumerWidget {
                           // Service provider profile overview
                           GestureDetector(
                             onTap: () {
+                              item.type == 'service'
+                                  ? ref
+                                      .read(selectedTabProvider.notifier)
+                                      .state = 1
+                                  : ref
+                                      .read(selectedTabProvider.notifier)
+                                      .state = 2;
                               Navigator.push(context,
                                   slideUpRoute(ServiceproviderProfileScreen()));
                             },

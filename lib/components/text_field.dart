@@ -10,6 +10,7 @@ class CustomTextField extends StatefulWidget {
   final bool isEmail;
   final bool isRequired;
   final String? defaultValue; // Optional default value
+  final String? errorText; // External error message from parent widget
 
   const CustomTextField({
     super.key,
@@ -17,9 +18,9 @@ class CustomTextField extends StatefulWidget {
     required this.controllerKey,
     required this.controllers,
     this.isEmail = false,
-    this.isRequired =
-        true, // Default is true, making the field required by default
+    this.isRequired = true, // Default is true, making the field required by default
     this.defaultValue, // Default value is optional
+    this.errorText, // Optional error text from parent widget
   });
 
   @override
@@ -28,7 +29,7 @@ class CustomTextField extends StatefulWidget {
 
 class CustomTextFieldState extends State<CustomTextField> {
   final FocusNode _focusNode = FocusNode();
-  String? _errorMessage;
+  String? _localErrorMessage;
 
   @override
   void initState() {
@@ -51,8 +52,8 @@ class CustomTextFieldState extends State<CustomTextField> {
   void _handleFocusChange() {
     if (_focusNode.hasFocus) {
       setState(() {
-        _errorMessage =
-            null; // Clear the error message when the field is focused
+        _localErrorMessage =
+            null; // Clear the local error message when the field is focused
       });
     }
   }
@@ -69,6 +70,8 @@ class CustomTextFieldState extends State<CustomTextField> {
 
   @override
   Widget build(BuildContext context) {
+    final errorToDisplay = widget.errorText ?? _localErrorMessage;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -98,23 +101,23 @@ class CustomTextFieldState extends State<CustomTextField> {
               borderRadius: BorderRadius.circular(secondaryBorderRadius),
             ),
             hintText: widget.isEmail ? "Enter your email" : null,
-            errorText: _errorMessage,
+            errorText: errorToDisplay, // Display error text here
           ),
           onChanged: (value) {
             setState(() {
-              _errorMessage = null; // Hide error when typing
+              _localErrorMessage = null; // Hide local error when typing
             });
           },
           onFieldSubmitted: (value) {
             setState(() {
-              _errorMessage =
+              _localErrorMessage =
                   _validateInput(value); // Show error after submission
             });
           },
           validator: (value) {
             final error = _validateInput(value);
             setState(() {
-              _errorMessage = error; // Update error message during validation
+              _localErrorMessage = error; // Update local error message
             });
             return error;
           },

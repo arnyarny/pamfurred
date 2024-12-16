@@ -19,3 +19,8 @@ final userIdProvider = Provider<String?>((ref) {
     error: (err, stack) => null, // If error, return null
   );
 });
+
+final userFirstNameProvider = StateProvider<String>((ref) => '');
+final userLastNameProvider = StateProvider<String>((ref) => '');
+
+final userPhoneNumberProvider = StateProvider<String>((ref) => '');

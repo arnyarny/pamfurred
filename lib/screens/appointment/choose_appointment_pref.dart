@@ -5,7 +5,7 @@ import 'package:pamfurred/components/error_builder.dart';
 import 'package:pamfurred/components/globals.dart';
 import 'package:pamfurred/providers/pet_profile_provider.dart';
 import 'package:pamfurred/providers/serviceprovider_provider.dart';
-import 'package:pamfurred/providers/user_id.dart';
+import 'package:pamfurred/providers/user_details.dart';
 
 class ChooseAppointmentPreferencesScreen extends ConsumerStatefulWidget {
   const ChooseAppointmentPreferencesScreen({super.key});

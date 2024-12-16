@@ -22,7 +22,7 @@ import 'package:pamfurred/providers/search_results_provider.dart';
 import 'package:pamfurred/providers/service_details_provider.dart';
 import 'package:pamfurred/providers/service_package_details_provider.dart';
 import 'package:pamfurred/providers/serviceprovider_provider.dart';
-import 'package:pamfurred/providers/user_id.dart';
+import 'package:pamfurred/providers/user_details.dart';
 import 'package:pamfurred/screens/search_results/methods/check_selected_category.dart';
 import 'package:pamfurred/screens/service_package_details.dart';
 import 'package:shimmer/shimmer.dart';

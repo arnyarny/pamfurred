@@ -10,7 +10,7 @@ import 'package:pamfurred/components/pull_to_refresh.dart';
 import 'package:pamfurred/components/time_and_date_formatter.dart';
 import 'package:pamfurred/components/title_text.dart';
 import 'package:pamfurred/providers/notifications_provider.dart';
-import 'package:pamfurred/providers/user_id.dart';
+import 'package:pamfurred/providers/user_details.dart';
 import 'package:pamfurred/components/connectivity_wrapper.dart';
 import 'package:shimmer/shimmer.dart';
 

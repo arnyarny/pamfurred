@@ -17,7 +17,7 @@ import 'package:pamfurred/models/dropdown_contents/bunny_breeds.dart';
 import 'package:pamfurred/models/dropdown_contents/pet_type.dart'; // Assuming PetType is in this file
 import 'package:pamfurred/models/dropdown_contents/sex.dart';
 import 'package:pamfurred/providers/pet_profile_provider.dart';
-import 'package:pamfurred/providers/user_id.dart';
+import 'package:pamfurred/providers/user_details.dart';
 import 'package:quickalert/models/quickalert_type.dart';
 import 'package:quickalert/widgets/quickalert_dialog.dart';
 import 'package:supabase_flutter/supabase_flutter.dart'; // Import the Sex class
@@ -229,7 +229,7 @@ class AddPetProfileScreenState extends ConsumerState<AddPetProfileScreen> {
                     onPressed: () async {
                       if (_formKey.currentState?.validate() ?? false) {
                         // Gather the form data
-                        String petName = controllers['petName']!.text;
+                        String petName = controllers['petName']!.text.trim();
                         double petWeight =
                             double.parse(controllers['petWeight']!.text);
                         String description =

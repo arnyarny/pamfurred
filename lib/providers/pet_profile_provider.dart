@@ -1,5 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:pamfurred/providers/user_id.dart';
+import 'package:pamfurred/providers/user_details.dart';
 import 'package:supabase_flutter/supabase_flutter.dart' as supabase_flutter;
 
 // The petProfileProvider fetches the pet profiles with the owner details

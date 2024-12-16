@@ -5,7 +5,7 @@ import 'package:pamfurred/components/globals.dart';
 import 'package:pamfurred/providers/global_providers.dart';
 import 'package:pamfurred/providers/pet_profile_provider.dart';
 import 'package:pamfurred/providers/serviceprovider_provider.dart';
-import 'package:pamfurred/providers/user_id.dart';
+import 'package:pamfurred/providers/user_details.dart';
 import 'package:pamfurred/screens/search_results/methods/check_selected_category.dart';
 
 class ChooseSearchResultsAppointmentPreferencesScreen

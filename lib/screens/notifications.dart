@@ -38,14 +38,6 @@ class NotificationsScreenState extends ConsumerState<NotificationsScreen> {
         date.day == now.day;
   }
 
-  bool isYesterday(DateTime date) {
-    final now = DateTime.now();
-    final yesterday = now.subtract(const Duration(days: 1));
-    return date.year == yesterday.year &&
-        date.month == yesterday.month &&
-        date.day == yesterday.day;
-  }
-
   @override
   Widget build(BuildContext context) {
     final userId = ref.read(userIdProvider).toString();
@@ -80,27 +72,17 @@ class NotificationsScreenState extends ConsumerState<NotificationsScreen> {
       return false;
     }).toList();
 
-    final yesterdayNotifications = notifications.where((notification) {
-      final createdAt = notification['created_at'];
-      if (createdAt != null) {
-        final parsedDate = DateTime.parse(createdAt);
-        return isYesterday(parsedDate);
-      }
-      return false;
-    }).toList();
-
     final olderNotifications = notifications.where((notification) {
       final createdAt = notification['created_at'];
       if (createdAt != null) {
         final parsedDate = DateTime.parse(createdAt);
-        return !isToday(parsedDate) && !isYesterday(parsedDate);
+        return !isToday(parsedDate);
       }
       return false;
     }).toList();
 
-    final hasNotifications = todayNotifications.isNotEmpty ||
-        yesterdayNotifications.isNotEmpty ||
-        olderNotifications.isNotEmpty;
+    final hasNotifications =
+        todayNotifications.isNotEmpty || olderNotifications.isNotEmpty;
 
     return PopScope(
       canPop: false,
@@ -131,17 +113,6 @@ class NotificationsScreenState extends ConsumerState<NotificationsScreen> {
                                     if (todayNotifications.isNotEmpty) ...[
                                       buildSectionHeader("Today"),
                                       ...todayNotifications.map((notification) {
-                                        int index =
-                                            notifications.indexOf(notification);
-                                        return reusableNotificationCard(
-                                            index, notification);
-                                      }),
-                                    ],
-                                    const SizedBox(height: primarySizedBox),
-                                    if (yesterdayNotifications.isNotEmpty) ...[
-                                      buildSectionHeader("Yesterday"),
-                                      ...yesterdayNotifications
-                                          .map((notification) {
                                         int index =
                                             notifications.indexOf(notification);
                                         return reusableNotificationCard(

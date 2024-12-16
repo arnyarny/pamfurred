@@ -37,7 +37,6 @@ class AppointmentService {
       print('Notification inserted with ID: $notifId');
 
       // Set loading to false once the operation is complete
-      // This part might be handled in your UI (setState or other methods)
 
       return updatedAppointmentId;
     } catch (e) {

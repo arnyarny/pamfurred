@@ -349,7 +349,7 @@ class ResultsListWidgetState extends ConsumerState<ResultsListWidget> {
                                                                       width:
                                                                           secondarySizedBox),
                                                                   SizedBox(
-                                                                    width: 230,
+                                                                    width: 200,
                                                                     child: customRegularWeightTitleText(
                                                                         context,
                                                                         'Matches with ${validPets.map((pet) => pet['pet_name'].toString()).join(', ')}',
@@ -439,7 +439,7 @@ class ResultsListWidgetState extends ConsumerState<ResultsListWidget> {
                                                                     width:
                                                                         secondarySizedBox),
                                                                 SizedBox(
-                                                                  width: 230,
+                                                                  width: 200,
                                                                   child:
                                                                       customRegularWeightTitleText(
                                                                     context,

@@ -45,6 +45,7 @@ class MainScreenState extends ConsumerState<MainScreen>
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state == AppLifecycleState.resumed) {
+      final realtimeService = RealtimeService();
       // Restart listener on resume
       print("App resumed, restarting real-time listener...");
       realtimeService.listenToAppointments();

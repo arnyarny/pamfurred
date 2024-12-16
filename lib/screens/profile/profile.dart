@@ -18,6 +18,8 @@ import 'package:pamfurred/screens/pet_profile/add_pet_profile.dart';
 import 'package:pamfurred/screens/profile/edit_address.dart';
 import 'package:pamfurred/screens/profile/edit_name.dart';
 import 'package:pamfurred/screens/profile/edit_phone_number.dart';
+import 'package:quickalert/quickalert.dart';
+import 'package:quickalert/widgets/quickalert_dialog.dart';
 import 'package:shimmer/shimmer.dart';
 import 'package:supabase_flutter/supabase_flutter.dart'; // Import Supabase
 
@@ -110,18 +112,6 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
         // Phone number
         ref.read(userPhoneNumberProvider.notifier).state =
             mapUserDetails?['phone_number'];
-
-        // Address
-        ref.read(userFloorUnitRoomProvider.notifier).state =
-            mapUserAddress?['floor_unit_room'];
-        ref.read(userStreetProvider.notifier).state = mapUserAddress?['street'];
-        ref.read(userBarangayProvider.notifier).state =
-            mapUserAddress?['barangay'];
-        ref.read(userMunicipalityProvider.notifier).state =
-            mapUserAddress?['city'];
-
-        print('Municipality: ${mapUserAddress?['city']}');
-        print('Barangay: ${mapUserAddress?['barangay']}');
       });
     } catch (e) {
       print("Error fetching user data: $e");
@@ -188,8 +178,20 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                                   ),
                                   IconButton(
                                     onPressed: () {
-                                      // Set visibility to false when loading
-                                      _logout();
+                                      QuickAlert.show(
+                                          context: context,
+                                          type: QuickAlertType.warning,
+                                          title: 'Logout?',
+                                          text:
+                                              'Are you sure you want to logout?',
+                                          animType:
+                                              QuickAlertAnimType.slideInUp,
+                                          showCancelBtn: true,
+                                          confirmBtnColor: primaryColor,
+                                          onConfirmBtnTap: () {
+                                            Navigator.pop(context);
+                                            _logout();
+                                          });
                                     },
                                     icon: const Icon(Icons.logout),
                                     iconSize: 25,
@@ -418,7 +420,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
             ]),
             const SizedBox(height: secondarySizedBox),
             SizedBox(
-              height: 275,
+              height: 300,
               child: Column(
                 children: [
                   GestureDetector(
@@ -507,13 +509,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                             color: Colors.grey,
                           ),
                         )
-                      : Text(
-                          details ?? '',
-                          style: const TextStyle(
-                            color: greyColor,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ),
+                      : wrappedText(context, details ?? '', greyColor),
                 ],
               ),
             ),

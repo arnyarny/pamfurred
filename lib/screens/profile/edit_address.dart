@@ -96,8 +96,8 @@ class EditAddressState extends ConsumerState<EditAddress> {
                   CustomDropdown<String>.search(
                     decoration: getDropdownDecoration(),
                     hintText: 'Select Municipality', // Label as a hint
-                    initialItem:
-                        ref.watch(userMunicipalityProvider).toUpperCase(),
+                    // initialItem:
+                    //     ref.watch(userMunicipalityProvider).toUpperCase(),
                     items: predefinedProvince.municipalities
                         .map((m) => m.name)
                         .toList(),
@@ -149,7 +149,7 @@ class EditAddressState extends ConsumerState<EditAddress> {
                           controllerKey: "floorUnitRoom",
                           controllers: controllers,
                           isRequired: false,
-                          defaultValue: ref.watch(userFloorUnitRoomProvider),
+                          // defaultValue: ref.watch(userFloorUnitRoomProvider),
                         ),
                       ),
                       const SizedBox(width: primarySizedBox),
@@ -158,7 +158,7 @@ class EditAddressState extends ConsumerState<EditAddress> {
                           label: "Street name",
                           controllerKey: "street",
                           controllers: controllers,
-                          defaultValue: ref.watch(userStreetProvider),
+                          // defaultValue: ref.watch(userStreetProvider),
                         ),
                       ),
                     ],

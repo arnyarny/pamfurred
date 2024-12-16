@@ -270,7 +270,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                                                         ? data[index]
                                                             ['pet_image']
                                                         // Temporary placeholder
-                                                        : '';
+                                                        : 'https://tinyurl.com/357z4usj';
                                                     return index == data.length
                                                         ? _buildAddPetButton(
                                                             context)
@@ -338,8 +338,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
         },
         child: ClipOval(
           child: CachedNetworkImage(
-            imageUrl: imageUrl ??
-                'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR7nreJH6sPRQH2qk3IL_R4j0o1-amatTZn7Q&s',
+            imageUrl:
+                imageUrl!.isEmpty ? 'https://tinyurl.com/357z4usj' : imageUrl,
             height: 40,
             width: 45,
             fit: BoxFit.cover,

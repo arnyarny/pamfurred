@@ -83,7 +83,9 @@ class PetProfileScreenState extends ConsumerState<PetProfileScreen> {
                                         const EdgeInsets.all(secondarySizedBox),
                                     child: ClipOval(
                                       child: CachedNetworkImage(
-                                        imageUrl: pet['pet_image'] ?? '',
+                                        imageUrl: pet['pet_image'].isEmpty
+                                            ? 'https://tinyurl.com/357z4usj'
+                                            : pet['pet_image'],
                                         fit: BoxFit.cover,
                                         width: 151,
                                         height: 151,

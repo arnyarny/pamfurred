@@ -20,7 +20,15 @@ final userIdProvider = Provider<String?>((ref) {
   );
 });
 
+// Full name
 final userFirstNameProvider = StateProvider<String>((ref) => '');
 final userLastNameProvider = StateProvider<String>((ref) => '');
 
+// Phone number
 final userPhoneNumberProvider = StateProvider<String>((ref) => '');
+
+// Address
+final userFloorUnitRoomProvider = StateProvider<String>((ref) => '');
+final userStreetProvider = StateProvider<String>((ref) => '');
+final userBarangayProvider = StateProvider<String>((ref) => '');
+final userMunicipalityProvider = StateProvider<String>((ref) => '');

@@ -15,6 +15,7 @@ import 'package:pamfurred/components/connectivity_wrapper.dart';
 import 'package:pamfurred/screens/login.dart';
 import 'package:pamfurred/screens/pet_profile/pet_profile.dart';
 import 'package:pamfurred/screens/pet_profile/add_pet_profile.dart';
+import 'package:pamfurred/screens/profile/edit_address.dart';
 import 'package:pamfurred/screens/profile/edit_name.dart';
 import 'package:pamfurred/screens/profile/edit_phone_number.dart';
 import 'package:shimmer/shimmer.dart';
@@ -100,13 +101,27 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
         mapUserAddress = addressDetails;
         isLoading = false;
 
+        // Full name
         ref.read(userFirstNameProvider.notifier).state =
             mapPetOwnerDetails?['first_name'];
         ref.read(userLastNameProvider.notifier).state =
             mapPetOwnerDetails?['last_name'];
 
+        // Phone number
         ref.read(userPhoneNumberProvider.notifier).state =
             mapUserDetails?['phone_number'];
+
+        // Address
+        ref.read(userFloorUnitRoomProvider.notifier).state =
+            mapUserAddress?['floor_unit_room'];
+        ref.read(userStreetProvider.notifier).state = mapUserAddress?['street'];
+        ref.read(userBarangayProvider.notifier).state =
+            mapUserAddress?['barangay'];
+        ref.read(userMunicipalityProvider.notifier).state =
+            mapUserAddress?['city'];
+
+        print('Municipality: ${mapUserAddress?['city']}');
+        print('Barangay: ${mapUserAddress?['barangay']}');
       });
     } catch (e) {
       print("Error fetching user data: $e");
@@ -428,14 +443,20 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                       details: mapUserDetails?['phone_number'] ?? '',
                     ),
                   ),
-                  _detailsCard(
-                    context: context,
-                    title: "Address",
-                    details:
-                        "${mapUserAddress?['floor_unit_room'] != '' ? '${mapUserAddress?['floor_unit_room']}, ' : ''}"
-                        "${mapUserAddress?['street'] != '' ? '${mapUserAddress?['street']}, ' : ''}"
-                        "${mapUserAddress?['barangay'] != '' ? '${mapUserAddress?['barangay']}, ' : ''}"
-                        "${mapUserAddress?['city'] ?? ''}",
+                  GestureDetector(
+                    onTap: () {
+                      Navigator.push(
+                          context, slideUpRoute(const EditAddress()));
+                    },
+                    child: _detailsCard(
+                      context: context,
+                      title: "Address",
+                      details:
+                          "${mapUserAddress?['floor_unit_room'] != '' ? '${mapUserAddress?['floor_unit_room']}, ' : ''}"
+                          "${mapUserAddress?['street'] != '' ? '${mapUserAddress?['street']}, ' : ''}"
+                          "${mapUserAddress?['barangay'] != '' ? '${mapUserAddress?['barangay']}, ' : ''}"
+                          "${mapUserAddress?['city'] ?? ''}",
+                    ),
                   ),
                 ],
               ),

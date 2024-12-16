@@ -96,6 +96,8 @@ class EditAddressState extends ConsumerState<EditAddress> {
                   CustomDropdown<String>.search(
                     decoration: getDropdownDecoration(),
                     hintText: 'Select Municipality', // Label as a hint
+                    initialItem:
+                        ref.watch(userMunicipalityProvider).toUpperCase(),
                     items: predefinedProvince.municipalities
                         .map((m) => m.name)
                         .toList(),
@@ -128,6 +130,7 @@ class EditAddressState extends ConsumerState<EditAddress> {
                   CustomDropdown<String>.search(
                     decoration: getDropdownDecoration(),
                     hintText: 'Select Barangay', // Label as a hint
+                    // initialItem: ref.watch(userBarangayProvider).toUpperCase(),
                     items: municipality?.barangays ?? [],
                     onChanged: (String? value) {
                       setState(() {

@@ -45,15 +45,27 @@ class CredentialsScreenState extends ConsumerState<CredentialsScreen> {
       final barangay = capitalizeFirstLetter(ref.watch(barangayProvider));
       final city = capitalizeFirstLetter(ref.watch(cityProvider));
 
-      // Basic field validation
+      // Email field validation
       if (email.isEmpty ||
           !RegExp(r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$")
-              .hasMatch(email) ||
-          password.length < 6) {
+              .hasMatch(email)) {
         setState(() {
           _isLoading = false;
-          _errorMessage =
-              "Invalid input: Ensure all fields are filled and password must be secure.";
+          _errorMessage = "Invalid email.";
+        });
+        return;
+      }
+
+      if (password.isEmpty ||
+          password.length < 8 ||
+          !RegExp(r'[0-9]').hasMatch(password) || // At least one digit
+          !RegExp(r'[A-Z]').hasMatch(password) || // At least one uppercase
+          !RegExp(r'[a-z]').hasMatch(password) || // At least one lowercase
+          !RegExp(r'[!@#$%^&*(),.?":{}|<>]').hasMatch(password)) {
+        // At least one special character
+        setState(() {
+          _isLoading = false;
+          _errorMessage = "Ensure password meets all the criteria.";
         });
         return;
       }
@@ -132,6 +144,7 @@ class CredentialsScreenState extends ConsumerState<CredentialsScreen> {
       body: Padding(
         padding: primaryPadding,
         child: SingleChildScrollView(
+          physics: BouncingScrollPhysics(),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [

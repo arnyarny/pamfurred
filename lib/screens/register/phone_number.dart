@@ -41,85 +41,89 @@ class PhoneNumberScreenState extends ConsumerState<PhoneNumberScreen> {
       backgroundColor: Colors.white,
       body: Padding(
         padding: primaryPadding,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            buildSectionHeader("Phone number"),
-            const SizedBox(height: secondarySizedBox),
-            formDescription(context,
-                "Please provide your phone number so that service providers can contact you directly for any updates or important information related to your appointment."),
-            const SizedBox(height: tertiarySizedBox),
-            RichText(
-              text: const TextSpan(
-                text: "Phone number ",
-                style: TextStyle(color: Colors.black, fontSize: regularText),
-                children: [
-                  TextSpan(text: "*", style: TextStyle(color: primaryColor)),
-                ],
+        child: SingleChildScrollView(
+          physics: BouncingScrollPhysics(),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              buildSectionHeader("Phone number"),
+              const SizedBox(height: secondarySizedBox),
+              formDescription(context,
+                  "Please provide your phone number so that service providers can contact you directly for any updates or important information related to your appointment."),
+              const SizedBox(height: tertiarySizedBox),
+              RichText(
+                text: const TextSpan(
+                  text: "Phone number ",
+                  style: TextStyle(color: Colors.black, fontSize: regularText),
+                  children: [
+                    TextSpan(text: "*", style: TextStyle(color: primaryColor)),
+                  ],
+                ),
               ),
-            ),
-            const SizedBox(height: primarySizedBox),
-            SizedBox(
-              height: 65,
-              child: IntlPhoneField(
-                cursorColor: Colors.black,
-                initialCountryCode:
-                    'PH', // Adjust the country code based on your app's requirements
-                invalidNumberMessage: null,
-                autovalidateMode: AutovalidateMode.disabled,
-                onChanged: (phone) {
-                  widget.controllers['phoneNumber']?.text =
-                      phone.completeNumber;
-                  setState(() {
-                    // Trigger state update when phone number changes
-                  });
-                },
-                decoration: InputDecoration(
-                  contentPadding: const EdgeInsets.all(10.0),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(secondaryBorderRadius),
+              const SizedBox(height: primarySizedBox),
+              SizedBox(
+                height: 65,
+                child: IntlPhoneField(
+                  cursorColor: Colors.black,
+                  initialCountryCode:
+                      'PH', // Adjust the country code based on your app's requirements
+                  invalidNumberMessage: null,
+                  autovalidateMode: AutovalidateMode.disabled,
+                  onChanged: (phone) {
+                    widget.controllers['phoneNumber']?.text =
+                        phone.completeNumber;
+                    setState(() {
+                      // Trigger state update when phone number changes
+                    });
+                  },
+                  decoration: InputDecoration(
+                    contentPadding: const EdgeInsets.all(10.0),
+                    border: OutlineInputBorder(
+                      borderRadius:
+                          BorderRadius.circular(secondaryBorderRadius),
+                    ),
                   ),
                 ),
               ),
-            ),
-            if (_showError) ...[
-              const SizedBox(height: 8.0),
-              const Text(
-                "Please enter a valid phone number.",
-                style: TextStyle(color: Colors.red),
+              if (_showError) ...[
+                const SizedBox(height: 8.0),
+                const Text(
+                  "Please enter a valid phone number.",
+                  style: TextStyle(color: Colors.red),
+                ),
+              ],
+              const SizedBox(height: secondarySizedBox),
+              CustomWideButton(
+                text: "Next",
+                onPressed: () {
+                  // Validate using the custom validator
+                  if (_validatePhoneNumber()) {
+                    setState(() {
+                      _showError = false;
+                      ref.read(phoneNumberProvider.notifier).state =
+                          widget.controllers['phoneNumber']!.text.trim();
+                    });
+                    Navigator.push(
+                        context,
+                        rightToLeftRoute(
+                          AddressDetailsScreen(controllers: {
+                            'floorUnitRoom': TextEditingController(),
+                            'street': TextEditingController(),
+                            'barangay': TextEditingController(),
+                            'city': TextEditingController(),
+                          }),
+                        ));
+                  } else {
+                    setState(() {
+                      _showError = true;
+                    });
+                  }
+                },
               ),
+              const SizedBox(height: quaternarySizedBox),
+              hasAnAccount(context)
             ],
-            const SizedBox(height: secondarySizedBox),
-            CustomWideButton(
-              text: "Next",
-              onPressed: () {
-                // Validate using the custom validator
-                if (_validatePhoneNumber()) {
-                  setState(() {
-                    _showError = false;
-                    ref.read(phoneNumberProvider.notifier).state =
-                        widget.controllers['phoneNumber']!.text.trim();
-                  });
-                  Navigator.push(
-                      context,
-                      rightToLeftRoute(
-                        AddressDetailsScreen(controllers: {
-                          'floorUnitRoom': TextEditingController(),
-                          'street': TextEditingController(),
-                          'barangay': TextEditingController(),
-                          'city': TextEditingController(),
-                        }),
-                      ));
-                } else {
-                  setState(() {
-                    _showError = true;
-                  });
-                }
-              },
-            ),
-            const SizedBox(height: quaternarySizedBox),
-            hasAnAccount(context)
-          ],
+          ),
         ),
       ),
     );

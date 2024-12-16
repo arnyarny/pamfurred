@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:pamfurred/components/custom_appbar.dart';
+import 'package:pamfurred/components/custom_floating_action_button.dart';
+import 'package:pamfurred/components/custom_padded_button.dart';
 import 'package:pamfurred/components/globals.dart';
 import 'package:pamfurred/components/legends.dart';
 import 'package:pamfurred/components/pull_to_refresh.dart';
@@ -9,49 +11,75 @@ import 'package:pamfurred/components/screen_transitions.dart';
 import 'package:pamfurred/components/time_and_date_formatter.dart';
 import 'package:pamfurred/providers/appointments_provider.dart';
 import 'package:pamfurred/providers/available_timeslots_provider.dart';
+import 'package:pamfurred/providers/cart_provider.dart';
 import 'package:pamfurred/providers/serviceprovider_provider.dart';
 import 'package:pamfurred/screens/appointment/appointment_summary.dart';
+import 'package:pamfurred/screens/appointment/serviceprovider_profile.dart';
+import 'package:pamfurred/screens/main_screen.dart';
+import 'package:quickalert/models/quickalert_animtype.dart';
+import 'package:quickalert/models/quickalert_type.dart';
+import 'package:quickalert/widgets/quickalert_dialog.dart';
 import 'package:shimmer/shimmer.dart';
 import 'package:table_calendar/table_calendar.dart';
 
-class ChooseDateAndTimeScreen extends ConsumerWidget {
+class ChooseDateAndTimeScreen extends ConsumerStatefulWidget {
   const ChooseDateAndTimeScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ChooseDateAndTimeScreenState createState() => ChooseDateAndTimeScreenState();
+}
+
+class ChooseDateAndTimeScreenState
+    extends ConsumerState<ChooseDateAndTimeScreen> {
+  @override
+  Widget build(BuildContext context) {
     final selectedDate = ref.watch(selectedDateProvider);
     final selectedTimeslot = ref.watch(selectedTimeslotProvider);
 
     return Scaffold(
       appBar: customAppBarWithTitleAndWidget(context, 'Select Date & Time', [
-        TextButton(
-          style: ButtonStyle(
-              shape: WidgetStateProperty.all<RoundedRectangleBorder>(
-                RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(secondaryBorderRadius),
-                ),
-              ),
-              backgroundColor: WidgetStateProperty.all<Color>(
-                  selectedDate != null && selectedTimeslot != null
-                      ? primaryColor
-                      : lighterGreyColor)),
-          onPressed: selectedDate != null && selectedTimeslot != null
-              ? () {
-                  Navigator.push(context,
-                      rightToLeftRoute(const AppointmentSummaryScreen()));
-                }
-              : null,
-          child: Text(
-            "Next",
-            style: TextStyle(
-              color: selectedDate != null && selectedTimeslot != null
-                  ? Colors.white
-                  : disabledButtonTextColor,
-            ),
-          ),
-        ),
+        customSmallPaddedTextButton(
+          text: 'Cancel',
+          backgroundColor: Colors.red,
+          onPressed: () {
+            QuickAlert.show(
+                context: context,
+                type: QuickAlertType.warning,
+                animType: QuickAlertAnimType.slideInUp,
+                confirmBtnColor: Colors.red,
+                showCancelBtn: true,
+                onConfirmBtnTap: () {
+                  Navigator.push(
+                      context,
+                      crossFadeRoute(const MainScreen(
+                        initialPage: 0,
+                      )));
+
+                  // Clear the cart when this button is pressed
+                  ref.read(cartNotifierProvider.notifier).clearCart();
+                  ref.read(willBookProvider.notifier).state = false;
+                  // If willBook is false, reset the providers
+                  resetProviders(ref);
+                },
+                title: 'Cancel appointment?',
+                text:
+                    'This will delete all your appointment preferences including all the services and packages currently in your cart.');
+          },
+        )
       ]),
       backgroundColor: Colors.white,
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
+      floatingActionButton: customFloatingActionButton(
+        context,
+        buttonText: 'Next',
+        isEnabled: selectedDate != null && selectedTimeslot != null,
+        onPressed: () {
+          Navigator.push(
+            context,
+            rightToLeftRoute(const AppointmentSummaryScreen()),
+          );
+        },
+      ),
       body: PullToRefresh(
         providersToRefresh: [
           availableDatesProvider,
@@ -416,6 +444,7 @@ class ChooseDateAndTimeScreen extends ConsumerWidget {
                             error: (error, stackTrace) => const Center(
                                 child: Icon(Icons.error, size: 30)),
                           ),
+                    const SizedBox(height: 80)
                   ],
                 ),
               ),

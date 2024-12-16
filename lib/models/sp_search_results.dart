@@ -21,29 +21,30 @@ class ServiceProviderItem {
   final int maxWeight; // Maximum weight
   final List<dynamic> petType;
   final List<dynamic> servicePackageType;
+  final List<dynamic>? inclusions;
 
-  ServiceProviderItem({
-    required this.spId,
-    required this.spName,
-    required this.spImage,
-    required this.servicePackageId,
-    required this.serviceProviderServicePackageId,
-    required this.name,
-    required this.servicePackageDesc,
-    required this.categoryName,
-    required this.type,
-    required this.imageUrl,
-    required this.price,
-    required this.averageRating,
-    required this.latitude,
-    required this.longitude,
-    required this.sentimentLabel,
-    required this.size,
-    required this.minWeight,
-    required this.maxWeight,
-    required this.petType,
-    required this.servicePackageType,
-  });
+  ServiceProviderItem(
+      {required this.spId,
+      required this.spName,
+      required this.spImage,
+      required this.servicePackageId,
+      required this.serviceProviderServicePackageId,
+      required this.name,
+      required this.servicePackageDesc,
+      required this.categoryName,
+      required this.type,
+      required this.imageUrl,
+      required this.price,
+      required this.averageRating,
+      required this.latitude,
+      required this.longitude,
+      required this.sentimentLabel,
+      required this.size,
+      required this.minWeight,
+      required this.maxWeight,
+      required this.petType,
+      required this.servicePackageType,
+      this.inclusions});
 
   // Factory constructor to create an instance from a service map
   factory ServiceProviderItem.fromService(
@@ -91,32 +92,32 @@ class ServiceProviderItem {
     if (package['package_id'] == packageId &&
         package['serviceprovider_package_id'] == spPackageId) {
       return ServiceProviderItem(
-        spId: package['sp_id'] ?? '',
-        spName: package['sp_name'] ?? 'Unknown SP Name',
-        spImage: package['sp_image'] ?? '',
-        servicePackageId: package['package_id'] ?? '',
-        serviceProviderServicePackageId:
-            package['serviceprovider_package_id'] ?? '',
-        name: package['package_name'] ?? 'Unnamed Package',
-        servicePackageDesc: package['package_desc'] ?? '',
-        categoryName: package['category_name'] ?? 'Unknown category',
-        type: 'package',
-        imageUrl: package['package_image'] ?? 'https://tinyurl.com/55w8ht23',
-        price: package['package_price'],
-        averageRating: package['average_rating'] ?? 0.0,
-        latitude: package['latitude'] ?? 0.0,
-        longitude: package['longitude'] ?? 0.0,
-        sentimentLabel: package['sentiment_label'] ?? '',
-        size: package['package_size'] ??
-            '', // Fetch the size based on package_id and serviceprovider_package_id
-        minWeight: package['min_weight'] ??
-            0, // Fetch the min_weight based on package_id and serviceprovider_package_id
-        maxWeight: package['max_weight'] ??
-            0, // Fetch the max_weight based on package_id and serviceprovider_package_id
-        petType:
-            package['pet_type'] ?? [], // Fetch the pet_type based on package_id
-        servicePackageType: package['package_type'] ?? [],
-      );
+          spId: package['sp_id'] ?? '',
+          spName: package['sp_name'] ?? 'Unknown SP Name',
+          spImage: package['sp_image'] ?? '',
+          servicePackageId: package['package_id'] ?? '',
+          serviceProviderServicePackageId:
+              package['serviceprovider_package_id'] ?? '',
+          name: package['package_name'] ?? 'Unnamed Package',
+          servicePackageDesc: package['package_desc'] ?? '',
+          categoryName: package['category_name'] ?? 'Unknown category',
+          type: 'package',
+          imageUrl: package['package_image'] ?? 'https://tinyurl.com/55w8ht23',
+          price: package['package_price'],
+          averageRating: package['average_rating'] ?? 0.0,
+          latitude: package['latitude'] ?? 0.0,
+          longitude: package['longitude'] ?? 0.0,
+          sentimentLabel: package['sentiment_label'] ?? '',
+          size: package['package_size'] ??
+              '', // Fetch the size based on package_id and serviceprovider_package_id
+          minWeight: package['min_weight'] ??
+              0, // Fetch the min_weight based on package_id and serviceprovider_package_id
+          maxWeight: package['max_weight'] ??
+              0, // Fetch the max_weight based on package_id and serviceprovider_package_id
+          petType: package['pet_type'] ??
+              [], // Fetch the pet_type based on package_id
+          servicePackageType: package['package_type'] ?? [],
+          inclusions: package['inclusions'] ?? []);
     } else {
       throw Exception(
           'Package data does not match the given package_id and serviceprovider_package_id');

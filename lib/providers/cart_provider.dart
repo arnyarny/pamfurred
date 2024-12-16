@@ -21,7 +21,8 @@ class CartNotifier extends StateNotifier<Set<CartItem>> {
 
   // Watch selected pet type and pet weight for appointment
   String get selectedPetType => ref.watch(selectedAppointmentPetTypeProvider);
-  double? get selectedPetWeight => ref.watch(selectedAppointmentPetWeightProvider);
+  double? get selectedPetWeight =>
+      ref.watch(selectedAppointmentPetWeightProvider);
 
   // Helper to get a unique set of provider IDs in the cart
   Set<String> get uniqueProviderIds {
@@ -79,8 +80,25 @@ class CartNotifier extends StateNotifier<Set<CartItem>> {
     );
   }
 
+  // **Conflict check for pet type**:
+  // Ensure the selected pet type exists in the service or package's pet types
+  bool _hasPetTypeConflict(Service service) {
+    return !service.petType.contains(selectedPetType);
+  }
+
+  bool _hasPetTypePackageConflict(Package package) {
+    return !package.petType.contains(selectedPetType);
+  }
+
   // Add a service to the cart
   void addService(Service service, BuildContext context) {
+    // Check for pet type conflict first
+    if (_hasPetTypeConflict(service)) {
+      _showPetTypeConflictDialog(context);
+      return;
+    }
+
+    // Handle other conflicts after checking pet type
     if (_hasProviderConflict(service)) {
       _showProviderConflictDialog(context);
       return;
@@ -93,6 +111,7 @@ class CartNotifier extends StateNotifier<Set<CartItem>> {
       _showTypeConflictDialog(context);
       return;
     }
+
     if (!state.any((item) =>
         item.id == service.id &&
         item.servicePackageDetailsId == service.servicePackageDetailsId)) {
@@ -102,6 +121,13 @@ class CartNotifier extends StateNotifier<Set<CartItem>> {
 
   // Add a package to the cart
   void addPackage(Package package, BuildContext context) {
+    // Check for pet type conflict first
+    if (_hasPetTypePackageConflict(package)) {
+      _showPetTypeConflictDialog(context);
+      return;
+    }
+
+    // Handle other conflicts after checking pet type
     if (_hasProviderPackageConflict(package)) {
       _showProviderConflictDialog(context);
       return;
@@ -114,11 +140,24 @@ class CartNotifier extends StateNotifier<Set<CartItem>> {
       _showTypeConflictDialog(context);
       return;
     }
+
     if (!state.any((item) =>
         item.id == package.id &&
         item.servicePackageDetailsId == package.servicePackageDetailsId)) {
       state = {...state, package};
     }
+  }
+
+  // Show a pet type conflict dialog
+  void _showPetTypeConflictDialog(BuildContext context) {
+    QuickAlert.show(
+      context: context,
+      type: QuickAlertType.warning,
+      animType: QuickAlertAnimType.slideInUp,
+      title: 'Pet Type Conflict',
+      text:
+          'The selected pet type is not compatible with the selected service or package.',
+    );
   }
 
   // Show a provider conflict dialog
@@ -139,7 +178,8 @@ class CartNotifier extends StateNotifier<Set<CartItem>> {
       type: QuickAlertType.error,
       animType: QuickAlertAnimType.slideInUp,
       title: 'Weight Conflict',
-      text: 'The selected pet weight is outside the allowed range for this service or package.',
+      text:
+          'The selected pet weight is outside the allowed range for this service or package.',
     );
   }
 

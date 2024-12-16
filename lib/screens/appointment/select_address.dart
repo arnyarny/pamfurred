@@ -2,14 +2,21 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pamfurred/backend_logic_files/location_functions.dart';
 import 'package:pamfurred/components/custom_appbar.dart';
+import 'package:pamfurred/components/custom_floating_action_button.dart';
 import 'package:pamfurred/components/custom_padded_button.dart';
 import 'package:pamfurred/components/globals.dart';
 import 'package:pamfurred/components/screen_transitions.dart';
 import 'package:pamfurred/providers/appointments_provider.dart';
+import 'package:pamfurred/providers/cart_provider.dart';
 import 'package:pamfurred/providers/serviceprovider_provider.dart';
 import 'package:pamfurred/screens/appointment/add_new_address.dart';
 import 'package:pamfurred/screens/appointment/choose_date_and_time.dart';
+import 'package:pamfurred/screens/appointment/serviceprovider_profile.dart';
+import 'package:pamfurred/screens/main_screen.dart';
 import 'package:pamfurred/screens/pin_location.dart';
+import 'package:quickalert/models/quickalert_animtype.dart';
+import 'package:quickalert/models/quickalert_type.dart';
+import 'package:quickalert/widgets/quickalert_dialog.dart';
 
 class SelectAppointmentAddressScreen extends ConsumerStatefulWidget {
   const SelectAppointmentAddressScreen({super.key});
@@ -31,17 +38,47 @@ class SelectAppointmentAddressScreenState
     return Scaffold(
       appBar: customAppBarWithTitleAndWidget(context, 'Select Address', [
         customSmallPaddedTextButton(
-          text: 'Next',
+          text: 'Cancel',
+          backgroundColor: Colors.red,
           onPressed: () {
-            Navigator.push(
-              context,
-              rightToLeftRoute(const ChooseDateAndTimeScreen()),
-            );
+            QuickAlert.show(
+                context: context,
+                type: QuickAlertType.warning,
+                animType: QuickAlertAnimType.slideInUp,
+                confirmBtnColor: Colors.red,
+                showCancelBtn: true,
+                onConfirmBtnTap: () {
+                  Navigator.push(
+                      context,
+                      crossFadeRoute(const MainScreen(
+                        initialPage: 0,
+                      )));
+
+                  // Clear the cart when this button is pressed
+                  ref.read(cartNotifierProvider.notifier).clearCart();
+                  ref.read(willBookProvider.notifier).state = false;
+                  // If willBook is false, reset the providers
+                  resetProviders(ref);
+                },
+                title: 'Cancel appointment?',
+                text:
+                    'This will delete all your appointment preferences including all the services and packages currently in your cart.');
           },
-          isEnabled: selectedOption.isNotEmpty,
         )
       ]),
       backgroundColor: Colors.white,
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
+      floatingActionButton: customFloatingActionButton(
+        context,
+        buttonText: 'Next',
+        isEnabled: selectedOption.isNotEmpty,
+        onPressed: () {
+          Navigator.push(
+            context,
+            rightToLeftRoute(const ChooseDateAndTimeScreen()),
+          );
+        },
+      ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
@@ -101,7 +138,9 @@ class SelectAppointmentAddressScreenState
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                            builder: (context) => const PinLocationNew(searchResult: false,)),
+                            builder: (context) => const PinLocationNew(
+                                  searchResult: false,
+                                )),
                       ).then((result) {
                         if (result != null && result is String) {
                           setState(() {

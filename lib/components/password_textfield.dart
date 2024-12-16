@@ -65,7 +65,6 @@ class PasswordTextFieldState extends State<PasswordTextField> {
             LowercaseValidationRule(),
             SpecialCharacterValidationRule(),
             MinCharactersValidationRule(8),
-            
           },
           validationRuleBuilder: (rules, value) {
             if (value.isEmpty) {

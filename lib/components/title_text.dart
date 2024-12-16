@@ -9,13 +9,13 @@ Text customTitleText(BuildContext context, String text) {
   );
 }
 
-Text customRegularWeightTitleText(BuildContext context, String text) {
+Text customRegularWeightTitleText(BuildContext context, String text,[ Color? textColor]) {
   return Text(
     text,
-    style: const TextStyle(
+    style: TextStyle(
         fontSize: regularText,
         fontWeight: regularWeight,
-        color: Colors.black,
+        color: textColor ?? Colors.black,
         overflow: TextOverflow.ellipsis),
   );
 }
@@ -58,13 +58,13 @@ Text customSearchResultsTitleText(BuildContext context, String text) {
   );
 }
 
-Text wrappedText(BuildContext context, String text) {
+Text wrappedText(BuildContext context, String text, [Color? textColor]) {
   return Text(
     text,
-    style: const TextStyle(
+    style: TextStyle(
         fontSize: regularText,
         fontWeight: regularWeight,
-        color: Colors.black,
+        color: textColor ?? Colors.black,
         overflow: TextOverflow.visible,),
   );
 }

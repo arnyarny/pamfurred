@@ -2,6 +2,8 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:pamfurred/backend_logic_files/check_if_matches_appointment_pref.dart';
+import 'package:pamfurred/backend_logic_files/check_if_pet_matches.dart';
 import 'package:pamfurred/components/capitalize_first_letter.dart';
 import 'package:pamfurred/components/empty_list_widget.dart';
 import 'package:pamfurred/components/error_builder.dart';
@@ -11,20 +13,30 @@ import 'package:pamfurred/components/rating_widget.dart';
 import 'package:pamfurred/components/sentiment_label.dart';
 import 'package:pamfurred/components/title_text.dart';
 import 'package:pamfurred/math_functions/distance_calculator.dart';
+import 'package:pamfurred/models/packages.dart';
+import 'package:pamfurred/models/services.dart';
+import 'package:pamfurred/providers/cart_provider.dart';
 import 'package:pamfurred/providers/global_providers.dart';
+import 'package:pamfurred/providers/pet_profile_provider.dart';
 import 'package:pamfurred/providers/search_results_provider.dart';
 import 'package:pamfurred/providers/service_details_provider.dart';
 import 'package:pamfurred/providers/service_package_details_provider.dart';
 import 'package:pamfurred/providers/serviceprovider_provider.dart';
+import 'package:pamfurred/providers/user_id.dart';
 import 'package:pamfurred/screens/search_results/methods/check_selected_category.dart';
 import 'package:pamfurred/screens/service_package_details.dart';
 import 'package:shimmer/shimmer.dart';
 
-class ResultsListWidget extends ConsumerWidget {
+class ResultsListWidget extends ConsumerStatefulWidget {
   const ResultsListWidget({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<ResultsListWidget> createState() => ResultsListWidgetState();
+}
+
+class ResultsListWidgetState extends ConsumerState<ResultsListWidget> {
+  @override
+  Widget build(BuildContext context) {
     final selectedIndex = ref.watch(selectedCategoryIndexProvider);
 
     // Get the current value of the selected results sorter
@@ -82,8 +94,19 @@ class ResultsListWidget extends ConsumerWidget {
               itemBuilder: (context, index) {
                 var provider = filteredProviders[index];
 
-                return SizedBox(
-                  height: 150,
+                List<String> petType = provider.petType.cast<String>();
+
+                int servicePackageMinWeight = provider.minWeight;
+                int servicePackageMaxWeight = provider.maxWeight;
+
+                // Pet profile data
+                final petProfileData = ref.watch(
+                    petProfileProvider(ref.watch(userIdProvider).toString()));
+
+                List<String> servicePackageType =
+                    List<String>.from(provider.servicePackageType);
+
+                return Expanded(
                   child: Column(
                     children: [
                       GestureDetector(
@@ -128,182 +151,544 @@ class ResultsListWidget extends ConsumerWidget {
                                   selectedSearchResultSpSentimentLabel.notifier)
                               .state = provider.sentimentLabel;
 
+                          // Set appointment category to the selected category from home screen
+                          ref
+                              .read(
+                                  selectedAppointmentCategoryProvider.notifier)
+                              .state = selectedCategory;
+
                           print(
                               'selectedSearchResultServicePackageTypeProvider: ${ref.read(selectedSearchResultServicePackageTypeProvider)}');
                           showModalBottomSheet(
                             context: context,
                             isScrollControlled: true,
+                            useSafeArea: true, // Adapts to device cutouts
                             shape: const RoundedRectangleBorder(
                               borderRadius: BorderRadius.vertical(
                                   top: Radius.circular(16)),
                             ),
                             builder: (context) {
-                              return SizedBox(
-                                  height: 700,
-                                  child: const ServicePackageDetails());
+                              return const ServicePackageDetails();
                             },
                           );
                         },
-                        child: Card(
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(0),
-                          ),
-                          elevation: 3,
-                          shadowColor: lighterGreyColor,
-                          color: Colors.white,
-                          child: Row(
-                            children: [
-                              FutureBuilder(
-                                future: precacheImage(
-                                    NetworkImage(provider.imageUrl), context),
-                                builder: (context, snapshot) {
-                                  if (snapshot.connectionState ==
-                                      ConnectionState.done) {
-                                    return CachedNetworkImage(
-                                      imageUrl: provider.imageUrl == ''
-                                          ? 'https://tinyurl.com/55w8ht23'
-                                          : provider.imageUrl,
-                                      width: 120,
-                                      height: 138,
-                                      fit: BoxFit.cover,
-                                      placeholder: (context, url) {
-                                        // Placeholder while loading
-                                        return Container(
-                                          width: 120,
-                                          height: 138,
-                                          color: Colors.grey[300],
-                                        );
-                                      },
-                                      errorWidget: (context, url, error) {
-                                        // Error icon if the image fails to load
-                                        return const SizedBox(
-                                          width: 120,
-                                          height: 138,
-                                          child: Icon(Icons.error),
-                                        );
-                                      },
-                                    );
-                                  } else {
-                                    return Shimmer.fromColors(
-                                      baseColor: Colors.grey[300]!,
-                                      highlightColor: Colors.grey[100]!,
-                                      child: Container(
-                                        width: 120,
-                                        height: 138,
-                                        color: Colors.grey[300],
-                                      ),
-                                    );
-                                  }
-                                },
+                        child: Stack(
+                          children: [
+                            Card(
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(0),
                               ),
-                              Expanded(
-                                child: Padding(
-                                  padding:
-                                      const EdgeInsets.all(secondarySizedBox),
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Row(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.spaceBetween,
-                                        children: [
-                                          Expanded(
-                                            child: customTitleText(
-                                              context,
-                                              capitalizeFirstLetter(
-                                                  provider.spName),
-                                            ),
+                              elevation: 3,
+                              shadowColor: lighterGreyColor,
+                              color: Colors.white,
+                              child: Row(
+                                children: [
+                                  FutureBuilder(
+                                    future: precacheImage(
+                                        NetworkImage(provider.imageUrl),
+                                        context),
+                                    builder: (context, snapshot) {
+                                      if (snapshot.connectionState ==
+                                          ConnectionState.done) {
+                                        return CachedNetworkImage(
+                                          imageUrl: provider.imageUrl == ''
+                                              ? 'https://tinyurl.com/55w8ht23'
+                                              : provider.imageUrl,
+                                          width: 120,
+                                          height: 138,
+                                          fit: BoxFit.cover,
+                                          placeholder: (context, url) {
+                                            // Placeholder while loading
+                                            return Container(
+                                              width: 120,
+                                              height: 138,
+                                              color: Colors.grey[300],
+                                            );
+                                          },
+                                          errorWidget: (context, url, error) {
+                                            // Error icon if the image fails to load
+                                            return const SizedBox(
+                                              width: 120,
+                                              height: 138,
+                                              child: Icon(Icons.error),
+                                            );
+                                          },
+                                        );
+                                      } else {
+                                        return Shimmer.fromColors(
+                                          baseColor: Colors.grey[300]!,
+                                          highlightColor: Colors.grey[100]!,
+                                          child: Container(
+                                            width: 120,
+                                            height: 138,
+                                            color: Colors.grey[300],
                                           ),
-                                          ratingWidget((provider.averageRating)
-                                              .toStringAsFixed(1)),
-                                        ],
-                                      ),
-                                      const SizedBox(height: primarySizedBox),
-                                      Text(
-                                        capitalizeFirstLetter(provider.name),
-                                        style: const TextStyle(
-                                          fontSize: regularText,
-                                          color: Colors.black,
-                                        ),
-                                      ),
-                                      const SizedBox(height: primarySizedBox),
-                                      Row(
+                                        );
+                                      }
+                                    },
+                                  ),
+                                  Expanded(
+                                    child: Padding(
+                                      padding: const EdgeInsets.all(
+                                          secondarySizedBox),
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
                                         children: [
+                                          Row(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.spaceBetween,
+                                            children: [
+                                              Expanded(
+                                                child: customTitleText(
+                                                  context,
+                                                  capitalizeFirstLetter(
+                                                      provider.spName),
+                                                ),
+                                              ),
+                                              ratingWidget(
+                                                  (provider.averageRating)
+                                                      .toStringAsFixed(1)),
+                                            ],
+                                          ),
+                                          const SizedBox(
+                                              height: primarySizedBox),
                                           Text(
-                                            "${provider.size}",
-                                            style: TextStyle(
+                                            capitalizeFirstLetter(
+                                                provider.name),
+                                            style: const TextStyle(
                                               fontSize: regularText,
                                               color: Colors.black,
                                             ),
                                           ),
-                                          const Text(
-                                            " • ",
-                                            style: TextStyle(
-                                              fontSize: smallText,
-                                              color: Colors.black,
-                                            ),
-                                          ),
-                                          const Text(
-                                            "₱",
-                                            style: TextStyle(
-                                              fontSize: smallText,
-                                              color: primaryColor,
-                                            ),
-                                          ),
                                           const SizedBox(
-                                              width: primarySizedBox),
-                                          customTitleTextWithPrimaryColor(
-                                            context,
-                                            "${provider.price}",
-                                          ),
-                                        ],
-                                      ),
-                                      const SizedBox(height: primarySizedBox),
-                                      Row(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.spaceBetween,
-                                        children: [
-                                          sentimentLabelTextWidget(
-                                            provider.sentimentLabel,
-                                          ),
+                                              height: primarySizedBox),
                                           Row(
                                             children: [
-                                              FutureBuilder<String?>(
-                                                future: getDistanceToTarget(
-                                                  ref,
-                                                  provider.latitude,
-                                                  provider.longitude,
+                                              Text(
+                                                "${provider.size}",
+                                                style: TextStyle(
+                                                  fontSize: regularText,
+                                                  color: Colors.black,
                                                 ),
-                                                builder: (context, snapshot) {
-                                                  if (snapshot.hasError) {
-                                                    return ErrorMessage();
-                                                  } else if (snapshot.hasData) {
-                                                    return Row(
-                                                      children: [
-                                                        const Icon(
-                                                            CupertinoIcons
-                                                                .location,
-                                                            size: 19),
-                                                        Text(snapshot.data ??
-                                                            'Distance not available'),
-                                                      ],
-                                                    );
-                                                  } else {
-                                                    return const Text('');
-                                                  }
-                                                },
+                                              ),
+                                              const Text(
+                                                " • ",
+                                                style: TextStyle(
+                                                  fontSize: smallText,
+                                                  color: Colors.black,
+                                                ),
+                                              ),
+                                              const Text(
+                                                "₱",
+                                                style: TextStyle(
+                                                  fontSize: smallText,
+                                                  color: primaryColor,
+                                                ),
+                                              ),
+                                              const SizedBox(
+                                                  width: primarySizedBox),
+                                              customTitleTextWithPrimaryColor(
+                                                context,
+                                                "${provider.price}",
+                                              ),
+                                            ],
+                                          ),
+                                          const SizedBox(
+                                              height: primarySizedBox),
+                                          Column(
+                                            children: [
+                                              Row(
+                                                children: [
+                                                  FutureBuilder<
+                                                      List<
+                                                          Map<String,
+                                                              dynamic>>>(
+                                                    future:
+                                                        getValidPetsForService(
+                                                      petType,
+                                                      servicePackageMinWeight,
+                                                      servicePackageMaxWeight,
+                                                      petProfileData,
+                                                    ),
+                                                    builder:
+                                                        (context, snapshot) {
+                                                      if (snapshot
+                                                              .connectionState ==
+                                                          ConnectionState
+                                                              .waiting) {
+                                                        return SizedBox
+                                                            .shrink(); // Show a loader while waiting
+                                                      }
+
+                                                      if (snapshot.hasError) {
+                                                        return Row(
+                                                          mainAxisAlignment:
+                                                              MainAxisAlignment
+                                                                  .start,
+                                                          children: [
+                                                            Icon(Icons.error),
+                                                          ],
+                                                        );
+                                                      }
+
+                                                      final validPets =
+                                                          snapshot.data ?? [];
+
+                                                      return validPets
+                                                              .isNotEmpty
+                                                          ? Expanded(
+                                                              child: Row(
+                                                                children: [
+                                                                  const Icon(
+                                                                      Icons
+                                                                          .check_circle,
+                                                                      color: Colors
+                                                                          .blue),
+                                                                  const SizedBox(
+                                                                      width:
+                                                                          secondarySizedBox),
+                                                                  SizedBox(
+                                                                    width: 200,
+                                                                    child: customRegularWeightTitleText(
+                                                                        context,
+                                                                        'Matches with ${validPets.map((pet) => pet['pet_name'].toString()).join(', ')}',
+                                                                        Colors
+                                                                            .blue),
+                                                                  ),
+                                                                ],
+                                                              ),
+                                                            )
+                                                          : SizedBox.shrink();
+                                                    },
+                                                  ),
+                                                ],
+                                              ),
+                                              const SizedBox(
+                                                height: primarySizedBox,
+                                              ),
+                                            ],
+                                          ),
+                                          Column(
+                                            children: [
+                                              Row(
+                                                children: [
+                                                  FutureBuilder<bool>(
+                                                    // Return a bool instead of a List<String>
+                                                    future: doesAppointmentMatchCriteria(
+                                                        petType,
+                                                        servicePackageType,
+                                                        ref.watch(
+                                                            selectedAppointmentPetTypeProvider),
+                                                        ref.watch(
+                                                            selectedAppointmentPackageServiceTypeProvider),
+                                                        servicePackageMinWeight,
+                                                        servicePackageMaxWeight,
+                                                        ref.watch(
+                                                                selectedAppointmentPetWeightProvider) ??
+                                                            0),
+                                                    builder:
+                                                        (context, snapshot) {
+                                                      if (snapshot
+                                                              .connectionState ==
+                                                          ConnectionState
+                                                              .waiting) {
+                                                        return SizedBox
+                                                            .shrink(); // Show a loader while waiting
+                                                      }
+
+                                                      if (snapshot.hasError) {
+                                                        return Row(
+                                                          mainAxisAlignment:
+                                                              MainAxisAlignment
+                                                                  .start,
+                                                          children: [
+                                                            Icon(Icons.error),
+                                                          ],
+                                                        );
+                                                      }
+
+                                                      final validPets = snapshot
+                                                              .data ??
+                                                          false; // Assuming false if data is null
+
+                                                      // Only update the provider after the frame is rendered (post-frame callback)
+                                                      WidgetsBinding.instance
+                                                          .addPostFrameCallback(
+                                                              (_) {
+                                                        if (validPets !=
+                                                            ref.read(
+                                                                servicePackageMatchesAppointmentPrefProvider)) {
+                                                          ref
+                                                              .read(
+                                                                  servicePackageMatchesAppointmentPrefProvider
+                                                                      .notifier)
+                                                              .state = validPets;
+                                                        }
+                                                      });
+
+                                                      return validPets
+                                                          ? Row(
+                                                              children: [
+                                                                const Icon(
+                                                                    Icons
+                                                                        .fact_check,
+                                                                    color: Colors
+                                                                        .blue),
+                                                                const SizedBox(
+                                                                    width:
+                                                                        secondarySizedBox),
+                                                                SizedBox(
+                                                                  width: 200,
+                                                                  child:
+                                                                      customRegularWeightTitleText(
+                                                                    context,
+                                                                    'Matches with your appointment preferences',
+                                                                    Colors.blue,
+                                                                  ),
+                                                                ),
+                                                              ],
+                                                            )
+                                                          : SizedBox
+                                                              .shrink(); // If the criteria don't match, return an empty widget
+                                                    },
+                                                  ),
+                                                ],
+                                              ),
+                                              const SizedBox(
+                                                height: primarySizedBox,
+                                              ),
+                                            ],
+                                          ),
+                                          Row(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.spaceBetween,
+                                            children: [
+                                              sentimentLabelTextWidget(
+                                                provider.sentimentLabel,
+                                              ),
+                                              Row(
+                                                children: [
+                                                  FutureBuilder<String?>(
+                                                    future: getDistanceToTarget(
+                                                      ref,
+                                                      provider.latitude,
+                                                      provider.longitude,
+                                                    ),
+                                                    builder:
+                                                        (context, snapshot) {
+                                                      if (snapshot.hasError) {
+                                                        return ErrorMessage();
+                                                      } else if (snapshot
+                                                          .hasData) {
+                                                        return Row(
+                                                          children: [
+                                                            const Icon(
+                                                                CupertinoIcons
+                                                                    .location,
+                                                                size: 19),
+                                                            Text(snapshot
+                                                                    .data ??
+                                                                'Distance not available'),
+                                                          ],
+                                                        );
+                                                      } else {
+                                                        return const Text('');
+                                                      }
+                                                    },
+                                                  ),
+                                                ],
                                               ),
                                             ],
                                           ),
                                         ],
                                       ),
+                                    ),
+                                  )
+                                ],
+                              ),
+                            ),
+                            FutureBuilder<bool>(
+                              // Return a bool instead of a List<String>
+                              future: doesAppointmentMatchCriteria(
+                                  petType,
+                                  servicePackageType,
+                                  ref.watch(selectedAppointmentPetTypeProvider),
+                                  ref.watch(
+                                      selectedAppointmentPackageServiceTypeProvider),
+                                  servicePackageMinWeight,
+                                  servicePackageMaxWeight,
+                                  ref.watch(
+                                          selectedAppointmentPetWeightProvider) ??
+                                      0),
+                              builder: (context, snapshot) {
+                                if (snapshot.connectionState ==
+                                    ConnectionState.waiting) {
+                                  return SizedBox
+                                      .shrink(); // Show a loader while waiting
+                                }
+
+                                if (snapshot.hasError) {
+                                  return Row(
+                                    mainAxisAlignment: MainAxisAlignment.start,
+                                    children: [
+                                      Icon(Icons.error),
                                     ],
-                                  ),
-                                ),
-                              )
-                            ],
-                          ),
+                                  );
+                                }
+
+                                final validPets = snapshot.data ??
+                                    false; // Assuming false if data is null
+
+                                // Only update the provider after the frame is rendered (post-frame callback)
+                                WidgetsBinding.instance
+                                    .addPostFrameCallback((_) {
+                                  if (validPets !=
+                                      ref.read(
+                                          servicePackageMatchesAppointmentPrefProvider)) {
+                                    ref
+                                        .read(
+                                            servicePackageMatchesAppointmentPrefProvider
+                                                .notifier)
+                                        .state = validPets;
+                                  }
+                                });
+
+                                final willBook = ref.watch(willBookProvider);
+
+                                // Cart providers
+                                final cartServices =
+                                    ref.watch(cartNotifierProvider);
+                                final isInCart = cartServices.any(
+                                  (cartService) =>
+                                      (provider.type == "service" &&
+                                          cartService.id ==
+                                              provider.servicePackageId &&
+                                          cartService.servicePackageDetailsId ==
+                                              provider
+                                                  .serviceProviderServicePackageId) ||
+                                      (provider.type == "package" &&
+                                          cartService.id ==
+                                              provider.servicePackageId &&
+                                          cartService.servicePackageDetailsId ==
+                                              provider
+                                                  .serviceProviderServicePackageId),
+                                );
+                                return validPets && willBook
+                                    ? Positioned(
+                                        bottom: 1,
+                                        left: 70,
+                                        child: CircleAvatar(
+                                          radius: 25,
+                                          backgroundColor: isInCart
+                                              ? Colors.red
+                                              : secondaryColor,
+                                          child: IconButton(
+                                            icon: Icon(
+                                              isInCart
+                                                  ? Icons.remove
+                                                  : CupertinoIcons.cart,
+                                              color: Colors.white,
+                                              size: 23,
+                                              shadows: [
+                                                Shadow(
+                                                  offset: Offset(0,
+                                                      0.2), // Horizontal and vertical offset
+                                                  blurRadius:
+                                                      5.0, // Blur effect
+                                                  color:
+                                                      mediumGreyColor, // Shadow color
+                                                ),
+                                              ],
+                                            ),
+                                            onPressed: () {
+                                              final cartNotifier = ref.read(
+                                                  cartNotifierProvider
+                                                      .notifier);
+
+                                              if (provider.type == "service") {
+                                                final service = Service(
+                                                    serviceId: provider
+                                                        .servicePackageId,
+                                                    serviceProviderServiceId:
+                                                        provider
+                                                            .serviceProviderServicePackageId,
+                                                    serviceServiceProviderId:
+                                                        provider.spId,
+                                                    serviceServiceProviderImage:
+                                                        provider.spImage,
+                                                    serviceName: provider.name,
+                                                    serviceDesc: provider
+                                                        .servicePackageDesc,
+                                                    category:
+                                                        provider.categoryName,
+                                                    servicePrice:
+                                                        provider.price,
+                                                    serviceImage:
+                                                        provider.imageUrl,
+                                                    serviceType:
+                                                        servicePackageType,
+                                                    servicePetType: petType,
+                                                    serviceSize: provider.size,
+                                                    minWeight:
+                                                        provider.minWeight,
+                                                    maxWeight:
+                                                        provider.maxWeight,
+                                                    serviceProviderNameOfService:
+                                                        provider.spName);
+
+                                                isInCart
+                                                    ? cartNotifier
+                                                        .removeService(service)
+                                                    : cartNotifier.addService(
+                                                        service, context);
+                                              } else if (provider.type ==
+                                                  "package") {
+                                                final package = Package(
+                                                    packageId: provider
+                                                        .servicePackageId,
+                                                    serviceProviderPackageId:
+                                                        provider
+                                                            .serviceProviderServicePackageId,
+                                                    packageServiceProviderId:
+                                                        provider.spId,
+                                                    packageServiceProviderImage:
+                                                        provider.spImage,
+                                                    packageName: provider.name,
+                                                    packageDesc: provider
+                                                        .servicePackageDesc,
+                                                    category:
+                                                        provider.categoryName,
+                                                    packagePrice:
+                                                        provider.price,
+                                                    packageImage:
+                                                        provider.imageUrl,
+                                                    packageType:
+                                                        servicePackageType,
+                                                    packagePetType: petType,
+                                                    packageSize: provider.size,
+                                                    minWeight:
+                                                        provider.minWeight,
+                                                    maxWeight:
+                                                        provider.maxWeight,
+                                                    serviceProviderNameOfPackage:
+                                                        provider.spName);
+
+                                                isInCart
+                                                    ? cartNotifier
+                                                        .removePackage(package)
+                                                    : cartNotifier.addPackage(
+                                                        package, context);
+                                              }
+                                            },
+                                          ),
+                                        ),
+                                      )
+                                    : SizedBox
+                                        .shrink(); // If the criteria don't match, return an empty widget
+                              },
+                            )
+                          ],
                         ),
                       ),
                       const SizedBox(height: primarySizedBox),

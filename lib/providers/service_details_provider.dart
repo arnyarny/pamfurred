@@ -13,9 +13,15 @@ final selectedServiceProviderServicePackageIdProvider = StateProvider<String>((r
 // Provider to manage the selected category for fetching details
 final selectedSearchResultCategoryProvider = StateProvider<String>((ref) => '');
 
-// Provider to manage the selected service package type after search result
+// Manage if it's a service or a package
 final selectedSearchResultServicePackageTypeProvider = StateProvider<String>((ref) => '');
 
 final selectedSearchResultSpSentimentLabel = StateProvider<String>((ref) => '');
 
 final selectedSearchResultSpAvgRating = StateProvider<num?>((ref) => null);
+
+final isServicePackageValidForPetProvider = StateProvider<bool>((ref) => false);
+
+// Provider to manage the selected pet ID for fetching details
+final servicePackageMatchesAppointmentPrefProvider = StateProvider<bool>((ref) => false);
+

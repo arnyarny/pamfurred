@@ -27,12 +27,11 @@ final allPackagesProvider =
       packageId: package['package_id'] as String? ?? '',
       serviceProviderPackageId: package['serviceprovider_package_id'] ?? '',
       packageName: package['package_name'] as String? ?? '',
-      packageDesc: package['package_desc'] == null || package['package_desc'] == ''
-          ? 'No description provided.'
-          : package['package_desc'] as String,
-      category: package['package_category'] is List<dynamic>
-          ? List<String>.from(package['package_category'] as List<dynamic>)
-          : [],
+      packageDesc:
+          package['package_desc'] == null || package['package_desc'] == ''
+              ? 'No description provided.'
+              : package['package_desc'] as String,
+      category: package['package_category'] ?? 'Unknown category',
       packagePrice: package['price'] as int? ?? 0,
       packageImage: package['package_image'] as String? ?? '',
       packageType: package['package_type'] is List<dynamic>
@@ -48,6 +47,9 @@ final allPackagesProvider =
       maxWeight: package['max_weight'] != null
           ? int.tryParse(package['max_weight'].toString()) ?? 0
           : 0,
+      inclusions: package['inclusions'] is List<dynamic>
+          ? List<String>.from(package['inclusions'] as List<dynamic>)
+          : [],
     );
   }).toList();
 
@@ -72,7 +74,7 @@ final allPackagesProvider =
   if (filterCriteria.packageCategory != null &&
       filterCriteria.packageCategory!.isNotEmpty) {
     packageList = packageList.where((package) {
-      return package.category.contains(filterCriteria.packageCategory);
+      return package.category == filterCriteria.packageCategory;
     }).toList();
   }
 

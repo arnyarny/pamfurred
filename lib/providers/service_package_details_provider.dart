@@ -63,6 +63,7 @@ final servicePackageDetailsProvider =
         'sp_image': service.serviceServiceProviderImage,
         'service_id': service.serviceId,
         'serviceprovider_service_id': service.serviceProviderServiceId,
+        'category_name': service.category,
         'service_name': service.serviceName,
         'service_desc': service.serviceDesc,
         'service_image': service.serviceImage,
@@ -111,6 +112,7 @@ final servicePackageDetailsProvider =
         'sp_image': package.packageServiceProviderImage,
         'package_id': package.packageId,
         'serviceprovider_package_id': package.serviceProviderPackageId,
+        'category_name': package.category,
         'package_name': package.packageName,
         'package_desc': package.packageDesc,
         'package_image': package.packageImage,
@@ -120,6 +122,7 @@ final servicePackageDetailsProvider =
         'max_weight': package.maxWeight,
         'package_type': package.packageType,
         'pet_type': package.packagePetType,
+        'inclusions': package.inclusions
       },
       package.packageId, // packageId as the second argument
       package

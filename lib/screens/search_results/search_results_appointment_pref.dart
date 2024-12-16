@@ -29,8 +29,8 @@ class ChooseSearchResultsAppointmentPreferencesScreenState
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final spIndexData = ref.watch(spIndexProvider);
       final packageServiceTypeOptions =
-          (spIndexData?['unique_package_service_types'] as List<dynamic>)
-              .cast<String>();
+          (spIndexData?['unique_package_service_types'] as List<dynamic>?)
+              ?.cast<String>();
 
       // Retrieve previously selected options if available
       final selectedServiceType =
@@ -39,8 +39,8 @@ class ChooseSearchResultsAppointmentPreferencesScreenState
       setState(() {
         // Check if there is a previously selected type; otherwise, select the first option
         selectedTypeIndex =
-            packageServiceTypeOptions.indexOf(selectedServiceType);
-        if (selectedTypeIndex == -1) {
+            packageServiceTypeOptions?.indexOf(selectedServiceType) ?? -1;
+        if (selectedTypeIndex == -1 && packageServiceTypeOptions != null) {
           selectedTypeIndex =
               0; // Default to the first option if nothing is selected
           ref
@@ -66,8 +66,8 @@ class ChooseSearchResultsAppointmentPreferencesScreenState
     final petTypeOptions =
         (spIndexData?['unique_pet_types'] as List<dynamic>).cast<String>();
     final packageServiceTypeOptions =
-        (spIndexData?['unique_package_service_types'] as List<dynamic>)
-            .cast<String>();
+        (spIndexData?['unique_package_service_types'] as List<dynamic>?)
+            ?.cast<String>();
 
     // Retrieve the current selected pet ID
     String? selectedPetProfileId = ref.watch(selectedPetProfileIdProvider);
@@ -266,60 +266,63 @@ class ChooseSearchResultsAppointmentPreferencesScreenState
                     ],
                   ),
                 ),
-                SizedBox(
-                  height: 60,
-                  child: ListView.builder(
-                    physics: const BouncingScrollPhysics(),
-                    scrollDirection: Axis.horizontal,
-                    itemCount: packageServiceTypeOptions.length,
-                    itemBuilder: (context, index) {
-                      return GestureDetector(
-                        onTap: () {
-                          setState(() {
-                            selectedTypeIndex = index;
-                            ref
-                                .read(
-                                    selectedAppointmentPackageServiceTypeProvider
-                                        .notifier)
-                                .state = packageServiceTypeOptions[index];
+                packageServiceTypeOptions == null
+                    ? const Center(child: CircularProgressIndicator())
+                    : SizedBox(
+                        height: 60,
+                        child: ListView.builder(
+                          physics: const BouncingScrollPhysics(),
+                          scrollDirection: Axis.horizontal,
+                          itemCount: packageServiceTypeOptions.length,
+                          itemBuilder: (context, index) {
+                            return GestureDetector(
+                              onTap: () {
+                                setState(() {
+                                  selectedTypeIndex = index;
+                                  ref
+                                      .read(
+                                          selectedAppointmentPackageServiceTypeProvider
+                                              .notifier)
+                                      .state = packageServiceTypeOptions[index];
 
-                            print(
-                                'Service type updated: ${packageServiceTypeOptions[index]}');
-                          });
-                        },
-                        child: Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Container(
-                                padding: const EdgeInsets.symmetric(
-                                    vertical: secondarySizedBox,
-                                    horizontal: tertiarySizedBox),
-                                decoration: BoxDecoration(
-                                  color: selectedTypeIndex == index
-                                      ? darkGreyColor
-                                      : lightGreyColor,
-                                  borderRadius: BorderRadius.circular(20),
-                                ),
-                                child: Text(
-                                  packageServiceTypeOptions[index],
-                                  style: TextStyle(
-                                    fontSize: regularText,
-                                    fontWeight: regularWeight,
-                                    color: selectedTypeIndex == index
-                                        ? Colors.white
-                                        : Colors.black,
-                                  ),
+                                  print(
+                                      'Service type updated: ${packageServiceTypeOptions[index]}');
+                                });
+                              },
+                              child: Padding(
+                                padding:
+                                    const EdgeInsets.symmetric(horizontal: 8.0),
+                                child: Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(
+                                          vertical: secondarySizedBox,
+                                          horizontal: tertiarySizedBox),
+                                      decoration: BoxDecoration(
+                                        color: selectedTypeIndex == index
+                                            ? darkGreyColor
+                                            : lightGreyColor,
+                                        borderRadius: BorderRadius.circular(20),
+                                      ),
+                                      child: Text(
+                                        packageServiceTypeOptions[index],
+                                        style: TextStyle(
+                                          fontSize: regularText,
+                                          fontWeight: regularWeight,
+                                          color: selectedTypeIndex == index
+                                              ? Colors.white
+                                              : Colors.black,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
                                 ),
                               ),
-                            ],
-                          ),
+                            );
+                          },
                         ),
-                      );
-                    },
-                  ),
-                ),
+                      ),
               ],
             ),
             const SizedBox(height: secondarySizedBox),

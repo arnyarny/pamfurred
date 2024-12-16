@@ -1,25 +1,25 @@
 import 'package:pamfurred/models/cart_item.dart';
 
 class Package implements CartItem {
-  const Package({
-    required this.packageServiceProviderId,
-    required this.serviceProviderNameOfPackage,
-    required this.packageServiceProviderImage,
-    required this.packageId,
-    required this.serviceProviderPackageId,
-    required this.packageName,
-    this.packageDesc,
-    required this.category,
-    // required this.minSize,
-    // required this.maxSize,
-    required this.packagePrice,
-    required this.packageImage,
-    required this.packageType,
-    required this.packagePetType,
-    required this.packageSize,
-    required this.minWeight,
-    required this.maxWeight,
-  });
+  const Package(
+      {required this.packageServiceProviderId,
+      required this.serviceProviderNameOfPackage,
+      required this.packageServiceProviderImage,
+      required this.packageId,
+      required this.serviceProviderPackageId,
+      required this.packageName,
+      this.packageDesc,
+      required this.category,
+      // required this.minSize,
+      // required this.maxSize,
+      required this.packagePrice,
+      required this.packageImage,
+      required this.packageType,
+      required this.packagePetType,
+      required this.packageSize,
+      required this.minWeight,
+      required this.maxWeight,
+      this.inclusions});
 
   final String packageServiceProviderId;
   final String serviceProviderNameOfPackage;
@@ -28,7 +28,7 @@ class Package implements CartItem {
   final String serviceProviderPackageId;
   final String packageName;
   final String? packageDesc;
-  final List<String> category;
+  final String category;
   final int packagePrice;
   final String packageImage;
   final List<String> packageType;
@@ -36,6 +36,7 @@ class Package implements CartItem {
   final String packageSize;
   final int minWeight;
   final int maxWeight;
+  final List<dynamic>? inclusions;
 
   // Override the CartItem getters
   @override

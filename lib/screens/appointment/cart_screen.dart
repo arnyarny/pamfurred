@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pamfurred/components/capitalize_first_letter.dart';
 import 'package:pamfurred/components/custom_appbar.dart';
+import 'package:pamfurred/components/custom_padded_button.dart';
 import 'package:pamfurred/components/globals.dart';
 import 'package:pamfurred/components/screen_transitions.dart';
 import 'package:pamfurred/models/packages.dart';
@@ -11,6 +12,10 @@ import 'package:pamfurred/providers/cart_provider.dart';
 import 'package:pamfurred/providers/serviceprovider_provider.dart';
 import 'package:pamfurred/screens/appointment/choose_date_and_time.dart';
 import 'package:pamfurred/screens/appointment/select_address.dart';
+import 'package:pamfurred/screens/appointment/serviceprovider_profile.dart';
+import 'package:quickalert/models/quickalert_animtype.dart';
+import 'package:quickalert/models/quickalert_type.dart';
+import 'package:quickalert/widgets/quickalert_dialog.dart';
 // import 'package:pamfurred/screens/select_address.dart';
 import 'package:shimmer/shimmer.dart';
 
@@ -36,12 +41,38 @@ class _CartScreenState extends ConsumerState<CartScreen> {
 
     const double buttonHeight = 50;
 
+    bool willBook = ref.watch(willBookProvider);
+
     return Scaffold(
       backgroundColor: Colors.white,
-      appBar: customAppBarWithTitle(
-        context,
-        "Your Cart",
-      ),
+      appBar: customAppBarWithTitleAndWidget(context, "Your Cart", [
+        willBook
+            ? customSmallPaddedTextButton(
+                text: 'Cancel',
+                backgroundColor: Colors.red,
+                onPressed: () {
+                  QuickAlert.show(
+                      context: context,
+                      type: QuickAlertType.warning,
+                      animType: QuickAlertAnimType.slideInUp,
+                      confirmBtnColor: Colors.red,
+                      showCancelBtn: true,
+                      onConfirmBtnTap: () {
+                        Navigator.pop(context);
+
+                        // Clear the cart when this button is pressed
+                        ref.read(cartNotifierProvider.notifier).clearCart();
+                        ref.read(willBookProvider.notifier).state = false;
+                        // If willBook is false, reset the providers
+                        resetProviders(ref);
+                      },
+                      title: 'Cancel appointment?',
+                      text:
+                          'This will delete all your appointment preferences including all the services and packages currently in your cart.');
+                },
+              )
+            : SizedBox.shrink(),
+      ]),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
       floatingActionButton: Padding(
         padding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
@@ -212,7 +243,9 @@ class _CartScreenState extends ConsumerState<CartScreen> {
           ClipRRect(
             borderRadius: BorderRadius.circular(primaryBorderRadius),
             child: CachedNetworkImage(
-              imageUrl: item.image,
+              imageUrl: item.image.isEmpty
+                  ? 'https://tinyurl.com/55w8ht23'
+                  : item.image,
               width: 90,
               height: 85,
               fit: BoxFit.fitHeight,

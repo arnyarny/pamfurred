@@ -2,6 +2,11 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:pamfurred/backend_logic_files/check_if_matches_appointment_pref.dart';
+import 'package:pamfurred/backend_logic_files/check_if_pet_matches.dart';
+import 'package:pamfurred/components/cart_icon.dart';
+import 'package:pamfurred/components/custom_floating_action_button.dart';
+import 'package:pamfurred/components/error_widget.dart';
 import 'package:pamfurred/components/globals.dart';
 import 'package:pamfurred/components/rating_widget.dart';
 import 'package:pamfurred/components/screen_transitions.dart';
@@ -10,9 +15,13 @@ import 'package:pamfurred/components/title_text.dart';
 import 'package:pamfurred/models/packages.dart';
 import 'package:pamfurred/models/services.dart';
 import 'package:pamfurred/providers/cart_provider.dart';
+import 'package:pamfurred/providers/global_providers.dart';
+import 'package:pamfurred/providers/pet_profile_provider.dart';
 import 'package:pamfurred/providers/service_details_provider.dart';
 import 'package:pamfurred/providers/service_package_details_provider.dart';
 import 'package:pamfurred/providers/serviceprovider_provider.dart';
+import 'package:pamfurred/providers/user_id.dart';
+import 'package:pamfurred/screens/appointment/cart_screen.dart';
 import 'package:pamfurred/screens/appointment/serviceprovider_profile.dart';
 import 'package:pamfurred/screens/search_results/search_results_appointment_pref.dart';
 import 'package:shimmer/shimmer.dart';
@@ -34,6 +43,9 @@ class ServicePackageDetails extends ConsumerWidget {
 
     final bool willBook = ref.watch(willBookProvider);
 
+    final bool servicePackageMatchesAppointmentPref =
+        ref.watch(servicePackageMatchesAppointmentPrefProvider);
+
     return details.when(
       data: (item) {
         // Fallback for missing image
@@ -46,6 +58,7 @@ class ServicePackageDetails extends ConsumerWidget {
         List<String> servicePackageType =
             List<String>.from(item.servicePackageType);
 
+        // Cart providers
         final cartServices = ref.watch(cartNotifierProvider);
         final isInCart = cartServices.any(
           (cartService) =>
@@ -59,14 +72,16 @@ class ServicePackageDetails extends ConsumerWidget {
                       item.serviceProviderServicePackageId),
         );
 
-        return Container(
-          decoration: const BoxDecoration(
-            borderRadius: BorderRadius.only(
-              topLeft: Radius.circular(tertiaryBorderRadius),
-              topRight: Radius.circular(tertiaryBorderRadius),
-            ),
-            color: lighterGreyColor,
-          ),
+        // Item (service/package) weight range
+        int servicePackageMinWeight = item.minWeight;
+        int servicePackageMaxWeight = item.maxWeight;
+
+        // Pet profile data
+        final petProfileData =
+            ref.watch(petProfileProvider(ref.watch(userIdProvider).toString()));
+
+        return FractionallySizedBox(
+          heightFactor: 1, // Set maximum height of the sheet
           child: Column(
             children: [
               // Notch
@@ -104,131 +119,138 @@ class ServicePackageDetails extends ConsumerWidget {
                                   ? BoxFit.cover
                                   : BoxFit.fitHeight,
                               placeholder: (context, url) {
-                                print("Loading image...");
                                 return const Center(
                                     child: CircularProgressIndicator());
                               },
                               errorWidget: (context, url, error) {
-                                print("Error loading image: $error");
                                 return const Icon(Icons.error, size: 48);
                               },
                             ),
                           ),
-                          const SizedBox(height: 16),
+                          const SizedBox(height: secondarySizedBox),
+                          servicePackageMatchesAppointmentPref && willBook
+                              ? Row(
+                                  mainAxisAlignment: MainAxisAlignment.end,
+                                  children: [
+                                    FilledButton.icon(
+                                      label: Text(
+                                        isInCart
+                                            ? 'Remove from cart'
+                                            : 'Add to cart',
+                                        style: TextStyle(
+                                          color: Colors.white,
+                                          shadows: [
+                                            Shadow(
+                                              offset: Offset(0,
+                                                  0.2), // Horizontal and vertical offset
+                                              blurRadius: 5.0, // Blur effect
+                                              color: greyColor, // Shadow color
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                      icon: Icon(
+                                        isInCart
+                                            ? Icons.remove
+                                            : CupertinoIcons.cart,
+                                        color: Colors.white,
+                                        size: 23,
+                                        shadows: [
+                                          Shadow(
+                                            offset: Offset(0,
+                                                0.2), // Horizontal and vertical offset
+                                            blurRadius: 5.0, // Blur effect
+                                            color:
+                                                mediumGreyColor, // Shadow color
+                                          ),
+                                        ],
+                                      ),
+                                      style: ButtonStyle(
+                                          backgroundColor:
+                                              WidgetStatePropertyAll<Color>(
+                                            isInCart
+                                                ? primaryColor
+                                                : secondaryColor, // Uniform color for all states
+                                          ),
+                                          shape: WidgetStatePropertyAll<
+                                              RoundedRectangleBorder>(
+                                            RoundedRectangleBorder(
+                                              borderRadius:
+                                                  BorderRadius.circular(
+                                                      secondaryBorderRadius),
+                                            ),
+                                          )),
+                                      onPressed: () {
+                                        final cartNotifier = ref.read(
+                                            cartNotifierProvider.notifier);
 
+                                        if (itemType == "service") {
+                                          final service = Service(
+                                              serviceId: item.servicePackageId,
+                                              serviceProviderServiceId: item
+                                                  .serviceProviderServicePackageId,
+                                              serviceServiceProviderId:
+                                                  item.spId,
+                                              serviceServiceProviderImage:
+                                                  item.spImage,
+                                              serviceName: item.name,
+                                              serviceDesc:
+                                                  item.servicePackageDesc,
+                                              category: item.categoryName,
+                                              servicePrice: item.price,
+                                              serviceImage: image,
+                                              serviceType: servicePackageType,
+                                              servicePetType: petType,
+                                              serviceSize: item.size,
+                                              minWeight: item.minWeight,
+                                              maxWeight: item.maxWeight,
+                                              serviceProviderNameOfService:
+                                                  item.spName);
+
+                                          isInCart
+                                              ? cartNotifier
+                                                  .removeService(service)
+                                              : cartNotifier.addService(
+                                                  service, context);
+                                        } else if (itemType == "package") {
+                                          final package = Package(
+                                              packageId: item.servicePackageId,
+                                              serviceProviderPackageId: item
+                                                  .serviceProviderServicePackageId,
+                                              packageServiceProviderId:
+                                                  item.spId,
+                                              packageServiceProviderImage:
+                                                  item.spImage,
+                                              packageName: item.name,
+                                              packageDesc:
+                                                  item.servicePackageDesc,
+                                              category: item.categoryName,
+                                              packagePrice: item.price,
+                                              packageImage: image,
+                                              packageType: servicePackageType,
+                                              packagePetType: petType,
+                                              packageSize: item.size,
+                                              minWeight: item.minWeight,
+                                              maxWeight: item.maxWeight,
+                                              serviceProviderNameOfPackage:
+                                                  item.spName);
+
+                                          isInCart
+                                              ? cartNotifier
+                                                  .removePackage(package)
+                                              : cartNotifier.addPackage(
+                                                  package, context);
+                                        }
+                                      },
+                                    ),
+                                  ],
+                                )
+                              : SizedBox.shrink(),
+                          const SizedBox(
+                            height: secondarySizedBox,
+                          ),
                           // Log title and provider details
                           Column(children: [
-                            Padding(
-                              padding: const EdgeInsets.only(
-                                  left: secondarySizedBox),
-                              child: Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
-                                children: [
-                                  willBook
-                                      ? GestureDetector(
-                                          onTap: () {
-                                            showModalBottomSheet(
-                                              context: context,
-                                              builder: (context) => const SizedBox(
-                                                  height: 300,
-                                                  child:
-                                                      ChooseSearchResultsAppointmentPreferencesScreen()),
-                                            );
-                                          },
-                                          child: Icon(Icons.filter_list))
-                                      : SizedBox.shrink(),
-                                  willBook
-                                      ? FilledButton.icon(
-                                          label: Text(
-                                            'Cancel booking',
-                                            style: TextStyle(
-                                              color: Colors.white,
-                                              shadows: [
-                                                Shadow(
-                                                  offset: Offset(0,
-                                                      0.2), // Horizontal and vertical offset
-                                                  blurRadius:
-                                                      5.0, // Blur effect
-                                                  color:
-                                                      greyColor, // Shadow color
-                                                ),
-                                              ],
-                                            ),
-                                          ),
-                                          style: ButtonStyle(
-                                              backgroundColor:
-                                                  WidgetStatePropertyAll<Color>(
-                                                primaryColor, // Uniform color for all states
-                                              ),
-                                              shape: WidgetStatePropertyAll<
-                                                  RoundedRectangleBorder>(
-                                                RoundedRectangleBorder(
-                                                  borderRadius:
-                                                      BorderRadius.circular(
-                                                          secondaryBorderRadius),
-                                                ),
-                                              )),
-                                          onPressed: () {
-                                            // Clear the cart when this button is pressed
-                                            ref
-                                                .read(cartNotifierProvider
-                                                    .notifier)
-                                                .clearCart();
-                                            ref
-                                                .read(willBookProvider.notifier)
-                                                .state = false;
-                                            // If willBook is false, reset the providers
-                                            resetProviders(ref);
-                                          },
-                                        )
-                                      : FilledButton.icon(
-                                          label: Text(
-                                            'Book now',
-                                            style: TextStyle(
-                                              color: Colors.white,
-                                              shadows: [
-                                                Shadow(
-                                                  offset: Offset(0,
-                                                      0.2), // Horizontal and vertical offset
-                                                  blurRadius:
-                                                      5.0, // Blur effect
-                                                  color:
-                                                      greyColor, // Shadow color
-                                                ),
-                                              ],
-                                            ),
-                                          ),
-                                          style: ButtonStyle(
-                                              backgroundColor:
-                                                  WidgetStatePropertyAll<Color>(
-                                                secondaryColor, // Uniform color for all states
-                                              ),
-                                              shape: WidgetStatePropertyAll<
-                                                  RoundedRectangleBorder>(
-                                                RoundedRectangleBorder(
-                                                  borderRadius:
-                                                      BorderRadius.circular(
-                                                          secondaryBorderRadius),
-                                                ),
-                                              )),
-                                          onPressed: () {
-                                            ref
-                                                .read(willBookProvider.notifier)
-                                                .state = true;
-
-                                            showModalBottomSheet(
-                                              context: context,
-                                              builder: (context) => const SizedBox(
-                                                  height: 300,
-                                                  child:
-                                                      ChooseSearchResultsAppointmentPreferencesScreen()),
-                                            );
-                                          },
-                                        )
-                                ],
-                              ),
-                            ),
                             Padding(
                               padding: const EdgeInsets.only(
                                   left: secondarySizedBox),
@@ -290,6 +312,24 @@ class ServicePackageDetails extends ConsumerWidget {
                               ),
                             ),
                             const SizedBox(height: secondarySizedBox),
+                            if (itemType == 'package') ...[
+                              Padding(
+                                padding: const EdgeInsets.only(
+                                    left: secondarySizedBox),
+                                child: Row(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    const Icon(Icons.list, color: tangerine),
+                                    const SizedBox(width: secondarySizedBox),
+                                    Expanded(
+                                      child: wrappedText(context,
+                                          'Inclusions: ${(item.inclusions)?.join(', ')}'),
+                                    )
+                                  ],
+                                ),
+                              ),
+                              const SizedBox(height: secondarySizedBox),
+                            ],
                             Padding(
                               padding: const EdgeInsets.only(
                                   left: secondarySizedBox),
@@ -318,116 +358,150 @@ class ServicePackageDetails extends ConsumerWidget {
                               ),
                             ),
                             const SizedBox(height: secondarySizedBox),
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.start,
-                              children: [
-                                FilledButton.icon(
-                                  label: Text(
-                                    isInCart
-                                        ? 'Remove from cart'
-                                        : 'Add to cart',
-                                    style: TextStyle(
-                                      color: Colors.white,
-                                      shadows: [
-                                        Shadow(
-                                          offset: Offset(0,
-                                              0.2), // Horizontal and vertical offset
-                                          blurRadius: 5.0, // Blur effect
-                                          color: greyColor, // Shadow color
-                                        ),
+                            FutureBuilder<List<Map<String, dynamic>>>(
+                              future: getValidPetsForService(
+                                petType,
+                                servicePackageMinWeight,
+                                servicePackageMaxWeight,
+                                petProfileData,
+                              ),
+                              builder: (context, snapshot) {
+                                if (snapshot.connectionState ==
+                                    ConnectionState.waiting) {
+                                  return SizedBox
+                                      .shrink(); // Show a loader while waiting
+                                }
+
+                                if (snapshot.hasError) {
+                                  return Padding(
+                                    padding: const EdgeInsets.only(
+                                        left: secondarySizedBox),
+                                    child: Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.start,
+                                      children: [
+                                        Icon(Icons.error),
                                       ],
                                     ),
-                                  ),
-                                  icon: Icon(
-                                    isInCart ? Icons.remove : Icons.add,
-                                    color: Colors.white,
-                                    size: 23,
-                                    shadows: [
-                                      Shadow(
-                                        offset: Offset(0,
-                                            0.2), // Horizontal and vertical offset
-                                        blurRadius: 5.0, // Blur effect
-                                        color: mediumGreyColor, // Shadow color
-                                      ),
-                                    ],
-                                  ),
-                                  style: ButtonStyle(
-                                      backgroundColor:
-                                          WidgetStatePropertyAll<Color>(
-                                        isInCart
-                                            ? primaryColor
-                                            : secondaryColor, // Uniform color for all states
-                                      ),
-                                      shape: WidgetStatePropertyAll<
-                                          RoundedRectangleBorder>(
-                                        RoundedRectangleBorder(
-                                          borderRadius: BorderRadius.circular(
-                                              secondaryBorderRadius),
+                                  );
+                                }
+
+                                final validPets = snapshot.data ?? [];
+
+                                // if (validPets.isEmpty) {
+                                //   return Text(
+                                //       "No pets are valid for this service.");
+                                // }
+
+                                return validPets.isNotEmpty
+                                    ? Padding(
+                                        padding: const EdgeInsets.only(
+                                            left: secondarySizedBox),
+                                        child: Row(
+                                          children: [
+                                            const Icon(Icons.check_circle,
+                                                color: Colors.blue),
+                                            const SizedBox(
+                                                width: secondarySizedBox),
+                                            customRegularWeightTitleText(
+                                                context,
+                                                'Matches with ${validPets.map((pet) => pet['pet_name'].toString()).join(', ')}',
+                                                Colors.blue)
+                                          ],
                                         ),
-                                      )),
-                                  onPressed: () {
-                                    final cartNotifier =
-                                        ref.read(cartNotifierProvider.notifier);
+                                      )
+                                    : SizedBox.shrink();
+                              },
+                            ),
+                            const SizedBox(height: secondarySizedBox),
+                            FutureBuilder<bool>(
+                              // Return a bool instead of a List<String>
+                              future: doesAppointmentMatchCriteria(
+                                  petType,
+                                  servicePackageType,
+                                  ref.watch(selectedAppointmentPetTypeProvider),
+                                  ref.watch(
+                                      selectedAppointmentPackageServiceTypeProvider),
+                                  servicePackageMinWeight,
+                                  servicePackageMaxWeight,
+                                  ref.watch(
+                                          selectedAppointmentPetWeightProvider) ??
+                                      0),
+                              builder: (context, snapshot) {
+                                if (snapshot.connectionState ==
+                                    ConnectionState.waiting) {
+                                  return SizedBox
+                                      .shrink(); // Show a loader while waiting
+                                }
 
-                                    if (itemType == "service") {
-                                      final service = Service(
-                                          serviceId: item.servicePackageId,
-                                          serviceProviderServiceId: item
-                                              .serviceProviderServicePackageId,
-                                          serviceServiceProviderId: item.spId,
-                                          serviceServiceProviderImage:
-                                              item.spImage,
-                                          serviceName: item.name,
-                                          serviceDesc: item.servicePackageDesc,
-                                          category: [item.categoryName],
-                                          servicePrice: item.price,
-                                          serviceImage: image,
-                                          serviceType: servicePackageType,
-                                          servicePetType: petType,
-                                          serviceSize: item.size,
-                                          minWeight: item.minWeight,
-                                          maxWeight: item.maxWeight,
-                                          serviceProviderNameOfService:
-                                              item.spName);
+                                if (snapshot.hasError) {
+                                  return Padding(
+                                    padding: const EdgeInsets.only(
+                                        left: secondarySizedBox),
+                                    child: Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.start,
+                                      children: [
+                                        Icon(Icons.error),
+                                      ],
+                                    ),
+                                  );
+                                }
 
-                                      isInCart
-                                          ? cartNotifier.removeService(service)
-                                          : cartNotifier.addService(
-                                              service, context);
-                                    } else if (itemType == "package") {
-                                      final package = Package(
-                                          packageId: item.servicePackageId,
-                                          serviceProviderPackageId: item
-                                              .serviceProviderServicePackageId,
-                                          packageServiceProviderId: item.spId,
-                                          packageServiceProviderImage:
-                                              item.spImage,
-                                          packageName: item.name,
-                                          packageDesc: item.servicePackageDesc,
-                                          category: [item.categoryName],
-                                          packagePrice: item.price,
-                                          packageImage: image,
-                                          packageType: servicePackageType,
-                                          packagePetType: petType,
-                                          packageSize: item.size,
-                                          minWeight: item.minWeight,
-                                          maxWeight: item.maxWeight,
-                                          serviceProviderNameOfPackage:
-                                              item.spName);
+                                final validPets = snapshot.data ??
+                                    false; // Assuming false if data is null
 
-                                      isInCart
-                                          ? cartNotifier.removePackage(package)
-                                          : cartNotifier.addPackage(
-                                              package, context);
-                                    }
-                                  },
-                                ),
-                              ],
-                            )
+                                // Only update the provider after the frame is rendered (post-frame callback)
+                                WidgetsBinding.instance
+                                    .addPostFrameCallback((_) {
+                                  if (validPets !=
+                                      ref.read(
+                                          servicePackageMatchesAppointmentPrefProvider)) {
+                                    ref
+                                        .read(
+                                            servicePackageMatchesAppointmentPrefProvider
+                                                .notifier)
+                                        .state = validPets;
+                                  }
+                                });
+
+                                return validPets
+                                    ? Padding(
+                                        padding: const EdgeInsets.only(
+                                            left: secondarySizedBox),
+                                        child: Row(
+                                          children: [
+                                            const Icon(Icons.fact_check,
+                                                color: Colors.blue),
+                                            const SizedBox(
+                                                width: secondarySizedBox),
+                                            customRegularWeightTitleText(
+                                              context,
+                                              'Matches with your appointment preferences',
+                                              Colors.blue,
+                                            ),
+                                          ],
+                                        ),
+                                      )
+                                    : SizedBox
+                                        .shrink(); // If the criteria don't match, return an empty widget
+                              },
+                            ),
                           ]),
-                          const SizedBox(height: secondarySizedBox),
+
+                          const SizedBox(
+                            height: secondarySizedBox,
+                          ),
+                          // Service provider profile overview
                           GestureDetector(
                             onTap: () {
+                              item.type == 'service'
+                                  ? ref
+                                      .read(selectedTabProvider.notifier)
+                                      .state = 1
+                                  : ref
+                                      .read(selectedTabProvider.notifier)
+                                      .state = 2;
                               Navigator.push(context,
                                   slideUpRoute(ServiceproviderProfileScreen()));
                             },
@@ -435,7 +509,7 @@ class ServicePackageDetails extends ConsumerWidget {
                               height: 120,
                               padding: const EdgeInsets.all(16),
                               decoration: BoxDecoration(
-                                color: lighterGreyColor,
+                                color: Colors.transparent,
                                 borderRadius: BorderRadius.circular(12),
                                 border:
                                     Border.all(color: primaryColor, width: 1),
@@ -503,7 +577,7 @@ class ServicePackageDetails extends ConsumerWidget {
                                         ),
                                         const SizedBox(height: primarySizedBox),
                                         ratingWidget(
-                                            spAvgRating!.toStringAsFixed(0)),
+                                            spAvgRating!.toStringAsFixed(1)),
                                         const SizedBox(height: primarySizedBox),
                                         sentimentLabelTextWidget(
                                             spSentimentLabel)
@@ -524,6 +598,88 @@ class ServicePackageDetails extends ConsumerWidget {
                             ),
                           ),
                           const SizedBox(height: tertiarySizedBox),
+                          willBook
+                              ? GestureDetector(
+                                  onTap: () {
+                                    Navigator.push(context,
+                                        slideUpRoute(const CartScreen()));
+                                  },
+                                  key: ValueKey<bool>(
+                                      willBook), // Key to differentiate the widgets
+                                  child: Container(
+                                    decoration: BoxDecoration(
+                                      borderRadius: BorderRadius.circular(
+                                          secondaryBorderRadius),
+                                      border: Border.all(
+                                          width: 0.5, color: primaryColor),
+                                      color: primaryColor,
+                                      boxShadow: [
+                                        BoxShadow(
+                                          color: Colors.black.withOpacity(0.2),
+                                          spreadRadius: 2,
+                                          blurRadius: 8,
+                                          offset: const Offset(2, 4),
+                                        ),
+                                      ],
+                                    ),
+                                    height: 50,
+                                    child: Padding(
+                                      padding: const EdgeInsets.only(
+                                          left: tertiarySizedBox,
+                                          right: primarySizedBox),
+                                      child: Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.spaceBetween,
+                                        children: [
+                                          const CartIcon(
+                                            iconColor: lighterSecondaryColor,
+                                            borderColor: Colors.white,
+                                            badgeColor: Colors.black,
+                                          ),
+                                          TextButton.icon(
+                                            onPressed: () {
+                                              Navigator.push(
+                                                  context,
+                                                  slideUpRoute(
+                                                      const CartScreen()));
+                                            },
+                                            icon: const Icon(
+                                              Icons.arrow_forward_ios_outlined,
+                                              color: Colors.white,
+                                            ),
+                                            iconAlignment: IconAlignment.end,
+                                            label: const Text(
+                                              'Book appointment',
+                                              style: TextStyle(
+                                                  color: Colors.white,
+                                                  fontSize: regularText,
+                                                  fontWeight: regularWeight),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                )
+                              : customFloatingActionButton(
+                                  context,
+                                  buttonText: 'Book now',
+                                  key: ValueKey<bool>(
+                                      willBook), // Key to differentiate the widgets
+                                  margin: EdgeInsets.all(0),
+                                  onPressed: () {
+                                    ref.read(willBookProvider.notifier).state =
+                                        true;
+
+                                    showModalBottomSheet(
+                                      context: context,
+                                      builder: (context) => const SizedBox(
+                                          height: 300,
+                                          child:
+                                              ChooseSearchResultsAppointmentPreferencesScreen()),
+                                    );
+                                  },
+                                ),
                         ],
                       ),
                     ],
@@ -540,12 +696,7 @@ class ServicePackageDetails extends ConsumerWidget {
       },
       error: (err, stack) {
         print("Error occurred: $err");
-        return Center(
-          child: Text(
-            'An error occurred: $err',
-            style: const TextStyle(color: Colors.red, fontSize: 16),
-          ),
-        );
+        return Center(child: somethingWentWrong());
       },
     );
   }

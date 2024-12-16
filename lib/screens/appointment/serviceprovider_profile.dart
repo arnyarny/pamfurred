@@ -537,9 +537,11 @@ final aboutTabProvider = FutureProvider<List<Widget>>((ref) async {
                               spDetailsHeader(Icons.access_time,
                                   'Opens from ${formatTime(timeOpen)} to ${formatTime(timeClose)}'),
                               const SizedBox(height: secondarySizedBox),
-                              spDetailsHeader(
-                                  Icons.call_outlined, sp['phone'] ?? 'N/A',
-                                  isPhoneNumber: true),
+                              if (sp['phone'] != null) ...[
+                                spDetailsHeader(
+                                    Icons.call_outlined, sp['phone'] ?? 'N/A',
+                                    isPhoneNumber: true),
+                              ],
                               const SizedBox(height: secondarySizedBox),
                               spDetailsHeader(CupertinoIcons.heart,
                                   'Caters ${petsCatered.join(', ')}'),

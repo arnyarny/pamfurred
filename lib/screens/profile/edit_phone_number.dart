@@ -177,7 +177,7 @@ class EditPhoneNumberState extends ConsumerState<EditPhoneNumber> {
 
                         Navigator.push(
                             context,
-                            rightToLeftRoute(const MainScreen(
+                            leftToRightRoute(const MainScreen(
                               initialPage: 3,
                             )));
                       } else {

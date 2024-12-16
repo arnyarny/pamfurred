@@ -213,7 +213,7 @@ class EditAddressState extends ConsumerState<EditAddress> {
 
                         Navigator.push(
                             context,
-                            rightToLeftRoute(const MainScreen(
+                            leftToRightRoute(const MainScreen(
                               initialPage: 3,
                             )));
                       } else {

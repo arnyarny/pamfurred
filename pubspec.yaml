@@ -150,6 +150,9 @@ dependencies:
   image_picker: ^1.1.2
 
   lottie: ^3.2.0
+  about: ^2.2.0
+
+  get_apps: ^0.0.3
 
 dev_dependencies:
   flutter_launcher_icons: "^0.14.2"

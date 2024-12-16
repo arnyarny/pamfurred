@@ -164,7 +164,7 @@ class EditNameState extends ConsumerState<EditName> {
 
                       Navigator.push(
                         context,
-                        rightToLeftRoute(const MainScreen(
+                        leftToRightRoute(const MainScreen(
                           initialPage: 3,
                         )),
                       );

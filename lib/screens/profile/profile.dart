@@ -1,6 +1,8 @@
+import 'package:about/about.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:pamfurred/components/connectivity_wrapper.dart';
 import 'package:pamfurred/components/custom_padded_button.dart';
 import 'package:pamfurred/components/error_widget.dart';
 import 'package:pamfurred/components/globals.dart';
@@ -11,15 +13,13 @@ import 'package:pamfurred/providers/cart_provider.dart';
 import 'package:pamfurred/providers/global_providers.dart';
 import 'package:pamfurred/providers/pet_profile_provider.dart';
 import 'package:pamfurred/providers/user_details.dart';
-import 'package:pamfurred/components/connectivity_wrapper.dart';
 import 'package:pamfurred/screens/login.dart';
-import 'package:pamfurred/screens/pet_profile/pet_profile.dart';
 import 'package:pamfurred/screens/pet_profile/add_pet_profile.dart';
+import 'package:pamfurred/screens/pet_profile/pet_profile.dart';
 import 'package:pamfurred/screens/profile/edit_address.dart';
 import 'package:pamfurred/screens/profile/edit_name.dart';
 import 'package:pamfurred/screens/profile/edit_phone_number.dart';
 import 'package:quickalert/quickalert.dart';
-import 'package:quickalert/widgets/quickalert_dialog.dart';
 import 'package:shimmer/shimmer.dart';
 import 'package:supabase_flutter/supabase_flutter.dart'; // Import Supabase
 
@@ -215,13 +215,9 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                                           16, 16, 16, 8),
                                       child: Row(
                                         mainAxisAlignment:
-                                            MainAxisAlignment.spaceBetween,
+                                            MainAxisAlignment.start,
                                         children: [
-                                          customTitleText(context, "Pets"),
-                                          data.isNotEmpty
-                                              ? const Icon(Icons.edit,
-                                                  size: 20, color: primaryColor)
-                                              : const SizedBox.shrink(),
+                                          customTitleText(context, "Pets")
                                         ],
                                       ),
                                     ),
@@ -315,6 +311,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                               ),
                               const SizedBox(height: primarySizedBox),
                               _buildDetailsCard(context, "Personal details"),
+                              const SizedBox(height: primarySizedBox),
+                              _buildAboutCard(context, "More information"),
                               const SizedBox(height: quaternarySizedBox),
                             ],
                           ),
@@ -425,7 +423,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                 children: [
                   GestureDetector(
                     onTap: () {
-                      Navigator.push(context, slideUpRoute(const EditName()));
+                      Navigator.push(
+                          context, rightToLeftRoute(const EditName()));
                     },
                     child: _detailsCard(
                       context: context,
@@ -437,7 +436,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                   GestureDetector(
                     onTap: () {
                       Navigator.push(
-                          context, slideUpRoute(const EditPhoneNumber()));
+                          context, rightToLeftRoute(const EditPhoneNumber()));
                     },
                     child: _detailsCard(
                       context: context,
@@ -448,7 +447,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                   GestureDetector(
                     onTap: () {
                       Navigator.push(
-                          context, slideUpRoute(const EditAddress()));
+                          context, rightToLeftRoute(const EditAddress()));
                     },
                     child: _detailsCard(
                       context: context,
@@ -458,6 +457,66 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                           "${mapUserAddress?['street'] != '' ? '${mapUserAddress?['street']}, ' : ''}"
                           "${mapUserAddress?['barangay'] != '' ? '${mapUserAddress?['barangay']}, ' : ''}"
                           "${mapUserAddress?['city'] ?? ''}",
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildAboutCard(BuildContext context, String title) {
+    return Card(
+      color: Colors.transparent,
+      shadowColor: Colors.transparent,
+      shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(10),
+          side: const BorderSide(width: .15, color: Colors.black)),
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+        child: Column(
+          children: [
+            Row(mainAxisAlignment: MainAxisAlignment.start, children: [
+              customTitleText(context, title),
+            ]),
+            const SizedBox(height: secondarySizedBox),
+            SizedBox(
+              height: 70,
+              child: Column(
+                children: [
+                  GestureDetector(
+                    onTap: () {
+                      showAboutPage(
+                        context: context,
+                        values: {
+                          'version': '1.0',
+                          'year': DateTime.now().year.toString(),
+                        },
+                        applicationLegalese:
+                            'Copyright © Pamfurred, {{ year }}',
+                        applicationDescription: const Text(
+                          'Furfection right at your fingertips.',
+                        ),
+                        children: const <Widget>[
+                          LicensesPageListTile(
+                            icon: Icon(Icons.favorite),
+                          ),
+                        ],
+                        applicationIcon: const SizedBox(
+                          width: 100,
+                          height: 100,
+                          child: Image(
+                            image: AssetImage('assets/pamfurred_logo.png'),
+                          ),
+                        ),
+                      );
+                    },
+                    child: _aboutCard(
+                      context: context,
+                      details: "About Pamfurred",
                     ),
                   ),
                 ],
@@ -531,235 +590,50 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     );
   }
 
-  // Future<void> _editDetails(
-  //     BuildContext context, String field, String details) async {
-  //   // Get the current session
-  //   Session? userSession = Supabase.instance.client.auth.currentSession;
-
-  //   if (userSession == null) {
-  //     throw Exception("User not logged in");
-  //   }
-
-  //   if (field == "Name") {
-  //     final newValues = await _showEditNameDialog(context, details);
-  //     if (newValues != null) {
-  //       await Supabase.instance.client.from('pet_owner').update({
-  //         'first_name': newValues[0],
-  //         'last_name': newValues[1],
-  //       }).eq('pet_owner_id', userSession.user.id); // Use the session user ID
-  //       _fetchUserData(); // Refresh user data
-  //     }
-  //   } else if (field == "Phone number") {
-  //     final newPhone =
-  //         await _showEditSingleFieldDialog(context, details, "Phone Number");
-  //     if (newPhone != null) {
-  //       await Supabase.instance.client
-  //           .from('user')
-  //           .update({'phone_number': newPhone}).eq(
-  //               'user_id', userSession.user.id); // Use the session user ID
-  //       _fetchUserData(); // Refresh user data
-  //     }
-  //   } else if (field == "Email address") {
-  //     final newEmail =
-  //         await _showEditSingleFieldDialog(context, details, "Email Address");
-  //     if (newEmail != null) {
-  //       await Supabase.instance.client
-  //           .from('user')
-  //           .update({'email': newEmail}).eq(
-  //               'user_id', userSession.user.id); // Use the session user ID
-  //       _fetchUserData(); // Refresh user data
-  //     }
-  //   } else if (field == "Address") {
-  //     final newAddressValues = await _showEditAddressDialog(context);
-  //     final userId = userSession.user.id; // Get user ID from session
-  //     final userDetails = await Supabase.instance.client
-  //         .from('user')
-  //         .select()
-  //         .eq('user_id', userId) // Query based on the current user's ID
-  //         .single();
-
-  //     final String addressId = userDetails['address_id'];
-  //     if (newAddressValues != null) {
-  //       await Supabase.instance.client
-  //           .from('address') // Assuming you have an address table
-  //           .update({
-  //         'floor_unit_room': newAddressValues[0] ?? '',
-  //         'street': newAddressValues[1] ?? '',
-  //         'barangay': newAddressValues[2] ?? '',
-  //         'city': newAddressValues[3] ?? '',
-  //       }).eq('address_id', addressId); // Use the session user ID
-  //       _fetchUserData(); // Refresh user data
-  //     }
-  //   }
-  // }
-
-  // Future<List<String?>?> _showEditNameDialog(
-  //     BuildContext context, String currentValue) {
-  //   TextEditingController firstNameController =
-  //       TextEditingController(text: currentValue.split(" ")[0]);
-  //   TextEditingController lastNameController = TextEditingController(
-  //       text: currentValue.split(" ").length > 1
-  //           ? currentValue.split(" ")[1]
-  //           : '');
-
-  //   return showDialog<List<String?>?>(
-  //     context: context,
-  //     builder: (BuildContext context) {
-  //       return AlertDialog(
-  //         title: const Text('Edit Name'),
-  //         content: Column(
-  //           mainAxisSize: MainAxisSize.min,
-  //           children: [
-  //             TextField(
-  //                 controller: firstNameController,
-  //                 decoration: const InputDecoration(labelText: "First Name")),
-  //             TextField(
-  //                 controller: lastNameController,
-  //                 decoration: const InputDecoration(labelText: "Last Name")),
-  //           ],
-  //         ),
-  //         actions: [
-  //           TextButton(
-  //               onPressed: () => Navigator.of(context).pop(),
-  //               child: const Text('Cancel')),
-  //           TextButton(
-  //             onPressed: () => Navigator.of(context)
-  //                 .pop([firstNameController.text, lastNameController.text]),
-  //             child: const Text('Save'),
-  //           ),
-  //         ],
-  //       );
-  //     },
-  //   );
-  // }
-
-  // Future<String?> _showEditSingleFieldDialog(
-  //     BuildContext context, String currentValue, String title) {
-  //   TextEditingController controller =
-  //       TextEditingController(text: currentValue);
-
-  //   return showDialog<String?>(
-  //     context: context,
-  //     builder: (BuildContext context) {
-  //       return AlertDialog(
-  //         title: Text('Edit $title'),
-  //         content: TextField(
-  //           controller: controller,
-  //           decoration: InputDecoration(labelText: title),
-  //         ),
-  //         actions: [
-  //           TextButton(
-  //               onPressed: () => Navigator.of(context).pop(),
-  //               child: const Text('Cancel')),
-  //           TextButton(
-  //             onPressed: () => Navigator.of(context).pop(controller.text),
-  //             child: const Text('Save'),
-  //           ),
-  //         ],
-  //       );
-  //     },
-  //   );
-  // }
-
-  // Future<List<String?>?> _showEditAddressDialog(BuildContext context) {
-  //   TextEditingController floorUnitRoomController =
-  //       TextEditingController(text: mapUserAddress?['floor_unit_room'] ?? '');
-  //   TextEditingController streetController =
-  //       TextEditingController(text: mapUserAddress?['street'] ?? '');
-  //   TextEditingController barangayController =
-  //       TextEditingController(text: mapUserAddress?['barangay'] ?? '');
-  //   TextEditingController cityController =
-  //       TextEditingController(text: mapUserAddress?['city'] ?? '');
-
-  //   return showDialog<List<String?>?>(
-  //     context: context,
-  //     builder: (BuildContext context) {
-  //       return AlertDialog(
-  //         title: const Text('Edit Address'),
-  //         content: Column(
-  //           mainAxisSize: MainAxisSize.min,
-  //           children: [
-  //             TextField(
-  //                 controller: floorUnitRoomController,
-  //                 decoration:
-  //                     const InputDecoration(labelText: "Floor/Unit/Room")),
-  //             TextField(
-  //                 controller: streetController,
-  //                 decoration: const InputDecoration(labelText: "Street")),
-  //             TextField(
-  //                 controller: barangayController,
-  //                 decoration: const InputDecoration(labelText: "Barangay")),
-  //             TextField(
-  //                 controller: cityController,
-  //                 decoration: const InputDecoration(labelText: "City")),
-  //           ],
-  //         ),
-  //         actions: [
-  //           TextButton(
-  //               onPressed: () => Navigator.of(context).pop(),
-  //               child: const Text('Cancel')),
-  //           TextButton(
-  //             onPressed: () => Navigator.of(context).pop([
-  //               floorUnitRoomController.text,
-  //               streetController.text,
-  //               barangayController.text,
-  //               cityController.text
-  //             ]),
-  //             child: const Text('Save'),
-  //           ),
-  //         ],
-  //       );
-  //     },
-  //   );
-  // }
-
-  Widget buildChangePasswordCard() {
-    return InkWell(
-      onTap: isLoading ? null : () => (),
-      child: Card(
-        color: lightGreyColor,
-        elevation: 0,
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    isLoading
-                        ? Shimmer.fromColors(
-                            baseColor: Colors.grey[300]!,
-                            highlightColor: Colors.grey[100]!,
-                            child: Container(
-                              width: 150,
-                              height: 20,
-                              color: Colors.grey,
-                            ),
-                          )
-                        : const Text(
-                            'Change password',
-                            style: TextStyle(fontSize: 16),
+  Widget _aboutCard({
+    required BuildContext context,
+    required String? details,
+  }) {
+    return Card(
+      color: lightGreyColor,
+      elevation: 0,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  isLoading
+                      ? Shimmer.fromColors(
+                          baseColor: Colors.grey[300]!,
+                          highlightColor: Colors.grey[100]!,
+                          child: Container(
+                            width: double.infinity,
+                            height: 16,
+                            color: Colors.grey,
                           ),
-                  ],
-                ),
+                        )
+                      : wrappedText(context, details ?? '', greyColor),
+                ],
               ),
-              isLoading
-                  ? Shimmer.fromColors(
-                      baseColor: Colors.grey[300]!,
-                      highlightColor: Colors.grey[100]!,
-                      child: Container(
-                        width: 16,
-                        height: 16,
-                        color: Colors.grey,
-                      ),
-                    )
-                  : const Icon(Icons.arrow_forward_ios_outlined,
-                      color: greyColor),
-            ],
-          ),
+            ),
+            isLoading
+                ? Shimmer.fromColors(
+                    baseColor: Colors.grey[300]!,
+                    highlightColor: Colors.grey[100]!,
+                    child: Container(
+                      width: 16,
+                      height: 16,
+                      color: Colors.grey,
+                    ),
+                  )
+                : const Icon(Icons.arrow_forward_ios_outlined,
+                    color: greyColor),
+          ],
         ),
       ),
     );

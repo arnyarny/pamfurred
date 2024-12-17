@@ -23,7 +23,11 @@ import 'package:pamfurred/providers/serviceprovider_provider.dart';
 import 'package:pamfurred/providers/user_details.dart';
 import 'package:pamfurred/screens/appointment/cart_screen.dart';
 import 'package:pamfurred/screens/appointment/serviceprovider_profile.dart';
+import 'package:pamfurred/screens/pet_profile/add_pet_profile.dart';
 import 'package:pamfurred/screens/search_results/search_results_appointment_pref.dart';
+import 'package:quickalert/models/quickalert_animtype.dart';
+import 'package:quickalert/models/quickalert_type.dart';
+import 'package:quickalert/widgets/quickalert_dialog.dart';
 import 'package:shimmer/shimmer.dart';
 
 class ServicePackageDetails extends ConsumerWidget {
@@ -58,6 +62,16 @@ class ServicePackageDetails extends ConsumerWidget {
         List<String> servicePackageType =
             List<String>.from(item.servicePackageType);
 
+        // Assign the first item to a variable
+        String? firstItem =
+            servicePackageType.isNotEmpty ? servicePackageType[0] : null;
+
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          ref.read(firstServicePackageTypeProvider.notifier).state = firstItem;
+
+          print('First item: $firstItem');
+        });
+
         // Cart providers
         final cartServices = ref.watch(cartNotifierProvider);
         final isInCart = cartServices.any(
@@ -79,6 +93,8 @@ class ServicePackageDetails extends ConsumerWidget {
         // Pet profile data
         final petProfileData =
             ref.watch(petProfileProvider(ref.watch(userIdProvider).toString()));
+
+        late List<dynamic> petTypeOptions = item.petType;
 
         return FractionallySizedBox(
           heightFactor: 1, // Set maximum height of the sheet
@@ -465,6 +481,8 @@ class ServicePackageDetails extends ConsumerWidget {
                                   }
                                 });
 
+                                print('Valid pet? $validPets');
+
                                 return validPets
                                     ? Padding(
                                         padding: const EdgeInsets.only(
@@ -668,16 +686,92 @@ class ServicePackageDetails extends ConsumerWidget {
                                       willBook), // Key to differentiate the widgets
                                   margin: EdgeInsets.all(0),
                                   onPressed: () {
-                                    ref.read(willBookProvider.notifier).state =
-                                        true;
+                                    petProfileData.when(
+                                        data: (data) {
+                                          final pet = data.where((pet) {
+                                            // Check if the pet type is in the allowed options
+                                            bool isValidType =
+                                                petTypeOptions.contains(
+                                                    pet['pet_type'].toString());
 
-                                    showModalBottomSheet(
-                                      context: context,
-                                      builder: (context) => const SizedBox(
-                                          height: 300,
-                                          child:
-                                              ChooseSearchResultsAppointmentPreferencesScreen()),
-                                    );
+                                            // Check if the pet's weight is within the service/package weight range
+                                            bool isValidWeight = pet[
+                                                        'pet_weight'] >=
+                                                    servicePackageMinWeight &&
+                                                pet['pet_weight'] <=
+                                                    servicePackageMaxWeight;
+
+                                            print(
+                                                'Pet type: ${pet['pet_type']}');
+                                            print(
+                                                'Pet weight: ${pet['pet_weight']}');
+
+                                            print(
+                                                'Is valid type: $isValidType');
+
+                                            // Include the pet if both conditions are met
+                                            return isValidType && isValidWeight;
+                                          }).toList();
+
+                                          if (data.isEmpty) {
+                                            QuickAlert.show(
+                                              context: context,
+                                              type: QuickAlertType.error,
+                                              animType:
+                                                  QuickAlertAnimType.slideInUp,
+                                              title: 'Oops!',
+                                              text:
+                                                  "You don't have any pet profile yet. Please add a pet profile first.",
+                                              confirmBtnText: 'Add now',
+                                              showConfirmBtn: true,
+                                              onConfirmBtnTap: () {
+                                                // Find the context for the dialog and close it without affecting the screen
+                                                Navigator.of(context,
+                                                        rootNavigator: true)
+                                                    .pop(); // This will close the dialog
+
+                                                // Navigate to the AddPetProfileScreen after closing the dialog
+                                                Navigator.push(
+                                                  context,
+                                                  slideUpRoute(
+                                                      const AddPetProfileScreen()),
+                                                );
+                                              },
+                                              showCancelBtn: true,
+                                            );
+                                          } else if (pet.isEmpty) {
+                                            QuickAlert.show(
+                                              context: context,
+                                              type: QuickAlertType.error,
+                                              animType:
+                                                  QuickAlertAnimType.slideInUp,
+                                              title: 'Oops!',
+                                              text:
+                                                  "Your pets' type doesn't match the services or packages offered by this service provider.",
+                                              confirmBtnText: 'Add pet',
+                                              showCancelBtn: true,
+                                            );
+                                          } else {
+                                            ref
+                                                .read(willBookProvider.notifier)
+                                                .state = true;
+                                            showModalBottomSheet(
+                                              context: context,
+                                              builder: (context) => const SizedBox(
+                                                  height: 300,
+                                                  child:
+                                                      ChooseSearchResultsAppointmentPreferencesScreen()),
+                                            );
+                                          }
+                                        },
+                                        error: (error, stackTrace) =>
+                                            const Center(
+                                                child: Icon(Icons.error,
+                                                    size: 30)),
+                                        loading: () => Center(
+                                              child:
+                                                  CircularProgressIndicator(),
+                                            ));
                                   },
                                 ),
                         ],

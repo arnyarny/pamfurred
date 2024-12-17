@@ -4,6 +4,7 @@ import 'package:pamfurred/components/error_builder.dart';
 import 'package:pamfurred/components/globals.dart';
 import 'package:pamfurred/providers/global_providers.dart';
 import 'package:pamfurred/providers/pet_profile_provider.dart';
+import 'package:pamfurred/providers/service_details_provider.dart';
 import 'package:pamfurred/providers/serviceprovider_provider.dart';
 import 'package:pamfurred/providers/user_details.dart';
 import 'package:pamfurred/screens/search_results/methods/check_selected_category.dart';
@@ -33,19 +34,26 @@ class ChooseSearchResultsAppointmentPreferencesScreenState
               ?.cast<String>();
 
       // Retrieve previously selected options if available
-      final selectedServiceType =
-          ref.read(selectedAppointmentPackageServiceTypeProvider);
+      final selectedServiceType = ref.read(firstServicePackageTypeProvider);
 
       setState(() {
         // Check if there is a previously selected type; otherwise, select the first option
         selectedTypeIndex =
-            packageServiceTypeOptions?.indexOf(selectedServiceType) ?? -1;
-        if (selectedTypeIndex == -1 && packageServiceTypeOptions != null) {
+            packageServiceTypeOptions!.indexOf(selectedServiceType!);
+
+        if (selectedTypeIndex == -1) {
           selectedTypeIndex =
               0; // Default to the first option if nothing is selected
+
+          // Set the first option as the default selected service type
           ref
               .read(selectedAppointmentPackageServiceTypeProvider.notifier)
-              .state = packageServiceTypeOptions[0];
+              .state = packageServiceTypeOptions[selectedTypeIndex!];
+        } else {
+          // If a valid selection is found, keep it as is
+          ref
+              .read(selectedAppointmentPackageServiceTypeProvider.notifier)
+              .state = selectedServiceType;
         }
 
         final selectedIndex = ref.watch(selectedCategoryIndexProvider);

@@ -408,26 +408,29 @@ class ResultsListWidgetState extends ConsumerState<ResultsListWidget> {
                                                         );
                                                       }
 
-                                                      final validPets = snapshot
-                                                              .data ??
-                                                          false; // Assuming false if data is null
+                                                      final isServiceValid =
+                                                          snapshot.data ??
+                                                              false; // Assuming false if data is null
+
+                                                      print(
+                                                          'isServiceValid: $isServiceValid');
 
                                                       // Only update the provider after the frame is rendered (post-frame callback)
                                                       WidgetsBinding.instance
                                                           .addPostFrameCallback(
                                                               (_) {
-                                                        if (validPets !=
+                                                        if (isServiceValid !=
                                                             ref.read(
                                                                 servicePackageMatchesAppointmentPrefProvider)) {
                                                           ref
-                                                              .read(
-                                                                  servicePackageMatchesAppointmentPrefProvider
+                                                                  .read(servicePackageMatchesAppointmentPrefProvider
                                                                       .notifier)
-                                                              .state = validPets;
+                                                                  .state =
+                                                              isServiceValid;
                                                         }
                                                       });
 
-                                                      return validPets
+                                                      return isServiceValid
                                                           ? Row(
                                                               children: [
                                                                 const Icon(
@@ -537,24 +540,27 @@ class ResultsListWidgetState extends ConsumerState<ResultsListWidget> {
                                   );
                                 }
 
-                                final validPets = snapshot.data ??
+                                final validServicePackage = snapshot.data ??
                                     false; // Assuming false if data is null
 
                                 // Only update the provider after the frame is rendered (post-frame callback)
                                 WidgetsBinding.instance
                                     .addPostFrameCallback((_) {
-                                  if (validPets !=
+                                  if (validServicePackage !=
                                       ref.read(
                                           servicePackageMatchesAppointmentPrefProvider)) {
                                     ref
                                         .read(
                                             servicePackageMatchesAppointmentPrefProvider
                                                 .notifier)
-                                        .state = validPets;
+                                        .state = validServicePackage;
                                   }
                                 });
 
                                 final willBook = ref.watch(willBookProvider);
+
+                                print('Will book? $willBook');
+                                print('Valid pets? $validServicePackage');
 
                                 // Cart providers
                                 final cartServices =
@@ -574,7 +580,7 @@ class ResultsListWidgetState extends ConsumerState<ResultsListWidget> {
                                               provider
                                                   .serviceProviderServicePackageId),
                                 );
-                                return validPets && willBook
+                                return validServicePackage && willBook
                                     ? Positioned(
                                         bottom: 1,
                                         left: 70,

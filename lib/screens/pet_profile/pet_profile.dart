@@ -15,6 +15,7 @@ import 'package:pamfurred/screens/pet_profile/delete_pet_profile.dart';
 import 'package:quickalert/models/quickalert_animtype.dart';
 import 'package:quickalert/models/quickalert_type.dart';
 import 'package:quickalert/widgets/quickalert_dialog.dart';
+import 'package:shimmer/shimmer.dart';
 
 class PetProfileScreen extends ConsumerStatefulWidget {
   const PetProfileScreen({super.key});
@@ -27,6 +28,20 @@ class PetProfileScreenState extends ConsumerState<PetProfileScreen> {
   bool _isExpanded = false;
   bool isLoading = false;
   late DeletePetProfileService deletPetProfileService;
+
+  // File? _image; // Store the picked image file
+  // final ImagePicker _picker = ImagePicker();
+
+  // Method to pick an image from the gallery
+  // Future<void> changeImage() async {
+  //   final pickedFile = await _picker.pickImage(source: ImageSource.gallery);
+  //   if (pickedFile != null) {
+  //     setState(() {
+  //       _image =
+  //           File(pickedFile.path); // Update the state with the selected image
+  //     });
+  //   }
+  // }
 
   void initState() {
     super.initState();
@@ -109,7 +124,13 @@ class PetProfileScreenState extends ConsumerState<PetProfileScreen> {
                                           borderRadius:
                                               BorderRadius.circular(100)),
                                       child: IconButton(
-                                          onPressed: () {},
+                                          onPressed: () {
+                                            // changeImage;
+                                            // editPetProfile(
+                                            //     ref,
+                                            //     pet['pet_image'],
+                                            //     _image.toString());
+                                          },
                                           icon: Icon(
                                             Icons.camera_alt,
                                             color: Colors.white,
@@ -159,7 +180,7 @@ class PetProfileScreenState extends ConsumerState<PetProfileScreen> {
                                       children: [
                                         petDesc(
                                             context,
-                                            'assets/id-card.png',
+                                            'https://cdn-icons-png.flaticon.com/512/2372/2372790.png',
                                             capitalizeFirstLetter(
                                                 pet['pet_name']),
                                             "name"),
@@ -167,7 +188,7 @@ class PetProfileScreenState extends ConsumerState<PetProfileScreen> {
                                             height: secondarySizedBox),
                                         petDesc(
                                             context,
-                                            'assets/time.png',
+                                            'https://cdn-icons-png.flaticon.com/512/7228/7228079.png',
                                             calculateAgeInMonthsOrWeeks(
                                                     pet['pet_date_of_birth']) ??
                                                 'N/A',
@@ -176,7 +197,7 @@ class PetProfileScreenState extends ConsumerState<PetProfileScreen> {
                                             height: secondarySizedBox),
                                         petDesc(
                                             context,
-                                            'assets/weight-scale.png',
+                                            'https://cdn-icons-png.flaticon.com/512/847/847523.png',
                                             pet['pet_weight']?.toString() ??
                                                 'N/A',
                                             "kg."),
@@ -189,13 +210,16 @@ class PetProfileScreenState extends ConsumerState<PetProfileScreen> {
                                         mainAxisAlignment:
                                             MainAxisAlignment.center,
                                         children: [
-                                          petDesc(context, 'assets/gender.png',
-                                              pet['pet_sex'] ?? 'N/A', "sex"),
+                                          petDesc(
+                                              context,
+                                              'https://cdn-icons-png.flaticon.com/512/3673/3673582.png',
+                                              pet['pet_sex'] ?? 'N/A',
+                                              "sex"),
                                           const SizedBox(
                                               height: secondarySizedBox),
                                           petDesc(
                                               context,
-                                              'assets/breed.png',
+                                              'https://cdn-icons-png.flaticon.com/512/886/886733.png',
                                               capitalizeFirstLetter(
                                                   pet['pet_breed']),
                                               "breed"),
@@ -203,7 +227,7 @@ class PetProfileScreenState extends ConsumerState<PetProfileScreen> {
                                               height: secondarySizedBox),
                                           petDesc(
                                               context,
-                                              'assets/categories.png',
+                                              'https://cdn-icons-png.flaticon.com/512/2437/2437643.png',
                                               capitalizeFirstLetter(
                                                   pet['pet_type']),
                                               "category"),
@@ -381,7 +405,29 @@ class PetProfileScreenState extends ConsumerState<PetProfileScreen> {
     return Row(
       children: [
         Column(
-          children: [Image.asset(image, height: 35)],
+          children: [
+            CachedNetworkImage(
+              imageUrl: image,
+              fit: BoxFit.cover,
+              height: 35,
+              placeholder: (context, url) => Container(
+                width: 35,
+                height: 35,
+                child: Shimmer.fromColors(
+                  baseColor: Colors.grey[300]!, // Light grey for base color
+                  highlightColor: Colors.white, // White for the shimmer effect
+                  child: Container(
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(100),
+                      color: Colors.grey[300],
+                    ),
+                  ),
+                ),
+              ),
+              errorWidget: (context, url, error) =>
+                  Icon(Icons.error), // Error widget
+            ),
+          ],
         ),
         const SizedBox(width: tertiarySizedBox),
         Column(

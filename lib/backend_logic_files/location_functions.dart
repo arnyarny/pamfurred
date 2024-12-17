@@ -1,7 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:geocoding/geocoding.dart';
 import 'package:pamfurred/backend_logic_files/store_location.dart';
-import 'package:pamfurred/providers/user_id.dart';
+import 'package:pamfurred/providers/user_details.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 Future<Map<String, dynamic>?> retrieveLocation(String userId) async {

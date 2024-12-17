@@ -9,7 +9,7 @@ import 'package:pamfurred/components/screen_transitions.dart';
 import 'package:pamfurred/components/title_text.dart';
 import 'package:pamfurred/providers/global_providers.dart';
 import 'package:pamfurred/providers/pet_profile_provider.dart';
-import 'package:pamfurred/providers/user_id.dart';
+import 'package:pamfurred/providers/user_details.dart';
 import 'package:pamfurred/screens/main_screen.dart';
 import 'package:pamfurred/screens/pet_profile/delete_pet_profile.dart';
 import 'package:quickalert/models/quickalert_animtype.dart';
@@ -25,6 +25,7 @@ class PetProfileScreen extends ConsumerStatefulWidget {
 
 class PetProfileScreenState extends ConsumerState<PetProfileScreen> {
   bool _isExpanded = false;
+  bool isLoading = false;
   late DeletePetProfileService deletPetProfileService;
 
   void initState() {
@@ -37,287 +38,322 @@ class PetProfileScreenState extends ConsumerState<PetProfileScreen> {
     final petProfileId = ref.watch(selectedPetIdProvider);
     final asyncPet = ref.watch(fetchPetByIdProvider(petProfileId));
 
-    return Scaffold(
-      backgroundColor: Colors.white,
-      appBar: customAppBar(context),
-      body: PullToRefresh(
-        providersToRefresh: [fetchPetByIdProvider(petProfileId)],
-        child: asyncPet.when(
-          data: (pet) {
-            if (pet == null) {
-              return const Center(child: Text("No pet data available."));
-            }
+    return Stack(
+      children: [
+        Scaffold(
+          backgroundColor: Colors.white,
+          appBar: customAppBar(context),
+          body: PullToRefresh(
+            providersToRefresh: [fetchPetByIdProvider(petProfileId)],
+            child: asyncPet.when(
+              data: (pet) {
+                if (pet == null) {
+                  return const Center(child: Text("No pet data available."));
+                }
 
-            const double descWidth = 331;
-            return Center(
-              child: SingleChildScrollView(
-                physics: BouncingScrollPhysics(),
-                child: SizedBox(
-                  width: screenPadding(context),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const SizedBox(height: primarySizedBox),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
+                const double descWidth = 331;
+                return Center(
+                  child: SingleChildScrollView(
+                    physics: BouncingScrollPhysics(),
+                    child: SizedBox(
+                      width: screenPadding(context),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Stack(
-                            fit: StackFit.loose,
+                          const SizedBox(height: primarySizedBox),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              Container(
-                                padding: const EdgeInsets.all(0.1),
-                                decoration: const BoxDecoration(
-                                  shape: BoxShape.circle,
-                                  gradient: LinearGradient(
-                                    colors: [primaryColor, Colors.transparent],
-                                    begin: Alignment.topCenter,
-                                    end: Alignment.bottomCenter,
-                                    stops: [0.25, 0.9],
-                                  ),
-                                ),
-                                child: Card(
-                                  shape: const CircleBorder(),
-                                  elevation: 0,
-                                  child: Padding(
-                                    padding:
-                                        const EdgeInsets.all(secondarySizedBox),
-                                    child: ClipOval(
-                                      child: CachedNetworkImage(
-                                        imageUrl: pet['pet_image'] ?? '',
-                                        fit: BoxFit.cover,
-                                        width: 151,
-                                        height: 151,
+                              Stack(
+                                fit: StackFit.loose,
+                                children: [
+                                  Container(
+                                    padding: const EdgeInsets.all(0.1),
+                                    decoration: const BoxDecoration(
+                                      shape: BoxShape.circle,
+                                      gradient: LinearGradient(
+                                        colors: [
+                                          primaryColor,
+                                          Colors.transparent
+                                        ],
+                                        begin: Alignment.topCenter,
+                                        end: Alignment.bottomCenter,
+                                        stops: [0.25, 0.9],
+                                      ),
+                                    ),
+                                    child: Card(
+                                      shape: const CircleBorder(),
+                                      elevation: 0,
+                                      child: Padding(
+                                        padding: const EdgeInsets.all(
+                                            secondarySizedBox),
+                                        child: ClipOval(
+                                          child: CachedNetworkImage(
+                                            imageUrl: pet['pet_image'].isEmpty
+                                                ? 'https://tinyurl.com/357z4usj'
+                                                : pet['pet_image'],
+                                            fit: BoxFit.cover,
+                                            width: 151,
+                                            height: 151,
+                                          ),
+                                        ),
                                       ),
                                     ),
                                   ),
-                                ),
-                              ),
-                              Positioned(
-                                bottom: 10,
-                                right: 5,
-                                child: Container(
-                                  decoration: BoxDecoration(
-                                      color: primaryColor,
-                                      borderRadius: BorderRadius.circular(100)),
-                                  child: IconButton(
-                                      onPressed: () {},
-                                      icon: Icon(
-                                        Icons.camera_alt,
-                                        color: Colors.white,
-                                      )),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: tertiarySizedBox),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          customTitleText(
-                              context, capitalizeFirstLetter(pet['pet_name'])),
-                          const SizedBox(width: secondarySizedBox),
-                        ],
-                      ),
-                      const SizedBox(height: tertiarySizedBox),
-                      Center(
-                        child: SizedBox(
-                          width: descWidth + 25,
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              customTitleText(context, 'Basic info'),
-                              editIcon()
-                            ],
-                          ),
-                        ),
-                      ),
-                      const SizedBox(height: secondarySizedBox),
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Padding(
-                            padding: const EdgeInsets.all(secondarySizedBox),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Column(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    petDesc(
-                                        context,
-                                        'assets/id-card.png',
-                                        capitalizeFirstLetter(pet['pet_name']),
-                                        "name"),
-                                    const SizedBox(height: secondarySizedBox),
-                                    petDesc(
-                                        context,
-                                        'assets/time.png',
-                                        calculateAgeInMonthsOrWeeks(
-                                                pet['pet_date_of_birth']) ??
-                                            'N/A',
-                                        "age"),
-                                    const SizedBox(height: secondarySizedBox),
-                                    petDesc(
-                                        context,
-                                        'assets/weight-scale.png',
-                                        pet['pet_weight']?.toString() ?? 'N/A',
-                                        "kg."),
-                                    const SizedBox(height: secondarySizedBox),
-                                  ],
-                                ),
-                                if (_isExpanded) ...[
-                                  Column(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: [
-                                      petDesc(context, 'assets/gender.png',
-                                          pet['pet_sex'] ?? 'N/A', "sex"),
-                                      const SizedBox(height: secondarySizedBox),
-                                      petDesc(
-                                          context,
-                                          'assets/breed.png',
-                                          capitalizeFirstLetter(
-                                              pet['pet_breed']),
-                                          "breed"),
-                                      const SizedBox(height: secondarySizedBox),
-                                      petDesc(
-                                          context,
-                                          'assets/categories.png',
-                                          capitalizeFirstLetter(
-                                              pet['pet_type']),
-                                          "category"),
-                                    ],
-                                  ),
-                                ],
-                                Align(
-                                  alignment: Alignment.bottomCenter,
-                                  child: TextButton(
-                                    onPressed: () {
-                                      setState(() {
-                                        _isExpanded = !_isExpanded;
-                                      });
-                                    },
-                                    child: Text(
-                                      _isExpanded ? "See less" : "See more",
-                                      style: const TextStyle(
-                                          fontSize: regularText),
+                                  Positioned(
+                                    bottom: 10,
+                                    right: 5,
+                                    child: Container(
+                                      decoration: BoxDecoration(
+                                          color: primaryColor,
+                                          borderRadius:
+                                              BorderRadius.circular(100)),
+                                      child: IconButton(
+                                          onPressed: () {},
+                                          icon: Icon(
+                                            Icons.camera_alt,
+                                            color: Colors.white,
+                                          )),
                                     ),
                                   ),
+                                ],
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: tertiarySizedBox),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              customTitleText(context,
+                                  capitalizeFirstLetter(pet['pet_name'])),
+                              const SizedBox(width: secondarySizedBox),
+                            ],
+                          ),
+                          const SizedBox(height: tertiarySizedBox),
+                          Center(
+                            child: SizedBox(
+                              width: descWidth + 25,
+                              child: Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                children: [
+                                  customTitleText(context, 'Basic info'),
+                                  editIcon()
+                                ],
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: secondarySizedBox),
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Padding(
+                                padding:
+                                    const EdgeInsets.all(secondarySizedBox),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Column(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      children: [
+                                        petDesc(
+                                            context,
+                                            'assets/id-card.png',
+                                            capitalizeFirstLetter(
+                                                pet['pet_name']),
+                                            "name"),
+                                        const SizedBox(
+                                            height: secondarySizedBox),
+                                        petDesc(
+                                            context,
+                                            'assets/time.png',
+                                            calculateAgeInMonthsOrWeeks(
+                                                    pet['pet_date_of_birth']) ??
+                                                'N/A',
+                                            "age"),
+                                        const SizedBox(
+                                            height: secondarySizedBox),
+                                        petDesc(
+                                            context,
+                                            'assets/weight-scale.png',
+                                            pet['pet_weight']?.toString() ??
+                                                'N/A',
+                                            "kg."),
+                                        const SizedBox(
+                                            height: secondarySizedBox),
+                                      ],
+                                    ),
+                                    if (_isExpanded) ...[
+                                      Column(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.center,
+                                        children: [
+                                          petDesc(context, 'assets/gender.png',
+                                              pet['pet_sex'] ?? 'N/A', "sex"),
+                                          const SizedBox(
+                                              height: secondarySizedBox),
+                                          petDesc(
+                                              context,
+                                              'assets/breed.png',
+                                              capitalizeFirstLetter(
+                                                  pet['pet_breed']),
+                                              "breed"),
+                                          const SizedBox(
+                                              height: secondarySizedBox),
+                                          petDesc(
+                                              context,
+                                              'assets/categories.png',
+                                              capitalizeFirstLetter(
+                                                  pet['pet_type']),
+                                              "category"),
+                                        ],
+                                      ),
+                                    ],
+                                    Align(
+                                      alignment: Alignment.bottomCenter,
+                                      child: TextButton(
+                                        onPressed: () {
+                                          setState(() {
+                                            _isExpanded = !_isExpanded;
+                                          });
+                                        },
+                                        child: Text(
+                                          _isExpanded ? "See less" : "See more",
+                                          style: const TextStyle(
+                                              fontSize: regularText),
+                                        ),
+                                      ),
+                                    ),
+                                  ],
                                 ),
+                              ),
+                            ],
+                          ),
+                          SizedBox(
+                            width: descWidth + 25,
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                customTitleText(context, 'Description'),
+                                editIcon()
                               ],
                             ),
                           ),
-                        ],
-                      ),
-                      SizedBox(
-                        width: descWidth + 25,
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            customTitleText(context, 'Description'),
-                            editIcon()
-                          ],
-                        ),
-                      ),
-                      const SizedBox(height: tertiarySizedBox),
-                      Center(
-                        child: SizedBox(
-                          width: descWidth,
-                          child: Text(
-                            pet['pet_desc'],
-                            textAlign: TextAlign.justify,
-                            style: TextStyle(
-                                color: pet['pet_desc'] == ''
-                                    ? lightGreyColor
-                                    : darkGreyColor,
-                                fontSize: regularText),
-                          ),
-                        ),
-                      ),
-                      const SizedBox(height: quaternarySizedBox),
-                      const SizedBox(height: quaternarySizedBox),
-                      const SizedBox(height: quaternarySizedBox),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.end,
-                        children: [
-                          Container(
-                            decoration: BoxDecoration(
-                                borderRadius: BorderRadius.circular(
-                                    secondaryBorderRadius),
-                                color: primaryColor),
-                            child: TextButton.icon(
-                              label: Text(
-                                'Delete pet profile',
-                                style: TextStyle(color: Colors.white),
-                              ),
-                              onPressed: () {
-                                QuickAlert.show(
-                                    context: context,
-                                    animType: QuickAlertAnimType.slideInUp,
-                                    type: QuickAlertType.warning,
-                                    onConfirmBtnTap: () async {
-                                      final result =
-                                          await deletPetProfileService
-                                              .deletePetProfile(
-                                                  petProfileId:
-                                                      pet['pet_profile_id'],
-                                                  petProfileImage:
-                                                      pet['pet_image'] ?? '');
-                                      Navigator.pop(context);
-
-                                      if (result != null) {
-                                        final refreshed = ref.refresh(
-                                            petProfileProvider(ref
-                                                .watch(userIdProvider)
-                                                .toString()));
-                                        print(refreshed);
-
-                                        Navigator.pushReplacement(
-                                            context,
-                                            crossFadeRoute(const MainScreen(
-                                                initialPage: 3)));
-
-                                        QuickAlert.show(
-                                            context: context,
-                                            type: QuickAlertType.success,
-                                            title: 'Delete success',
-                                            text:
-                                                'The pet profile has been successfully deleted.');
-                                        print(
-                                            'Pet profile deleted successfully.');
-                                      } else {
-                                        print('Failed to delete pet profile.');
-                                      }
-                                    },
-                                    showCancelBtn: true,
-                                    cancelBtnText: 'No',
-                                    confirmBtnText: 'Yes',
-                                    confirmBtnColor: primaryColor,
-                                    title: 'Delete pet profile?',
-                                    text:
-                                        'This will delete all the pet profile data.');
-                              },
-                              icon: Icon(
-                                Icons.delete,
-                                color: Colors.white,
+                          const SizedBox(height: tertiarySizedBox),
+                          Center(
+                            child: SizedBox(
+                              width: descWidth,
+                              child: Text(
+                                pet['pet_desc'],
+                                textAlign: TextAlign.justify,
+                                style: TextStyle(
+                                    color: pet['pet_desc'] == ''
+                                        ? lightGreyColor
+                                        : darkGreyColor,
+                                    fontSize: regularText),
                               ),
                             ),
                           ),
+                          const SizedBox(height: quaternarySizedBox),
+                          const SizedBox(height: quaternarySizedBox),
+                          const SizedBox(height: quaternarySizedBox),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.end,
+                            children: [
+                              Container(
+                                decoration: BoxDecoration(
+                                    borderRadius: BorderRadius.circular(
+                                        secondaryBorderRadius),
+                                    color: primaryColor),
+                                child: TextButton.icon(
+                                  label: Text(
+                                    'Delete pet profile',
+                                    style: TextStyle(color: Colors.white),
+                                  ),
+                                  onPressed: () {
+                                    QuickAlert.show(
+                                        context: context,
+                                        animType: QuickAlertAnimType.slideInUp,
+                                        type: QuickAlertType.warning,
+                                        onConfirmBtnTap: () async {
+                                          isLoading = true;
+
+                                          final result =
+                                              await deletPetProfileService
+                                                  .deletePetProfile(
+                                                      petProfileId:
+                                                          pet['pet_profile_id'],
+                                                      petProfileImage:
+                                                          pet['pet_image'] ??
+                                                              '');
+
+                                          Navigator.pop(context);
+
+                                          isLoading = false;
+
+                                          if (result != null) {
+                                            final refreshed = ref.refresh(
+                                                petProfileProvider(ref
+                                                    .watch(userIdProvider)
+                                                    .toString()));
+                                            print(refreshed);
+
+                                            Navigator.pushReplacement(
+                                                context,
+                                                crossFadeRoute(const MainScreen(
+                                                    initialPage: 3)));
+
+                                            QuickAlert.show(
+                                                context: context,
+                                                type: QuickAlertType.success,
+                                                title: 'Delete success',
+                                                text:
+                                                    'The pet profile has been successfully deleted.');
+                                            print(
+                                                'Pet profile deleted successfully.');
+                                          } else {
+                                            print(
+                                                'Failed to delete pet profile.');
+                                          }
+                                        },
+                                        showCancelBtn: true,
+                                        cancelBtnText: 'No',
+                                        confirmBtnText: 'Yes',
+                                        confirmBtnColor: primaryColor,
+                                        title: 'Delete pet profile?',
+                                        text:
+                                            'This will delete all the pet profile data.');
+                                  },
+                                  icon: Icon(
+                                    Icons.delete,
+                                    color: Colors.white,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: quaternarySizedBox),
+                          const SizedBox(height: quaternarySizedBox),
                         ],
                       ),
-                      const SizedBox(height: quaternarySizedBox),
-                      const SizedBox(height: quaternarySizedBox),
-                    ],
+                    ),
                   ),
-                ),
-              ),
-            );
-          },
-          loading: () => const Center(child: CircularProgressIndicator()),
-          error: (err, stack) => Center(child: Text("Error: $err")),
+                );
+              },
+              loading: () => const Center(child: CircularProgressIndicator()),
+              error: (err, stack) => Center(child: Text("Error: $err")),
+            ),
+          ),
         ),
-      ),
+        if (isLoading)
+          Container(
+            color: Colors.black54, // Semi-transparent background
+            child: const Center(
+              child: CircularProgressIndicator(),
+            ),
+          ),
+      ],
     );
   }
 

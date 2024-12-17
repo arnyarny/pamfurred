@@ -25,7 +25,7 @@ import 'package:pamfurred/providers/global_providers.dart';
 import 'package:pamfurred/providers/serviceprovider_provider.dart';
 import 'package:pamfurred/providers/sp_profile_provider_packages.dart';
 import 'package:pamfurred/providers/sp_profile_provider_services.dart';
-import 'package:pamfurred/providers/user_id.dart';
+import 'package:pamfurred/providers/user_details.dart';
 import 'package:pamfurred/screens/appointment/serviceprovider_profile.dart';
 import 'package:pamfurred/screens/appointment_details/appointment_details.dart';
 import 'package:pamfurred/screens/location_permission.dart';

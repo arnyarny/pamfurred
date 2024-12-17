@@ -4,7 +4,7 @@ import 'package:intl/intl.dart';
 import 'package:pamfurred/components/custom_padded_button.dart';
 import 'package:pamfurred/components/globals.dart';
 import 'package:pamfurred/providers/appointments_provider.dart';
-import 'package:pamfurred/providers/user_id.dart';
+import 'package:pamfurred/providers/user_details.dart';
 import 'package:quickalert/models/quickalert_type.dart';
 import 'package:quickalert/widgets/quickalert_dialog.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -92,105 +92,109 @@ class GiveFeedbackBottomSheetState
     final spDetails = ref.watch(appointmentSpIndexProvider);
     final spName = spDetails?['establishment_name'];
 
-    return Padding(
-      padding: const EdgeInsets.all(tertiarySizedBox),
-      child: Container(
-        padding: const EdgeInsets.only(top: secondarySizedBox),
-        decoration: const BoxDecoration(
-          borderRadius: BorderRadius.only(
-              topLeft: Radius.circular(tertiaryBorderRadius),
-              topRight: Radius.circular(tertiaryBorderRadius)),
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Center(
-              child: Container(
-                decoration: const BoxDecoration(
-                  borderRadius: BorderRadius.all(
-                    Radius.circular(tertiaryBorderRadius),
+    return FractionallySizedBox(
+      heightFactor: .8,
+      child: Padding(
+        padding: const EdgeInsets.all(tertiarySizedBox),
+        child: Container(
+          padding: const EdgeInsets.only(top: secondarySizedBox),
+          decoration: const BoxDecoration(
+            borderRadius: BorderRadius.only(
+                topLeft: Radius.circular(tertiaryBorderRadius),
+                topRight: Radius.circular(tertiaryBorderRadius)),
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Center(
+                child: Container(
+                  decoration: const BoxDecoration(
+                    borderRadius: BorderRadius.all(
+                      Radius.circular(tertiaryBorderRadius),
+                    ),
+                    color: greyColor,
                   ),
-                  color: greyColor,
+                  width: 50,
+                  height: 5,
                 ),
-                width: 50,
-                height: 5,
               ),
-            ),
-            const SizedBox(height: tertiarySizedBox),
-            Text(
-              'Rate ${spName ?? 'the establishment'}',
-              style: const TextStyle(fontSize: titleFont),
-            ),
-            const SizedBox(height: secondarySizedBox),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.start,
-              children: List.generate(5, (index) {
-                return GestureDetector(
-                  onTap: () {
-                    setState(() {
-                      _rating = index + 1;
-                      _errorMessage = null;
-                    });
-                  },
-                  child: Icon(
-                    index < _rating ? Icons.star : Icons.star_border,
-                    color: secondaryColor,
-                    size: 40.0,
-                  ),
-                );
-              }),
-            ),
-            const SizedBox(height: tertiarySizedBox),
-            const Text(
-              'Write a review',
-              style: TextStyle(fontSize: titleFont),
-            ),
-            const SizedBox(height: secondarySizedBox),
-            TextFormField(
-              controller: _reviewController,
-              maxLines: 4,
-              textCapitalization: TextCapitalization.sentences,
-              decoration: const InputDecoration(
-                hintText: 'Tell us about your experience',
-                hintStyle: TextStyle(fontSize: regularText, color: greyColor),
-                border: OutlineInputBorder(borderSide: BorderSide(width: .25)),
-              ),
-            ),
-            if (_errorMessage != null) ...[
-              const SizedBox(height: 8.0),
+              const SizedBox(height: tertiarySizedBox),
               Text(
-                _errorMessage!,
-                style: const TextStyle(color: Colors.red, fontSize: 14.0),
+                'Rate ${spName ?? 'the establishment'}',
+                style: const TextStyle(fontSize: titleFont),
               ),
-            ],
-            const SizedBox(height: quaternarySizedBox),
-            Align(
-              alignment: Alignment.centerRight,
-              child: SizedBox(
-                width: 175,
-                height: 50,
-                child: customPaddedTextButton(
-                  text: _isSubmitting
-                      ? const SizedBox(
-                          width: 27,
-                          height: 30,
-                          child: CircularProgressIndicator(
-                            color: Colors.white,
-                            strokeWidth: 2.5,
-                          ),
-                        )
-                      : 'Submit feedback',
-                  onPressed: _isSubmitting
-                      ? null
-                      : () async {
-                          await submitFeedback();
-                        },
+              const SizedBox(height: secondarySizedBox),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.start,
+                children: List.generate(5, (index) {
+                  return GestureDetector(
+                    onTap: () {
+                      setState(() {
+                        _rating = index + 1;
+                        _errorMessage = null;
+                      });
+                    },
+                    child: Icon(
+                      index < _rating ? Icons.star : Icons.star_border,
+                      color: secondaryColor,
+                      size: 40.0,
+                    ),
+                  );
+                }),
+              ),
+              const SizedBox(height: tertiarySizedBox),
+              const Text(
+                'Write a review',
+                style: TextStyle(fontSize: titleFont),
+              ),
+              const SizedBox(height: secondarySizedBox),
+              TextFormField(
+                controller: _reviewController,
+                maxLines: 4,
+                textCapitalization: TextCapitalization.sentences,
+                decoration: const InputDecoration(
+                  hintText: 'Tell us about your experience',
+                  hintStyle: TextStyle(fontSize: regularText, color: greyColor),
+                  border:
+                      OutlineInputBorder(borderSide: BorderSide(width: .25)),
                 ),
               ),
-            ),
-            const SizedBox(height: tertiarySizedBox),
-          ],
+              if (_errorMessage != null) ...[
+                const SizedBox(height: 8.0),
+                Text(
+                  _errorMessage!,
+                  style: const TextStyle(color: Colors.red, fontSize: 14.0),
+                ),
+              ],
+              const SizedBox(height: quaternarySizedBox),
+              Align(
+                alignment: Alignment.centerRight,
+                child: SizedBox(
+                  width: 175,
+                  height: 50,
+                  child: customPaddedTextButton(
+                    text: _isSubmitting
+                        ? const SizedBox(
+                            width: 27,
+                            height: 30,
+                            child: CircularProgressIndicator(
+                              color: Colors.white,
+                              strokeWidth: 2.5,
+                            ),
+                          )
+                        : 'Submit feedback',
+                    onPressed: _isSubmitting
+                        ? null
+                        : () async {
+                            await submitFeedback();
+                          },
+                  ),
+                ),
+              ),
+              const SizedBox(height: tertiarySizedBox),
+            ],
+          ),
         ),
       ),
     );

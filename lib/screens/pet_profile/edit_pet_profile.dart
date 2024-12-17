@@ -9,7 +9,7 @@ import 'package:pamfurred/components/screen_transitions.dart';
 import 'package:pamfurred/components/title_text.dart';
 import 'package:pamfurred/providers/global_providers.dart';
 import 'package:pamfurred/providers/pet_profile_provider.dart';
-import 'package:pamfurred/providers/user_id.dart';
+import 'package:pamfurred/providers/user_details.dart';
 import 'package:pamfurred/screens/main_screen.dart';
 import 'package:pamfurred/screens/pet_profile/delete_pet_profile.dart';
 import 'package:quickalert/models/quickalert_animtype.dart';

@@ -20,7 +20,7 @@ import 'package:pamfurred/providers/pet_profile_provider.dart';
 import 'package:pamfurred/providers/service_details_provider.dart';
 import 'package:pamfurred/providers/service_package_details_provider.dart';
 import 'package:pamfurred/providers/serviceprovider_provider.dart';
-import 'package:pamfurred/providers/user_id.dart';
+import 'package:pamfurred/providers/user_details.dart';
 import 'package:pamfurred/screens/appointment/cart_screen.dart';
 import 'package:pamfurred/screens/appointment/serviceprovider_profile.dart';
 import 'package:pamfurred/screens/search_results/search_results_appointment_pref.dart';

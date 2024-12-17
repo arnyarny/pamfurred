@@ -385,18 +385,19 @@ class AuthRedirectState extends ConsumerState<AuthRedirect>
     _streamSubscriptions.add(subscription);
   }
 
-  @override
-  void dispose() {
-    // Dispose animation controller
-    _controller.dispose();
+  // @override
+  // void dispose() {
+  //   WidgetsBinding.instance.removeObserver(this);
+  //   // Dispose animation controller
+  //   _controller.dispose();
 
-    // Cancel all stream subscriptions
-    for (final subscription in _streamSubscriptions) {
-      subscription.cancel();
-    }
+  //   // Cancel all stream subscriptions
+  //   for (final subscription in _streamSubscriptions) {
+  //     subscription.cancel();
+  //   }
 
-    super.dispose();
-  }
+  //   super.dispose();
+  // }
 
   @override
   Widget build(BuildContext context) {

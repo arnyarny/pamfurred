@@ -48,7 +48,7 @@ String formatDateToShort(String date) {
 
 // Get date now
 String getFormattedDate() {
-  DateTime dateNow = DateTime.now();
-  String formattedDate = DateFormat('yyyy-MM-dd').format(dateNow);
+  String formattedDate =
+      DateTime.now().toUtc().toIso8601String(); // Current timestamp in UTC;
   return formattedDate;
 }
